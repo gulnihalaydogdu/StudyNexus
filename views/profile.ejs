@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus - Profilim</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+
+    <div class="profile-box">
+        <div class="profile-header">
+            <h2>Kişisel Bilgilerim</h2>
+            <p>Hesap detaylarınızı buradan yönetebilirsiniz.</p>
+        </div>
+        
+        <form action="/profile/edit" method="POST">
+            <div class="form-row">
+                <div>
+                    <label>Kullanıcı Adı</label>
+                    <input type="text" value="<%= user.username %>" disabled>
+                </div>
+                <div>
+                    <label>E-Posta Adresi</label>
+                    <input type="text" value="<%= user.email %>" disabled>
+                </div>
+            </div>
+
+            <label>İsim Soyisim</label>
+            <input type="text" name="full_name" value="<%= user.full_name || '' %>" required>
+
+            <div class="form-row">
+                <div>
+                    <label>Yaşadığınız Şehir</label>
+                    <input type="text" name="location" value="<%= user.location || '' %>" required>
+                </div>
+                <div>
+                    <label>Doğum Tarihi</label>
+                    <input type="date" name="birth_date" value="<%= user.birth_date || '' %>" required>
+                </div>
+            </div>
+
+            <% if (user.role === 'student') { %>
+                <div class="form-row">
+                    <div>
+                        <label>Sınıfınız</label>
+                        <input type="text" name="grade" value="<%= user.grade || '' %>">
+                    </div>
+                    <div>
+                        <label>Yaşınız</label>
+                        <input type="number" name="age" value="<%= user.age || '' %>">
+                    </div>
+                </div>
+            <% } else if (user.role === 'teacher') { %>
+                <label>Branşınız</label>
+                <input type="text" name="branch" value="<%= user.branch || '' %>">
+            <% } %>
+
+            <div class="btn-group">
+                <a href="/" class="back-btn">İptal</a>
+                <button type="submit" class="save-btn">Değişiklikleri Kaydet</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

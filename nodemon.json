@@ -1,0 +1,5 @@
+{
+  "watch": ["*.js", "routes", "lib", "views", "public"],
+  "ext": "js,ejs,json",
+  "delay": 800
+}

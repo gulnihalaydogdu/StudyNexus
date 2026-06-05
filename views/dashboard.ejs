@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus - Planlayıcı Tuvali</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <h1 class="brand">StudyNexus</h1>
+        <nav class="nav-links">
+            <a href="#week-panel" class="nav-chip">📋 Bu Hafta</a>
+            <a href="#stats-panel" class="nav-chip">📊 İlerleme</a>
+            <% if (user.role === 'teacher') { %><a href="#coaching-panel" class="nav-chip">🎯 Öğrencilerim</a><% } else { %><a href="#coaching-panel" class="nav-chip">👩‍🏫 Koçum</a><% } %>
+        </nav>
+        <div class="user-menu">
+            <a href="/profile" class="profile-link">
+                👤 <%= user.username %>
+                    <span class="role-tag">
+                        <%= user.role==='student' ? 'Öğrenci' : 'Öğretmen' %>
+                    </span>
+            </a>
+            <a href="/logout" class="logout-btn">Çıkış Yap</a>
+        </div>
+    </header>
+
+    <main class="canvas-area">
+
+        <div class="left-sidebar">
+            
+            <div class="pile-container">
+                <% if (!weeklyPlans || weeklyPlans.length === 0) { %>
+                    <div class="pile-empty-state">
+                        <div style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;">🗂️</div>
+                        <div class="pile-title" style="color: #a39fbb;">Kayıtlı Plan Yok</div>
+                        <div class="pile-date">İlk haftalık planınızı oluşturup kaydedin.</div>
+                    </div>
+                <% } else { %>
+                    <% weeklyPlans.forEach((plan, index) => { %>
+                        <div class="pile-paper" style="--index: <%= index %>;" data-plan-id="<%= plan.id %>">
+                            <div class="pile-title"><%= plan.title %></div>
+                            <div class="pile-date"><%= plan.date_range %></div>
+                            <div class="pile-actions">
+                                <button class="view-plan-btn" onclick="openQuickLook(<%= plan.id %>)">Hızlı Bakış</button>
+                                <button class="edit-plan-btn" onclick="editWeeklyPlan(<%= plan.id %>)">Düzenle</button>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+
+            <% 
+                const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                const now = new Date();
+                let currentMonthIndex = now.getMonth();
+                let currentYear = now.getFullYear();
+                
+                const dynamicMonths = [];
+                for(let i = 0; i < 3; i++) {
+                    let calcMonth = (currentMonthIndex + i) % 12; // 12. ayı geçerse başa (Ocağa) sarar
+                    let calcYear = currentYear + Math.floor((currentMonthIndex + i) / 12); // Yıl atlamayı hesaplar
+                    dynamicMonths.push({ name: monthNames[calcMonth], year: calcYear });
+                }
+            %>
+            
+            <div class="calendar-widget">
+                <div class="cal-header">
+                    <h3>🗓️ Takvim Görünümü</h3>
+                </div>
+                <div class="cal-body">
+                    <% dynamicMonths.forEach(m => { %>
+                        <div class="cal-month-group">
+                            <div class="cal-month-name"><%= m.name %> <%= m.year %></div>
+                            <div class="cal-weeks-grid">
+                                <% for(let w=1; w<=4; w++) { 
+                                    // Veritabanındaki ay ismiyle dinamik ay ismini eşleştiriyoruz
+                                    let event = calendarEvents.find(e => e.target_month === m.name && e.target_week == w);
+                                    
+                                    if (event && !weeklyPlans.some(p => p.id === event.plan_id)) {
+                                        event = null; 
+                                    }
+                                %>
+                                    <div class="cal-week-box <%= event ? 'filled' : 'empty' %>" 
+                                         title="<%= event ? 'Atanan Plan ID: ' + event.plan_id : 'Boş Hafta' %>"
+                                         id="cal-box-<%= m.name %>-<%= w %>"
+                                         <% if(event) { %> onclick="openQuickLook(<%= event.plan_id %>)" <% } %>>
+                                         
+                                        <span class="week-num"><%= w %>. Hafta</span>
+                                        <% if(event) { %>
+                                            <div class="week-indicator"></div>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+            </div>
+
+        </div>
+
+        <div class="workspace">
+            <div class="workspace-empty-state" id="workspaceEmptyState">
+                <img src="/img/poster.png" alt="Hoş Geldiniz" class="welcome-poster">
+            </div>
+            <button class="add-btn" id="createNewBtn">+</button>
+            <div class="a4-template" id="a4Canvas" data-editing-id="">
+                <button class="cancel-canvas-btn" id="closeCanvasBtn">Vazgeç</button>
+                <button class="save-plan-btn" id="savePlanBtn">💾 Kaydet</button>
+                <button class="download-pdf-btn" id="downloadPdfBtn">📥 PDF İndir</button>
+                <div class="a4-header">
+                    <input type="text" id="planTitleInput" placeholder="Plan Başlığı" style="display: block; width: 100%; text-align: center; font-size: 1.8rem; font-weight: 800; color: var(--text-main); border: none; outline: none; background: transparent; font-family: 'Poppins', sans-serif;">
+                    <input type="text" id="planDateInput" placeholder="Tarih (Örn: 18 Mayıs - 25 Mayıs)" style="display: block; width: 100%; text-align: center; font-size: 1rem; font-weight: 500; color: var(--text-muted); border: none; outline: none; background: transparent; margin-top: 8px; font-family: 'Poppins', sans-serif;">
+                </div>
+                <div class="planner-rows">
+                    <div class="day-row"><div class="day-letter" style="color: #ef4444;">P</div><div class="drop-zone" data-day="Pazartesi"></div></div>
+                    <div class="day-row"><div class="day-letter" style="color: #8b5cf6;">S</div><div class="drop-zone" data-day="Salı"></div></div>
+                    <div class="day-row"><div class="day-letter" style="color: #06b6d4;">Ç</div><div class="drop-zone" data-day="Çarşamba"></div></div>
+                    <div class="day-row"><div class="day-letter" style="color: #d946ef;">P</div><div class="drop-zone" data-day="Perşembe"></div></div>
+                    <div class="day-row"><div class="day-letter" style="color: #f59e0b;">C</div><div class="drop-zone" data-day="Cuma"></div></div>
+                    <div class="day-row"><div class="day-letter" style="color: #10b981;">C</div><div class="drop-zone" data-day="Cumartesi"></div></div>
+                    <div class="day-row"><div class="day-letter" style="color: #f97316;">P</div><div class="drop-zone" data-day="Pazar"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="toolbox">
+            <div class="toolbox-drag-panel action-card"
+                style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: #333;">📘 Hızlı Ekle</h3>
+
+                <form id="addCourseForm" onsubmit="event.preventDefault(); submitNewCourse();"
+                    style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="newCourseInput" placeholder="Yeni Ders (Örn: CTIS 222)" required
+                        style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button type="submit"
+                        style="background: #333; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">+</button>
+                </form>
+
+                <form id="addTopicForm" onsubmit="event.preventDefault(); submitNewTopic();"
+                    style="display: flex; gap: 10px;">
+                    <select id="topicCourseSelect" required
+                        style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="" disabled selected>Ders...</option>
+                        <% courses.forEach(course=> { %>
+                            <option value="<%= course.id %>">
+                                <%= course.name %>
+                            </option>
+                            <% }) %>
+                    </select>
+                    <input type="text" id="newTopicInput" placeholder="Konu Adı" required
+                        style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button type="submit"
+                        style="background: #8b5cf6; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer;">+</button>
+                </form>
+
+            <div class="course-tags-wrapper" style="margin-top:12px;">
+                <span class="tags-title">Kayıtlı Dersler</span>
+                <div id="courseTagsContainer" class="tags-container">
+                    <% courses.forEach(course=> { %>
+                        <div class="course-pill" data-course-id="<%= course.id %>"
+                            onclick="selectCourseInCombo(<%= course.id %>)" style="cursor: pointer;">
+                            <span class="pill-text">
+                                <%= course.name %>
+                            </span>
+                            <button type="button" class="pill-delete-btn"
+                                onclick="event.stopPropagation(); deleteCourse(<%= course.id %>, this)"
+                                title="Dersi Sil">×</button>
+                        </div>
+                        <% }) %>
+                </div>
+            </div>
+
+            <div class="unassigned-topics topics-scroll">
+                <h3>📌 Sürükle — Kağıda Yerleştir</h3>
+
+                <div class="draggable-list" id="topicsContainer">
+                    <% topics.forEach(topic=> { %>
+                        <div class="draggable-item" draggable="<%= topic.is_completed ? 'false' : 'true' %>"
+                            data-topic-id="<%= topic.id %>" data-course-id="<%= topic.course_id %>"
+                            data-topic-name="<%= topic.name %>"
+                            style="background: #f9fafb; border: 1px solid #eee; padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; <%= topic.is_completed ? 'opacity: 0.5;' : 'cursor: grab;' %>">
+
+                            <span
+                                style="flex: 1; font-size: 0.9rem; <%= topic.is_completed ? 'text-decoration: line-through; color: #999;' : '' %>">
+                                <%= topic.name %>
+                            </span>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button
+                                    onclick="event.stopPropagation(); toggleTopicDone(<%= topic.id %>, <%= topic.is_completed ? 'false' : 'true' %>, this)"
+                                    style="background: none; border: none; cursor: pointer; color: #10b981; font-weight: bold; font-size: 1.1rem;"
+                                    title="Yeterince ekledim">✓</button>
+                                <button onclick="event.stopPropagation(); deleteTopic(<%= topic.id %>, this)"
+                                    style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: bold; font-size: 1.1rem;"
+                                    title="Konuyu sil">✕</button>
+                            </div>
+                        </div>
+                        <% }) %>
+                </div>
+            </div>
+            </div>
+
+            <div id="week-panel" class="action-card week-panel-card">
+                <h3>📋 Bu Hafta — <%= weekPanel.todayName %></h3>
+                <% if (!weekPanel.hasPlan) { %>
+                    <p class="week-panel-empty">Bu ayın <%= weekPanel.week %>. haftası için takvimde plan yok.</p>
+                <% } else { %>
+                    <p class="week-panel-sub"><%= weekPanel.planTitle %> · <%= weekPanel.month %> <%= weekPanel.week %>. Hafta</p>
+                    <% if (weekPanel.todayItems.length === 0) { %>
+                        <p class="week-panel-empty">Bugün için planlanmış konu yok.</p>
+                    <% } else { %>
+                        <ul class="week-task-list" id="weekTaskList">
+                            <% weekPanel.todayItems.forEach(item => { %>
+                                <li><strong><%= item.course_name %></strong> — <%= item.topic_name %>
+                                    <% if (item.description) { %><span class="week-task-desc"><%= item.description %></span><% } %>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <div id="stats-panel" class="action-card stats-card">
+                <h3>📊 İlerleme</h3>
+                <div class="stats-overall">
+                    <div class="stats-ring" id="statsRing" style="--p: <%= stats.overallPercent %>;">
+                        <span id="statsPercentText"><%= stats.overallPercent %>%</span>
+                    </div>
+                    <div>
+                        <strong id="statsCountText"><%= stats.completedTopics %> / <%= stats.totalTopics %></strong>
+                        <p class="stats-muted">konu tamamlandı</p>
+                    </div>
+                </div>
+                <div id="statsCourseRows">
+                    <% stats.byCourse.forEach(c => { %>
+                        <div class="stats-course-row" data-course-id="<%= c.id %>">
+                            <span><%= c.name %></span>
+                            <div class="stats-bar"><div class="stats-bar-fill" style="width:<%= c.percent %>%"></div></div>
+                            <span class="stats-pct"><%= c.percent %>%</span>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div id="coaching-panel" class="action-card coaching-card">
+                <% if (user.role === 'teacher') { %>
+                    <h3>🎯 Öğrencilerim</h3>
+                    <p class="coaching-hint">Davet kodunuz: <code id="coachCodeDisplay">...</code></p>
+                    <ul id="teacherStudentsList" class="coaching-list"></ul>
+                <% } else { %>
+                    <h3>👩‍🏫 Koçuma Bağlan</h3>
+                    <form class="coaching-form" onsubmit="event.preventDefault(); linkToCoach();">
+                        <input type="text" id="coachCodeInput" placeholder="Koç kodu" required style="text-transform:uppercase;">
+                        <button type="submit" class="daily-submit-btn">Bağlan</button>
+                    </form>
+                    <ul id="myTeachersList" class="coaching-list"></ul>
+                <% } %>
+            </div>
+        </aside>
+
+    </main>
+
+    <% if (flashMsg) { %>
+        <div class="toast-message" id="toastMsg">
+            <%= flashMsg %>
+        </div>
+        <% } %>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+
+    <!-- HIZLI BAKIŞ MODALI (A4 GÖRÜNÜMÜ) -->
+    <div id="quickLookModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 850px; max-height: 90vh; background: #fcfbfe; display: flex; flex-direction: column;">
+            
+            <button class="close-modal-btn" onclick="closeQuickLook()">✕</button>
+            
+            <div class="modal-header">
+                <h2 id="qlTitle">Plan Başlığı</h2>
+                <p id="qlDate">Tarih Aralığı</p>
+            </div>
+            
+            <div class="modal-body" id="qlBody" style="background: #f8f9fa; padding: 30px; display: flex; justify-content: center; overflow-y: auto; flex: 1;">
+                
+                <div class="a4-template" style="display: block; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 0; cursor: default; transform: scale(0.95); transform-origin: top center; height: max-content; padding-bottom: 40px;">
+                    <div class="planner-rows">
+                        <div class="day-row"><div class="day-letter" style="color: #ef4444;">P</div><div class="read-only-zone" data-day="Pazartesi"></div></div>
+                        <div class="day-row"><div class="day-letter" style="color: #8b5cf6;">S</div><div class="read-only-zone" data-day="Salı"></div></div>
+                        <div class="day-row"><div class="day-letter" style="color: #06b6d4;">Ç</div><div class="read-only-zone" data-day="Çarşamba"></div></div>
+                        <div class="day-row"><div class="day-letter" style="color: #d946ef;">P</div><div class="read-only-zone" data-day="Perşembe"></div></div>
+                        <div class="day-row"><div class="day-letter" style="color: #f59e0b;">C</div><div class="read-only-zone" data-day="Cuma"></div></div>
+                        <div class="day-row"><div class="day-letter" style="color: #10b981;">C</div><div class="read-only-zone" data-day="Cumartesi"></div></div>
+                        <div class="day-row"><div class="day-letter" style="color: #f97316;">P</div><div class="read-only-zone" data-day="Pazar"></div></div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="modal-footer" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box; padding: 20px 30px; border-top: 1px solid var(--border); background: white; gap: 10px; flex-wrap: wrap;">
+                <button class="delete-plan-btn" onclick="deleteWeeklyPlan()" id="qlDeleteBtn">🗑️ Planı Sil</button>
+                <button class="edit-plan-btn-modal" onclick="editFromQuickLook()">✏️ Düzenle</button>
+                <button class="add-to-calendar-btn" onclick="addToCalendar()">📅 Takvime Ekle</button>
+                <select id="assignStudentSelect" class="share-class-select" style="display:none;" title="Öğrenci seç"></select>
+                <button type="button" id="assignPlanBtn" class="share-plan-btn" style="display:none;" onclick="openAssignPlanModal()">📤 Öğrenciye Ata</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="calendarModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="close-modal-btn" onclick="closeCalendarModal()">✕</button>
+            
+            <div class="modal-header" style="border-bottom: none; padding-bottom: 10px;">
+                <h2 style="font-size: 1.3rem;">📅 Hedef Hafta</h2>
+                <p style="font-size: 0.8rem;">Bu planı hangi haftaya atayalım?</p>
+            </div>
+            
+            <div class="modal-body" style="background: white; padding-top: 0;">
+                <select id="calMonthSelect" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 10px; border: 1px solid #e9e4f4; background: #fcfbfe; color: var(--text-main); font-weight: 600; outline: none; font-family: 'Poppins', sans-serif;">
+                    <% dynamicMonths.forEach(m => { %>
+                        <option value="<%= m.name %>"><%= m.name %> <%= m.year %></option>
+                    <% }) %>
+                </select>
+
+                <div class="week-selector-container">
+                    <button class="week-pill active" onclick="selectWeek(this, 1)">1. Hafta</button>
+                    <button class="week-pill" onclick="selectWeek(this, 2)">2. Hafta</button>
+                    <button class="week-pill" onclick="selectWeek(this, 3)">3. Hafta</button>
+                    <button class="week-pill" onclick="selectWeek(this, 4)">4. Hafta</button>
+                </div>
+                
+                <input type="hidden" id="selectedWeekValue" value="1">
+            </div>
+            
+            <div class="modal-footer" style="justify-content: center; background: white;">
+                <button class="add-to-calendar-btn" onclick="confirmCalendarAssignment()" style="width: 100%;">Onayla ve Takvime Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentOverviewModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <button class="close-modal-btn" onclick="closeStudentOverview()">✕</button>
+            <div class="modal-header"><h2 id="soStudentName">Öğrenci</h2></div>
+            <div class="modal-body" id="studentOverviewBody"></div>
+        </div>
+    </div>
+
+    <div id="assignPlanModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <button class="close-modal-btn" onclick="closeAssignPlanModal()">✕</button>
+            <div class="modal-header"><h2>Öğrenciye Plan Ata</h2></div>
+            <div class="modal-body">
+                <select id="assignStudentModalSelect" style="width:100%;padding:10px;margin-bottom:12px;"></select>
+                <select id="assignMonthSelect" style="width:100%;padding:10px;margin-bottom:12px;">
+                    <% dynamicMonths.forEach(m => { %><option value="<%= m.name %>"><%= m.name %> <%= m.year %></option><% }) %>
+                </select>
+                <div class="week-selector-container">
+                    <button type="button" class="week-pill active" onclick="selectAssignWeek(this,1)">1. Hafta</button>
+                    <button type="button" class="week-pill" onclick="selectAssignWeek(this,2)">2. Hafta</button>
+                    <button type="button" class="week-pill" onclick="selectAssignWeek(this,3)">3. Hafta</button>
+                    <button type="button" class="week-pill" onclick="selectAssignWeek(this,4)">4. Hafta</button>
+                </div>
+                <input type="hidden" id="assignWeekValue" value="1">
+            </div>
+            <div class="modal-footer"><button class="add-to-calendar-btn" onclick="confirmAssignPlan()" style="width:100%;">Ata</button></div>
+        </div>
+    </div>
+
+    <script>
+        window.STUDYNEXUS_USER = { id: <%= user.id %>, role: '<%= user.role %>' };
+    </script>
+    <script src="/js/canvas.js"></script>
+</body>
+</html>

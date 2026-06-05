@@ -1,0 +1,125 @@
+/* public/css/profile.css */
+
+:root {
+    /* Ortak Tema Değişkenleri */
+    --primary: #8b5cf6; 
+    --primary-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    --bg-color: #f5f3f9; 
+    --surface: rgba(253, 252, 255, 0.95); 
+    --text-main: #2e1065; 
+    --text-muted: #7c7b9b;
+    --border: #e9e4f4; 
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 16px -4px rgba(109, 40, 217, 0.08);
+    --shadow-lg: 0 20px 25px -5px rgba(109, 40, 217, 0.1);
+    --radius: 20px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    color: var(--text-main);
+}
+
+/* Profil Kutusu (Glassmorphism & Soft Shadow) */
+.profile-box {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 45px 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 550px;
+    border: 1px solid white;
+}
+
+/* Başlıklar */
+.profile-header { text-align: center; margin-bottom: 35px; }
+.profile-header h2 { margin: 0; color: var(--text-main); font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+.profile-header p { margin: 8px 0 0; color: var(--text-muted); font-size: 0.95rem; }
+
+/* Form Elemanları */
+label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+
+input { 
+    width: 100%; 
+    padding: 14px 18px; 
+    margin-bottom: 20px; 
+    border: 2px solid var(--border); 
+    border-radius: 12px; 
+    font-family: 'Poppins', sans-serif; 
+    font-size: 0.95rem; 
+    box-sizing: border-box; 
+    background-color: #fcfbfe; 
+    color: var(--text-main);
+    transition: all 0.3s ease; 
+}
+
+input:focus { 
+    outline: none; 
+    border-color: var(--primary); 
+    background-color: white; 
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); 
+}
+
+input[disabled] { 
+    background-color: #e9e4f4; 
+    color: #8a88a4; 
+    cursor: not-allowed; 
+    border-color: transparent; 
+}
+
+.form-row { display: flex; gap: 20px; }
+.form-row > div { flex: 1; }
+
+/* Butonlar */
+.btn-group { display: flex; gap: 15px; margin-top: 15px; }
+
+button, .back-btn { 
+    flex: 1; 
+    padding: 14px; 
+    border: none; 
+    border-radius: 12px; 
+    font-size: 1.05rem; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    font-family: 'Poppins', sans-serif; 
+    text-align: center; 
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.save-btn { 
+    background: var(--primary-gradient); 
+    color: white; 
+}
+
+.save-btn:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(139, 92, 246, 0.35); 
+}
+
+.back-btn { 
+    background-color: white; 
+    color: var(--text-main); 
+    border: 2px solid var(--border);
+}
+
+.back-btn:hover { 
+    border-color: #dcd7ea; 
+    background-color: #fcfbfe; 
+    transform: translateY(-2px); 
+}

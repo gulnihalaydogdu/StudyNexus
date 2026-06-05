@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus - Kayıt</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+    <div class="auth-form-section" style="width:100%; max-width:520px; margin:40px auto;">
+        <div class="auth-box">
+            <% if (mode === 'auto_verified') { %>
+                <h2>Kayıt tamam ✓</h2>
+                <p class="subtitle"><strong><%= username %></strong> hesabınız hazır. Mail sunucusu yapılandırılmadığı için e-posta doğrulaması atlandı (yerel geliştirme modu).</p>
+                <a href="/login" style="display:inline-block;margin-top:16px;">Giriş yap</a>
+            <% } else if (mode === 'email_sent') { %>
+                <h2>E-postanızı kontrol edin</h2>
+                <p class="subtitle"><strong><%= email %></strong> adresine doğrulama linki gönderildi. Onayladıktan sonra giriş yapabilirsiniz.</p>
+                <a href="/login">Giriş sayfası</a>
+            <% } else { %>
+                <h2>Hesap oluşturuldu</h2>
+                <p class="subtitle">Mail gönderilemedi<%= mailReason === 'send_failed' ? ' (sunucu hatası)' : '' %>. Aşağıdaki linkle hesabınızı doğrulayın:</p>
+                <p style="word-break:break-all; font-size:0.85rem; background:#f5f3f9; padding:12px; border-radius:8px;">
+                    <a href="<%= verificationLink %>"><%= verificationLink %></a>
+                </p>
+                <a href="/login">Giriş sayfası</a>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

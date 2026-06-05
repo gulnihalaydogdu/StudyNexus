@@ -1,0 +1,4 @@
+node_modules/
+.env
+studynexus.db
+.DS_Store

@@ -1,0 +1,932 @@
+/* public/css/dashboard.css */
+
+:root {
+    /* O sevdiğimiz lila/menekşe premium tema */
+    --primary: #8b5cf6; 
+    --primary-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    --bg-color: #f5f3f9; 
+    --surface: rgba(253, 252, 255, 0.95); 
+    --text-main: #2e1065; 
+    --text-muted: #7c7b9b;
+    --border: #e9e4f4; 
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 16px -4px rgba(109, 40, 217, 0.08);
+    --shadow-lg: 0 20px 25px -5px rgba(109, 40, 217, 0.1);
+    --radius: 16px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--text-main);
+    /* height: 100vh; ve overflow: hidden; SİLİNDİ */
+    min-height: 100vh;
+    overflow-y: auto; /* Artık tüm sayfa kaydırılabilir! */
+}
+
+/* Ana Tuval Alanı */
+.canvas-area {
+    display: flex;
+    flex: 1;
+    position: relative;
+    padding: 40px 60px;
+    gap: 50px;
+    min-height: calc(100vh - 80px); 
+    align-items: flex-start; /* İçeriklerin sünmesini engeller */
+}
+
+/* Üst Menü (Buzlu Cam) */
+.navbar {
+    /* Eski kodların aynen dursun, sadece şunları ekle: */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(253, 252, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+    box-shadow: var(--shadow-sm);
+    z-index: 100;
+}
+
+.brand { font-size: 1.5rem; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; letter-spacing: -0.5px; }
+
+.user-menu { display: flex; align-items: center; gap: 20px; }
+.profile-link { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-main); font-weight: 600; padding: 6px 16px; background: white; border-radius: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: all 0.3s ease; }
+.profile-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+.role-tag { font-size: 0.7rem; background: var(--primary-gradient); color: white; padding: 3px 10px; border-radius: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3); }
+.logout-btn { background-color: white; color: #ef4444; border: 1px solid #fee2e2; text-decoration: none; padding: 8px 18px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; }
+.logout-btn:hover { background-color: #ef4444; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+
+
+
+
+
+/* Sağ Sütun — tuvalin yanında, sürükle-bırak için */
+.toolbox {
+    width: 320px;
+    min-width: 280px;
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 10;
+    order: 3;
+}
+
+.workspace { order: 2; flex: 1; }
+.left-sidebar { order: 1; }
+
+.toolbox-drag-panel {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    border: 2px solid rgba(139, 92, 246, 0.15);
+}
+
+.topics-scroll {
+    margin-top: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.topics-scroll h3 {
+    margin: 0 0 10px;
+    font-size: 0.95rem;
+    color: #333;
+    position: sticky;
+    top: 0;
+    background: white;
+    padding-bottom: 6px;
+    z-index: 1;
+}
+
+.week-panel-card h3 { margin-top: 0; }
+.week-panel-sub { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 10px; }
+.week-panel-empty { font-size: 0.85rem; color: var(--text-muted); }
+.week-task-list { list-style: none; padding: 0; margin: 0; }
+.week-task-list li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+.week-task-desc { display: block; font-size: 0.75rem; color: #888; font-style: italic; }
+
+.coaching-hint { font-size: 0.8rem; color: var(--text-muted); }
+.coaching-hint code { background: #f3f0ff; padding: 2px 8px; border-radius: 6px; color: var(--primary); font-weight: 700; }
+.coaching-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.coaching-list li { padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; }
+.coaching-form { display: flex; gap: 8px; margin-top: 8px; }
+.coaching-form input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+.student-overview-stats { display: flex; gap: 16px; margin-bottom: 16px; }
+.student-plan-row { padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+
+
+.pile-title { font-weight: 700; color: var(--text-main); font-size: 1.2rem; margin-bottom: 10px; }
+.pile-date { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+/* Sağ Taraf: Aksiyon ve Yeni A4 Alanı */
+.workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    position: relative;
+    padding-bottom: 100px;
+    /* height: 100%; ve overflow-y: auto; SİLİNDİ */
+}
+
+/* Custom Scrollbar for Workspace */
+.workspace::-webkit-scrollbar { width: 8px; }
+.workspace::-webkit-scrollbar-track { background: transparent; }
+.workspace::-webkit-scrollbar-thumb { background: #dcd7ea; border-radius: 10px; }
+.workspace::-webkit-scrollbar-thumb:hover { background: #c1b8d9; }
+
+/* Gizli A4 Şablonu */
+.a4-template {
+    display: none; 
+    width: 100%;
+    max-width: 700px;
+    background: white; /* Kağıt saf beyaz olmalı */
+    min-height: 900px; /* A4 formatı */
+    box-shadow: var(--shadow-lg);
+    border-radius: 8px; /* Kağıt köşesi hafif yumuşak */
+    padding: 50px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.a4-template.active {
+    display: block;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9) translateY(40px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.a4-header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
+.a4-header h2 { margin: 0; color: var(--text-main); font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+
+/* Büyük Mor Artı Butonunu Sağ Üste Taşıyoruz (Tasarımdaki gibi) */
+/* Büyük Mor Artı Butonu (Tam Sağ Üst Köşe) */
+.add-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 0; /* Eski ayarı tamamen sildik */
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 30px; 
+    width: 110px; /* Ekranda sırıtmasın diye biraz daha kibarlaştırdık */
+    height: 50px;
+    font-size: 2rem;
+    font-weight: 300;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+.add-btn:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+/* A4 İçindeki İptal / Kapat Butonu */
+.cancel-canvas-btn {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    background: white;
+    color: #ef4444; /* Kırmızı metin */
+    border: 1px solid #fee2e2;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.cancel-canvas-btn:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
+}
+
+/* --- A4 ŞABLONU GÜN SATIRLARI --- */
+.planner-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.day-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 15px;
+    min-height: 80px; /* İçine bir şeyler atılabilmesi için minimum yükseklik */
+}
+
+.day-row:last-child {
+    border-bottom: none;
+}
+
+/* Kocaman Renkli Harfler */
+.day-letter {
+    font-size: 3rem;
+    font-weight: 800;
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Sürükle Bırak Alanı (Drop Zone) */
+.drop-zone {
+    flex: 1;
+    background-color: transparent;
+    border: 2px dashed transparent; /* Başlangıçta çizgiler görünmez */
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Konuyu havada tutarken (sürüklerken) alanın belirginleşmesi için */
+.drop-zone.drag-over {
+    background-color: rgba(139, 92, 246, 0.05);
+    border-color: var(--primary);
+}
+/* --- TUVALE BIRAKILAN PLAN SATIRI --- */
+.planned-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: white;
+    border-bottom: 1px solid var(--border); /* PDF satırı hissiyatı */
+    animation: fadeIn 0.3s ease;
+}
+
+/* Sürüklenen orijinal öğenin kaybolmaması ama görsel bir efekt vermesi için */
+.draggable-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.planned-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.planned-item .item-title {
+    font-weight: 600;
+    font-size: 0.8rem; /* 0.9rem'den küçülttük, daha kibar duracak */
+    color: var(--text-main);
+    min-width: 100px; /* 140px'ten 100px'e düşürdük, açıklamaya devasa bir yer açıldı! */
+    max-width: 130px; /* İsim çok uzunsa açıklamayı itmesin diye sınır koyduk */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Sığmazsa sonuna ... koyar */
+}
+
+/* Kullanıcının sonradan dolduracağı açıklama alanı */
+.planned-item input[type="text"] {
+    flex: 1;
+    margin: 0;
+    padding: 6px 10px;
+    border: none;
+    border-bottom: 1px dashed var(--border); /* Sadece alt çizgi */
+    border-radius: 0;
+    background: transparent;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.planned-item input[type="text"]:focus {
+    border-bottom: 2px solid var(--primary);
+    background: rgba(139, 92, 246, 0.02);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- TUVAL İÇİ TAŞIMA VE SİLME --- */
+.planned-item {
+    cursor: grab; /* Sürüklenebilir olduğunu belirtir */
+}
+
+.planned-item:active {
+    cursor: grabbing; /* Tutulduğunda el işareti kapanır */
+}
+
+.delete-item-btn {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+    opacity: 0.3; /* Normalde soluk durur */
+    transition: all 0.2s ease;
+}
+
+.planned-item:hover .delete-item-btn {
+    opacity: 1; /* Satırın üzerine gelince belirginleşir */
+}
+
+.delete-item-btn:hover {
+    color: #dc2626;
+    transform: scale(1.2);
+}
+
+/* Başarı Bildirimi (Flash Message) */
+.toast-message {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: #10b981; /* Başarı Yeşili */
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    z-index: 1000;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    animation: slideInUp 0.5s ease forwards;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- KAYITLI DERSLER (PILLS) TASARIMI --- */
+.course-tags-wrapper {
+    margin: 15px 0 20px 0;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border: 1px solid var(--border);
+}
+
+.tags-title {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.course-pill {
+    background: #fcfbfe;
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #dcd7ea;
+    transition: all 0.2s ease;
+}
+
+.course-pill:hover {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 2px 6px rgba(139, 92, 246, 0.15);
+    transform: translateY(-1px);
+}
+
+.pill-delete-btn {
+    background: transparent;
+    border: none;
+    color: #a39fbb; /* Normalde soluk ve zarif bir gri/lila */
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pill-delete-btn:hover {
+    color: #ef4444; /* Sadece fareyle üzerine gelince kırmızı uyarı versin */
+    transform: scale(1.2) rotate(90deg); /* Küçük tatlı bir animasyon */
+}
+
+/* --- PDF İNDİR BUTONU (Kağıdın altına, sağ köşeye taşındı) --- */
+.download-pdf-btn {
+    position: absolute;
+    bottom: -65px; /* Butonu kağıdın sınırlarından çıkarıp hemen altına iter */
+    right: 0;      /* Kağıdın sağ kenarıyla jilet gibi hizalar */
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px; /* Tıklaması daha rahat olsun diye biraz büyüttük */
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
+}
+
+.download-pdf-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* --- DİNAMİK TUVAL VE TAŞMA DÜZELTMELERİ --- */
+
+.planned-item {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden; /* Dışarı taşmayı engeller */
+}
+
+/* Flexbox içinde Input taşmasını önleyen kritik kod */
+.planned-item input[type="text"] {
+    flex: 1;
+    min-width: 0; 
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* KADEME 1: KOMPAKT MOD (3 veya 4 eleman varken) */
+.drop-zone.compact .planned-item,
+.read-only-zone.compact .planned-item {
+    padding: 4px 10px;
+    gap: 8px;
+    min-height: 32px; 
+}
+
+.drop-zone.compact .item-title,
+.read-only-zone.compact .item-title {
+    font-size: 0.75rem; 
+    min-width: 80px;    
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.drop-zone.compact input[type="text"] {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+
+/* KADEME 2: İKİ SÜTUNLU MOD (5 ve üzeri eleman varken) */
+.drop-zone.two-columns,
+.read-only-zone.two-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); 
+    gap: 6px 12px; 
+    align-content: start;
+}
+
+.drop-zone.two-columns .planned-item,
+.read-only-zone.two-columns .planned-item {
+    gap: 4px; 
+    padding: 4px 6px;
+}
+
+.drop-zone.two-columns .item-title,
+.read-only-zone.two-columns .item-title {
+    font-size: 0.55rem;  
+    min-width: 60px; 
+    max-width: 80px; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- KAYDET BUTONU (PDF butonunun solunda, kağıdın altında) --- */
+.save-plan-btn {
+    position: absolute;
+    bottom: -65px; /* PDF butonu ile aynı hizada aşağıda */
+    right: 150px;  /* PDF butonunun hemen solunda durması için boşluk */
+    background: #10b981; /* Başarı yeşili */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.save-plan-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Tıklanıp "Kaydediliyor..." durumundayken görünümü */
+.save-plan-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* --- DESTE (PILE) KONTEYNERİ --- */
+.pile-container {
+    width: 350px;
+    position: sticky;
+    top: 40px; 
+    z-index: 10;
+    /* Fareyle üzerine gelince aşağı açılacakları için konteynere biraz yer açıyoruz */
+    min-height: 600px; 
+}
+
+/* HİÇ PLAN YOKKEN GÖRÜNEN BOŞ KUTU */
+.pile-empty-state {
+    width: 100%;
+    height: 450px;
+    background: rgba(253, 252, 255, 0.4);
+    border: 2px dashed #dcd7ea;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+
+/* YIĞINDAKİ KAĞITLAR (Arka plan resimli versiyon) */
+.pile-paper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 450px;
+    
+    /* YENİ: Arka plan resmi eklendi */
+    background-color: white;
+    background-image: url('/img/paper-texture.png'); /* Kağıt dokusu resmi */
+    background-size: cover; /* Resmi kağıda tam oturtur */
+    background-position: top center; 
+    
+    box-shadow: var(--shadow-md);
+    border: 1px solid #e9e4f4;
+    border-radius: 12px;
+    padding: 25px;
+    box-sizing: border-box;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    transform: translateY(calc(var(--index) * 12px)) scale(calc(1 - (var(--index) * 0.03)));
+    z-index: calc(100 - var(--index)); 
+    opacity: calc(1 - (var(--index) * 0.15)); 
+}
+
+/* Resmin üstündeki yazıların okunaklı kalması için hafif buzlu bir kutu içine alıyoruz */
+.pile-paper .pile-title,
+.pile-paper .pile-date {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+/* FAREYİ YIĞININ ÜSTÜNE GETİRİNCE (İskambil destesi gibi açılır) */
+.pile-container:hover .pile-paper {
+    /* Her kağıt kendi sırasına göre 85px aşağı kayar */
+    transform: translateY(calc(var(--index) * 85px)) scale(1);
+    opacity: 1; /* Hepsi netleşir */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+/* AÇILMIŞ YIĞINDA, TEK BİR KAĞIDIN ÜSTÜNE GELDİĞİNDE */
+.pile-container .pile-paper:hover {
+    transform: translateY(calc(var(--index) * 85px - 15px)) scale(1.03); /* Hafifçe yukarı zıplar */
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+    z-index: 200; /* Seçilen kağıt diğerlerinin üstüne çıkar */
+}
+
+/* Yığındaki Hızlı Bakış Butonu */
+.view-plan-btn {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    background: #f5f3f9;
+    color: var(--primary);
+    border: 1px solid #e9e4f4;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0; /* Normalde gizli */
+}
+
+/* Sadece o kağıdın üzerindeyken butonu göster */
+.pile-container .pile-paper:hover .view-plan-btn {
+    opacity: 1;
+}
+
+.view-plan-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* --- HIZLI BAKIŞ MODALI --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(46, 16, 101, 0.4);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex; justify-content: center; align-items: center;
+    opacity: 0; visibility: hidden; transition: all 0.3s ease;
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+
+.modal-content {
+    background: white; width: 90%; max-width: 650px; max-height: 85vh;
+    border-radius: 16px; box-shadow: var(--shadow-lg);
+    display: flex; flex-direction: column; position: relative;
+    transform: translateY(30px); transition: all 0.3s ease;
+    overflow: hidden;
+}
+.modal-overlay.active .modal-content { transform: translateY(0); }
+
+.close-modal-btn {
+    position: absolute; top: 20px; right: 20px; background: #f5f3f9;
+    color: #ef4444; border: none; width: 32px; height: 32px;
+    border-radius: 50%; font-weight: bold; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.close-modal-btn:hover { background: #fee2e2; transform: scale(1.1); }
+
+.modal-header { padding: 30px 30px 20px; border-bottom: 1px solid var(--border); text-align: center; }
+.modal-header h2 { margin: 0 0 5px 0; color: var(--text-main); font-size: 1.5rem; }
+.modal-header p { margin: 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+.modal-body { padding: 20px 30px; overflow-y: auto; flex: 1; background: #faf9fc; }
+
+/* Gün Grupları ve Satırlar */
+.ql-day-group { margin-bottom: 20px; }
+.ql-day-name { font-weight: 700; color: var(--primary); border-bottom: 2px solid #e9e4f4; padding-bottom: 5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.ql-item { display: flex; align-items: center; padding: 10px 15px; background: white; border: 1px solid #e9e4f4; border-radius: 10px; margin-bottom: 8px; gap: 12px; box-shadow: var(--shadow-sm); }
+.ql-course { font-size: 0.7rem; background: var(--primary-gradient); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+.ql-topic { font-size: 0.85rem; font-weight: 700; color: var(--text-main); min-width: 110px; }
+.ql-desc { font-size: 0.8rem; color: var(--text-muted); flex: 1; }
+
+.modal-footer { padding: 20px 30px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; background: white; }
+
+.add-to-calendar-btn {
+    background: var(--primary-gradient); color: white; border: none; padding: 12px 24px;
+    border-radius: 10px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2); transition: all 0.2s;
+}
+.add-to-calendar-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(139, 92, 246, 0.3); }
+
+.delete-plan-btn:hover {
+    background: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    transform: translateY(-2px);
+}
+
+/* --- TAKVİM HAFTA SEÇİCİ (PILLS) --- */
+.week-selector-container {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px;
+}
+
+.week-pill {
+    background: #f5f3f9; color: var(--text-muted); border: 1px solid #e9e4f4;
+    padding: 10px 15px; border-radius: 12px; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;
+    flex: 1; min-width: 70px;
+}
+
+.week-pill:hover { background: #e9e4f4; color: var(--text-main); }
+
+/* Seçili olan hafta premium mora boyanır */
+.week-pill.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
+    transform: translateY(-2px);
+}
+
+/* --- SOL SÜTUN (YIĞIN + TAKVİM) --- */
+.left-sidebar {
+    width: 350px;
+    position: sticky;
+    top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Yığın ve Takvim arasındaki boşluk */
+    z-index: 10;
+    height: calc(100vh - 80px); /* Sayfa sonunu aşmasın */
+    overflow-y: auto; /* İçeriği çok olursa kendi içinde kaysın */
+    padding-bottom: 20px;
+}
+
+/* Sol sütunun kendi scrollbar'ını gizle (daha temiz bir görünüm için) */
+.left-sidebar::-webkit-scrollbar { display: none; }
+
+/* Eski yığın konteynerinin ayarlarını güncelliyoruz (Sticky'i ebeveyne verdik) */
+.pile-container {
+    position: relative;
+    top: 0;
+    min-height: 480px; /* Eskiden 600'dü, takvime yer açmak için biraz kıstık */
+    width: 100%;
+    margin-top: 0;
+}
+
+/* --- TAKVİM WIDGET'I --- */
+.calendar-widget {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    padding: 20px;
+}
+
+.calendar-widget .cal-header h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: var(--text-main);
+    border-bottom: 2px solid #e9e4f4;
+    padding-bottom: 10px;
+}
+
+.cal-month-group { margin-bottom: 15px; }
+.cal-month-name { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+
+.cal-weeks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+.cal-week-box {
+    background: #f5f3f9;
+    border: 1px dashed #dcd7ea;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.cal-week-box.empty:hover { background: #e9e4f4; border-color: var(--primary); }
+
+/* Plan atanmış dolu haftaların şık görünümü */
+/* Plan atanmış dolu haftaların şık görünümü */
+.cal-week-box.filled {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid var(--primary);
+    cursor: pointer; /* YENİ: Tıklanabilir olduğunu belli et */
+}
+
+.cal-week-box.filled:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.15);
+}
+
+.week-num { font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
+
+/* Dolu haftayı belirten mor nokta */
+.week-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-gradient); box-shadow: 0 2px 4px rgba(139, 92, 246, 0.4);}
+
+/* --- WORKSPACE İLK AÇILIŞ POSTERİ --- */
+.workspace-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 80px; /* Posteri aşağı itip ortalar */
+    animation: fadeIn 0.6s ease;
+}
+
+/* --- WORKSPACE İLK AÇILIŞ POSTERİ --- */
+.welcome-poster {
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 30px;
+    object-fit: cover;
+    transition: transform 0.4s ease, filter 0.4s ease;
+    
+    /* YENİ: Dört kenardan da eşit oranda (%15) dağıtarak silikleştirme efekti */
+    -webkit-mask-image: 
+        linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%),
+        linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    
+    filter: drop-shadow(0 15px 25px rgba(139, 92, 246, 0.15));
+}
+
+/* --- HIZLI BAKIŞ (QUICK LOOK) A4 ADAPTASYONU --- */
+#quickLookModal .modal-content {
+    max-width: 850px; /* A4 kağıdının sığması için pencereyi genişlettik */
+    max-height: 90vh;
+    background: #fcfbfe;
+}
+
+.read-only-zone {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px 10px;
+    align-content: flex-start;
+    min-height: 40px;
+}
+
+/* Okunabilir A4 modunda satırların içine eklenen ders kutuları */
+.read-only-zone .planned-item {
+    cursor: default; 
+    box-shadow: none;
+    border: 1px solid #e9e4f4;
+    background: white;
+    border-radius: 8px;
+    padding: 4px 10px;
+    margin-bottom: 4px;
+}
+
+.nav-links { display: flex; gap: 8px; flex: 1; justify-content: center; flex-wrap: wrap; }
+.nav-chip { text-decoration: none; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); padding: 6px 12px; background: white; border-radius: 20px; border: 1px solid var(--border); }
+.nav-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+.stats-card h3, .daily-card h3, .class-card h3 { margin-top: 0; font-size: 1.1rem; color: #333; }
+.stats-overall { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+.stats-ring { width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--primary) calc(var(--p) * 1%), #e9e4f4 0); display: flex; align-items: center; justify-content: center; position: relative; }
+.stats-ring::before { content: ''; position: absolute; inset: 8px; background: white; border-radius: 50%; }
+.stats-ring span { position: relative; font-weight: 700; font-size: 0.85rem; }
+.stats-muted { margin: 4px 0 0; font-size: 0.75rem; color: var(--text-muted); }
+.stats-course-row { display: grid; grid-template-columns: 1fr 2fr auto; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 0.8rem; }
+.stats-bar { height: 8px; background: #ede9fe; border-radius: 4px; overflow: hidden; }
+.stats-bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 4px; }
+.stats-pct { font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
+
+.daily-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.daily-form input, .daily-form select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
+.daily-form-row { display: flex; gap: 8px; }
+.daily-submit-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.today-tasks { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+.today-task { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+.today-task.done { opacity: 0.55; }
+.today-task.done span { text-decoration: line-through; }
+.today-meta { font-size: 0.75rem; color: var(--text-muted); flex: 1; }
+.today-delete { background: none; border: none; color: #ef4444; cursor: pointer; }
+.today-empty { color: var(--text-muted); font-size: 0.85rem; padding: 8px 0; }
+
+.pile-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.edit-plan-btn { background: white; color: var(--primary); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+.edit-plan-btn:hover { background: #f5f3ff; }
+.edit-plan-btn-modal { background: white; color: var(--primary); border: 1px solid var(--border); padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+
+.class-list, .shared-plans-list { list-style: none; padding: 0; margin: 0 0 12px; }
+.class-list li, .shared-plans-list li { padding: 8px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
+.shared-title { font-size: 0.9rem; margin: 12px 0 8px; color: var(--text-muted); }
+.share-class-select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; }
+.share-plan-btn { background: #06b6d4; color: white; border: none; padding: 12px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.copy-plan-btn { margin-top: 6px; background: var(--primary); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }

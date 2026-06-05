@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus - Giriş Yap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css"> </head>
+<body>
+    
+    <div class="auth-graphic">
+        <h1>StudyNexus</h1>
+        <p>Geleceğini planla, hedeflerine ulaş. Öğrenciler ve öğretmenler için tasarlanmış akıllı eğitim asistanı.</p>
+    </div>
+
+    <div class="auth-form-section">
+        <div class="auth-box">
+            <h2>Hoş Geldin 👋</h2>
+            <p class="subtitle">Çalışmalarına kaldığın yerden devam et.</p>
+            
+            <form action="/login" method="POST">
+                <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+                <input type="password" name="password" placeholder="Şifre" required>
+                <button type="submit">Giriş Yap</button>
+            </form>
+            
+            <div class="switch-link" style="margin-top:12px;">
+                <a href="/forgot-password">Şifremi unuttum</a>
+            </div>
+            <div class="switch-link">
+                Hesabın yok mu? <a href="/register">Hemen Kayıt Ol</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

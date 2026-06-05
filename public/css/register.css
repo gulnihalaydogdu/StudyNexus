@@ -1,0 +1,157 @@
+/* public/css/register.css */
+
+:root {
+    /* Ortak Tema Değişkenleri */
+    --primary: #8b5cf6; 
+    --primary-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    --bg-color: #f5f3f9; 
+    --surface: rgba(253, 252, 255, 0.95); 
+    --text-main: #2e1065; 
+    --text-muted: #7c7b9b;
+    --border: #e9e4f4; 
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 16px -4px rgba(109, 40, 217, 0.08);
+    --shadow-lg: 0 20px 25px -5px rgba(109, 40, 217, 0.1);
+    --radius: 20px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+/* Form alanı uzun olduğu için kaydırma çubuğu ekliyoruz */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dcd7ea; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #b8b2ce; }
+
+/* Sol Taraftaki Grafik Alanı (Mor Gradyan) */
+.auth-graphic {
+    flex: 1;
+    background: var(--primary-gradient);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
+
+.auth-graphic::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.6;
+}
+
+.auth-graphic h1, .auth-graphic p { position: relative; z-index: 1; }
+.auth-graphic h1 { font-size: 3.5rem; margin-bottom: 15px; font-weight: 800; letter-spacing: -1px; }
+.auth-graphic p { font-size: 1.15rem; opacity: 0.95; max-width: 420px; line-height: 1.6; font-weight: 400; }
+
+/* Sağ Taraftaki Form Alanı (Kaydırılabilir) */
+.auth-form-section {
+    flex: 1.2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    overflow-y: auto; /* İçerik taşarsa kaydırma açılır */
+}
+
+/* Form Kutusu (Glassmorphism) */
+.auth-box {
+    width: 100%;
+    max-width: 450px;
+    padding: 45px 40px;
+    margin: 40px 0; /* Yukarı ve aşağıdan boşluk */
+    background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-box h2 { font-size: 2rem; color: var(--text-main); margin-bottom: 5px; margin-top: 0; font-weight: 700; letter-spacing: -0.5px; }
+.auth-box p.subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
+
+/* Input Tarlaları ve Label'lar */
+label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+
+input, select {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: #fcfbfe;
+    color: var(--text-main);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+}
+
+.form-row { display: flex; gap: 15px; }
+.form-row > * { flex: 1; }
+
+/* Dinamik Açılan Alanlar (Öğrenci/Öğretmen Kutuları) */
+.dynamic-field {
+    display: none; 
+    background-color: #f5f3f9; 
+    padding: 20px; 
+    border-radius: 12px; 
+    border-left: 4px solid var(--primary); 
+    margin-bottom: 16px;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Kayıt Butonu */
+button {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+}
+
+button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(139, 92, 246, 0.35); }
+button:active { transform: scale(0.98); }
+
+/* Alt Yönlendirme Linki */
+.switch-link { text-align: center; margin-top: 25px; color: var(--text-muted); font-size: 0.9rem; }
+.switch-link a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+.switch-link a:hover { color: #7c3aed; text-decoration: underline; }

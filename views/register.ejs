@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus - Kayıt Ol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/register.css"> </head>
+<body>
+    
+    <div class="auth-graphic">
+        <h1>StudyNexus</h1>
+        <p>Aramıza katıl. Takvimini oluştur, derslerini yönet ve başarını grafiğe dök.</p>
+    </div>
+
+    <div class="auth-form-section">
+        <div class="auth-box">
+            <h2>Yeni Hesap Oluştur 🚀</h2>
+            <p class="subtitle">Lütfen rolünüzü seçerek bilgilerinizi doldurun.</p>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <p class="subtitle" style="color:#ef4444;"><%= error %></p>
+            <% } %>
+            <% if (typeof requireMail !== 'undefined' && requireMail && typeof mailConfigured !== 'undefined' && !mailConfigured) { %>
+                <p class="subtitle" style="color:#ef4444; font-size:0.85rem;">Kayıt için sunucuda e-posta ayarı gerekli (.env → MAIL_USER, MAIL_PASS).</p>
+            <% } else if (typeof mailConfigured !== 'undefined' && mailConfigured) { %>
+                <p class="subtitle" style="color:#10b981; font-size:0.85rem;">Kayıt sonrası doğrulama linki e-postanıza gönderilecek.</p>
+            <% } %>
+            
+            <form action="/register" method="POST">
+                <select id="roleSelect" name="role" onchange="toggleFields()" required>
+                    <option value="" disabled selected>Ben bir...</option>
+                    <option value="student">Öğrenciyim</option>
+                    <option value="teacher">Öğretmenim</option>
+                </select>
+
+                <div id="commonFields" style="display: none;">
+                    <div class="form-row">
+                        <input type="text" name="username" placeholder="Kullanıcı Adı" required>
+                        <input type="password" name="password" placeholder="Şifre" required>
+                    </div>
+                    <input type="text" name="full_name" placeholder="İsim Soyisim" required>
+                    <input type="email" name="email" placeholder="E-Posta Adresi" required>
+                    <div class="form-row">
+                        <input type="text" name="location" placeholder="Yaşadığınız Şehir" required>
+                        <div>
+                            <label>Doğum Tarihi</label>
+                            <input type="date" name="birth_date" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="studentFields" class="dynamic-field">
+                    <label>Öğrenci Bilgileri</label>
+                    <input type="text" name="grade" placeholder="Sınıfınız (Örn: 10. Sınıf, Üni 2)">
+                    <input type="number" name="age" placeholder="Yaşınız">
+                </div>
+
+                <div id="teacherFields" class="dynamic-field">
+                    <label>Öğretmen Bilgileri</label>
+                    <input type="text" name="branch" placeholder="Branşınız (Örn: Matematik)">
+                </div>
+
+                <button type="submit" id="submitBtn" style="display: none;">Kayıt İşlemini Tamamla</button>
+            </form>
+            
+            <div class="switch-link">
+                Zaten hesabın var mı? <a href="/login">Giriş Yap</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFields() {
+            const role = document.getElementById('roleSelect').value;
+            const commonFields = document.getElementById('commonFields');
+            const studentFields = document.getElementById('studentFields');
+            const teacherFields = document.getElementById('teacherFields');
+            const submitBtn = document.getElementById('submitBtn');
+
+            commonFields.style.display = 'block';
+            submitBtn.style.display = 'block';
+
+            if (role === 'student') {
+                studentFields.style.display = 'block';
+                teacherFields.style.display = 'none';
+            } else if (role === 'teacher') {
+                studentFields.style.display = 'none';
+                teacherFields.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
