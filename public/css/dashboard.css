@@ -969,6 +969,41 @@ body {
 .stats-card-wide .stats-ring::before { inset: 12px; }
 .stats-card-wide .stats-ring span { font-size: 1.1rem; }
 
+.gamification-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: center;
+    padding: 16px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #f5f3ff, #fff);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+.gamification-card strong {
+    display: block;
+    font-size: 1.35rem;
+    color: var(--text-main);
+}
+.gamification-kicker {
+    display: block;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.badge-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.badge-pill {
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.badge-pill.muted { color: var(--text-muted); font-weight: 600; }
+
 .week-task-list {
     list-style: none;
     padding: 0;
@@ -1111,6 +1146,30 @@ body {
     padding: 32px 40px;
     align-items: start;
 }
+.teacher-analytics-card { grid-column: 1 / -1; }
+.teacher-analytics-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+.analytics-pill {
+    min-width: 120px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #f5f3ff;
+    border: 1px solid var(--border);
+}
+.analytics-pill strong {
+    display: block;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+.analytics-pill span,
+.analytics-note {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
 .teacher-student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .teacher-student-card {
     background: #faf8ff;
@@ -1227,6 +1286,51 @@ body {
 .canvas-action-btn.danger:hover { background: #fef2f2; }
 .canvas-action-btn.accent { background: #06b6d4; color: white; border-color: transparent; }
 .canvas-action-btn.accent:hover { filter: brightness(1.05); }
+
+.student-feedback-box {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.teacher-feedback-panel {
+    max-width: 980px;
+    margin: 24px auto 12px;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 18px;
+    align-items: start;
+}
+.feedback-form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.feedback-form textarea {
+    flex: 1;
+    min-height: 74px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    font-family: inherit;
+}
+.feedback-list {
+    grid-column: 1 / -1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.feedback-list li {
+    background: #faf8ff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: var(--text-main);
+}
 
 .topic-label.done { text-decoration: line-through; color: #999; }
 .coaching-form { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }

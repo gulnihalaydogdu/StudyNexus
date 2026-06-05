@@ -30,6 +30,23 @@
 
 <main class="app-shell teacher-student-main">
     <p class="teacher-student-hint">Öğrencinin kayıtlı programları ve takvimi. Bir plana veya takvim haftasına tıklayarak tam tuvalde görüntüleyin.</p>
+    <section class="teacher-feedback-panel action-card">
+        <div>
+            <h2>Geri Bildirim</h2>
+            <p class="coaching-hint">Öğrenciye kısa bir yönlendirme veya motivasyon notu bırakın.</p>
+        </div>
+        <form class="feedback-form" onsubmit="event.preventDefault(); submitStudentFeedback(<%= student.id %>);">
+            <textarea id="studentFeedbackInput" maxlength="600" placeholder="Örn: Bu hafta kimya tekrarına öncelik ver, iyi gidiyorsun."></textarea>
+            <button type="submit" class="daily-submit-btn">Gönder</button>
+        </form>
+        <ul id="teacherFeedbackList" class="feedback-list">
+            <% if (!feedback.length) { %>
+                <li>Henüz geri bildirim yok.</li>
+            <% } else { feedback.forEach(item => { %>
+                <li><strong><%= item.teacher_name || item.teacher_username %></strong>: <%= item.message %></li>
+            <% }) } %>
+        </ul>
+    </section>
     <div class="canvas-area">
         <%- include('partials/planner-sidebar', {
             weeklyPlans,

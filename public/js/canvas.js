@@ -42,9 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const deletePlanBtn = document.getElementById('deletePlanBtn');
     const calendarPlanBtn = document.getElementById('calendarPlanBtn');
     const assignPlanBtn = document.getElementById('assignPlanBtn');
+    const templatePlanBtn = document.getElementById('templatePlanBtn');
     if (deletePlanBtn) deletePlanBtn.addEventListener('click', () => window.deleteWeeklyPlan());
     if (calendarPlanBtn) calendarPlanBtn.addEventListener('click', () => window.addToCalendar());
     if (assignPlanBtn) assignPlanBtn.addEventListener('click', () => window.openAssignPlanModal());
+    if (templatePlanBtn) templatePlanBtn.addEventListener('click', () => window.togglePlanTemplate());
 
     // --- 2. SÜRÜKLE BIRAK (DRAG & DROP) MOTORU ---
     const draggables = document.querySelectorAll('.draggable-item');
@@ -782,9 +784,11 @@ window.updateCanvasPlanActions = function (planId, readOnly = false) {
     const del = document.getElementById('deletePlanBtn');
     const cal = document.getElementById('calendarPlanBtn');
     const assign = document.getElementById('assignPlanBtn');
+    const template = document.getElementById('templatePlanBtn');
     if (del) del.style.display = show ? 'inline-flex' : 'none';
     if (cal) cal.style.display = show ? 'inline-flex' : 'none';
     if (assign) assign.style.display = show && window.STUDYNEXUS_USER?.role === 'teacher' ? 'inline-flex' : 'none';
+    if (template) template.style.display = show && window.STUDYNEXUS_USER?.role === 'teacher' ? 'inline-flex' : 'none';
 };
 
 window.setReadOnlyMode = function (readonly) {
@@ -1122,6 +1126,25 @@ window.deleteWeeklyPlan = function () {
         .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
 };
 
+window.togglePlanTemplate = function () {
+    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
+    if (!planId) return window.showToast('Önce bir plan açın veya kaydedin.', 'error');
+
+    fetch(`/api/plan/${planId}/template`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+        .then((res) => res.json())
+        .then((data) => {
+            if (!data.success) {
+                window.showToast(data.message || 'Şablon güncellenemedi.', 'error');
+                return;
+            }
+            window.showToast(data.message, 'success');
+        })
+        .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
+};
+
 window.addToCalendar = function () {
     const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
     if (!planId) return;
@@ -1248,6 +1271,19 @@ window.loadCoachingData = function () {
                         d.students.map(s => `<option value="${s.id}">${escapeHtml(s.full_name || s.username)}</option>`).join('');
                 }
             });
+        fetch('/api/coaching/analytics')
+            .then(r => r.json())
+            .then(d => {
+                const box = document.getElementById('teacherAnalyticsSummary');
+                if (!box || !d.success) return;
+                const a = d.analytics;
+                box.innerHTML = `
+                    <div class="analytics-pill"><strong>${a.count}</strong><span>öğrenci</span></div>
+                    <div class="analytics-pill"><strong>${a.avgProgress}%</strong><span>ortalama</span></div>
+                    <div class="analytics-pill"><strong>${a.needsAttention.length}</strong><span>destek lazım</span></div>
+                    ${a.topStudent ? `<p class="analytics-note">En yüksek ilerleme: <strong>${escapeHtml(a.topStudent.full_name || a.topStudent.username)}</strong></p>` : ''}
+                `;
+            });
     } else {
         fetch('/api/coaching/my-teacher')
             .then(r => r.json())
@@ -1258,7 +1294,40 @@ window.loadCoachingData = function () {
                     ? '<li>Henüz koça bağlı değilsiniz.</li>'
                     : d.teachers.map(t => `<li><strong>${escapeHtml(t.full_name || t.username)}</strong>${t.branch ? ' — ' + escapeHtml(t.branch) : ''}</li>`).join('');
             });
+        fetch('/api/coaching/feedback')
+            .then(r => r.json())
+            .then(d => {
+                const list = document.getElementById('studentFeedbackList');
+                if (!list || !d.success) return;
+                list.innerHTML = d.feedback.length
+                    ? d.feedback.map(item => `<li><strong>${escapeHtml(item.full_name || item.username)}</strong>: ${escapeHtml(item.message)}</li>`).join('')
+                    : '<li>Henüz geri bildirim yok.</li>';
+            });
     }
+};
+
+window.submitStudentFeedback = function (studentId) {
+    const input = document.getElementById('studentFeedbackInput');
+    const message = input?.value.trim();
+    if (!message) return window.showToast('Geri bildirim boş olamaz.', 'error');
+
+    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id') || null;
+    fetch(`/api/coaching/students/${studentId}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, planId })
+    })
+        .then(r => r.json())
+        .then(d => {
+            if (!d.success) return window.showToast(d.message || 'Geri bildirim kaydedilemedi.', 'error');
+            const list = document.getElementById('teacherFeedbackList');
+            if (list) {
+                list.insertAdjacentHTML('afterbegin', `<li><strong>Siz</strong>: ${escapeHtml(message)}</li>`);
+            }
+            input.value = '';
+            window.showToast('Geri bildirim gönderildi.', 'success');
+        })
+        .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
 };
 
 window.linkToCoach = function () {
