@@ -1355,42 +1355,108 @@ body {
 
 .teacher-home {
     display: grid;
-    grid-template-columns: minmax(260px, 1fr) 2fr;
+    grid-template-columns: minmax(280px, 1fr) 1.7fr;
     gap: 24px;
     padding: 32px 40px;
     align-items: start;
 }
-.teacher-analytics-card { grid-column: 1 / -1; }
-.teacher-analytics-summary {
+.teacher-hero { grid-column: 1 / -1; }
+.teacher-invite-card { grid-column: 1; grid-row: 2; }
+.teacher-guide-card { grid-column: 1; grid-row: 3; }
+.teacher-students-card { grid-column: 2; grid-row: 2 / 4; }
+
+/* Karşılama hero'su */
+.teacher-hero {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    justify-content: space-between;
     align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 28px 32px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #6d28d9, #7c3aed 50%, #a855f7);
+    color: #fff;
+    box-shadow: 0 16px 40px rgba(124, 58, 237, 0.28);
 }
-.analytics-pill {
-    min-width: 120px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: #f5f3ff;
-    border: 1px solid var(--border);
+.teacher-hero-text { flex: 1 1 320px; }
+.teacher-hero-kicker {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #ede9fe;
+    opacity: 0.9;
 }
-.analytics-pill strong {
-    display: block;
-    color: var(--primary);
-    font-size: 1.25rem;
+.teacher-hero-text h2 { margin: 6px 0 4px; font-size: 1.7rem; color: #fff; }
+.teacher-hero-text p { margin: 0 0 16px; color: #ede9fe; font-size: 0.92rem; max-width: 460px; }
+.teacher-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-btn {
+    border: none;
+    padding: 11px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
 }
-.analytics-pill span,
-.analytics-note {
-    color: var(--text-muted);
-    font-size: 0.85rem;
+.hero-btn:hover { transform: translateY(-1px); }
+.hero-btn.primary { background: #fff; color: #6d28d9; }
+.hero-btn.primary:hover { filter: brightness(0.96); }
+.hero-btn.ghost { background: rgba(255, 255, 255, 0.16); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); }
+.hero-btn.ghost:hover { background: rgba(255, 255, 255, 0.26); }
+.teacher-hero-stat {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 18px 28px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.35);
 }
+.teacher-hero-stat strong { display: block; font-size: 2.4rem; line-height: 1; color: #fff; }
+.teacher-hero-stat span { font-size: 0.82rem; color: #ede9fe; }
+
+/* Nasıl çalışır rehberi */
+.teacher-steps { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.teacher-steps li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+.step-num {
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary-gradient, linear-gradient(135deg, #7c3aed, #a855f7));
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.teacher-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.teacher-card-sub { color: var(--text-muted); font-size: 0.82rem; }
+.teacher-empty { color: var(--text-muted); }
 .teacher-student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .teacher-student-card {
     background: #faf8ff;
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 14px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
+.teacher-student-card:hover {
+    transform: translateY(-2px);
+    border-color: #c4b5fd;
+    box-shadow: 0 10px 24px rgba(124, 58, 237, 0.14);
+}
+.teacher-student-card-link { text-decoration: none; color: inherit; display: block; }
 .teacher-student-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .teacher-student-pct { color: var(--primary); font-weight: 700; }
 .invite-code-big { display: block; font-size: 1.8rem; letter-spacing: 0.12em; padding: 16px; background: #f5f3ff; border-radius: 12px; margin-top: 12px; }

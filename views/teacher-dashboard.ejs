@@ -25,19 +25,43 @@
 <main class="app-shell">
     <section id="panel-students" class="app-panel active">
         <div class="teacher-home">
+            <div class="teacher-hero">
+                <div class="teacher-hero-text">
+                    <span class="teacher-hero-kicker">Koç Paneli</span>
+                    <h2>Merhaba, <%= user.username %> 👋</h2>
+                    <p>Öğrencilerinin gelişimini takip et, haftalık plan oluştur ve tek tıkla ata.</p>
+                    <div class="teacher-hero-actions">
+                        <button type="button" class="hero-btn primary" onclick="window.showAppPanel('planner')">📝 Plan Oluştur</button>
+                        <button type="button" class="hero-btn ghost" id="heroCopyCode">📋 Davet Kodunu Kopyala</button>
+                    </div>
+                </div>
+                <div class="teacher-hero-stat">
+                    <strong id="teacherStudentCount">—</strong>
+                    <span>öğrenci</span>
+                </div>
+            </div>
+
             <div class="teacher-invite-card action-card">
                 <h2>Öğrenci Davet Kodu</h2>
                 <p class="coaching-hint">Öğrencileriniz bu kodu <strong>Koçum</strong> sekmesinden girerek size bağlanır.</p>
                 <code id="coachCodeDisplay" class="invite-code-big">...</code>
             </div>
-            <div class="teacher-analytics-card action-card">
-                <h2>Sınıf Analitiği</h2>
-                <div id="teacherAnalyticsSummary" class="teacher-analytics-summary">
-                    <span>Yükleniyor...</span>
-                </div>
+
+            <div class="teacher-guide-card action-card">
+                <h2>Nasıl çalışır?</h2>
+                <ol class="teacher-steps">
+                    <li><span class="step-num">1</span> Davet kodunu öğrencinle paylaş.</li>
+                    <li><span class="step-num">2</span> <strong>Plan Oluştur</strong> sekmesinden haftalık plan hazırla.</li>
+                    <li><span class="step-num">3</span> Planı kaydedip öğrencine ata.</li>
+                    <li><span class="step-num">4</span> Aşağıdaki kartlardan ilerlemeyi takip et ve geri bildirim ver.</li>
+                </ol>
             </div>
+
             <div class="teacher-students-card action-card">
-                <h2>Öğrencilerim</h2>
+                <div class="teacher-card-head">
+                    <h2>Öğrencilerim</h2>
+                    <span class="teacher-card-sub" id="teacherStudentsSub"></span>
+                </div>
                 <ul id="teacherStudentsList" class="coaching-list teacher-student-grid"></ul>
             </div>
         </div>

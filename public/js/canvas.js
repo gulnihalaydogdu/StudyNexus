@@ -1398,15 +1398,32 @@ window.loadCoachingData = function () {
         fetch('/api/coaching/invite-code')
             .then(r => r.json())
             .then(d => {
-                if (d.code) document.getElementById('coachCodeDisplay').textContent = d.code;
+                if (d.code) {
+                    const codeEl = document.getElementById('coachCodeDisplay');
+                    if (codeEl) codeEl.textContent = d.code;
+                    const copyBtn = document.getElementById('heroCopyCode');
+                    if (copyBtn) {
+                        copyBtn.onclick = () => {
+                            navigator.clipboard?.writeText(d.code)
+                                .then(() => window.showToast('Davet kodu kopyalandı.', 'success'))
+                                .catch(() => window.showToast('Kopyalanamadı, kodu elle seçin.', 'error'));
+                        };
+                    }
+                }
             });
         fetch('/api/coaching/students')
             .then(r => r.json())
             .then(d => {
                 const list = document.getElementById('teacherStudentsList');
                 if (!list || !d.success) return;
+
+                const countEl = document.getElementById('teacherStudentCount');
+                if (countEl) countEl.textContent = d.students.length;
+                const subEl = document.getElementById('teacherStudentsSub');
+                if (subEl) subEl.textContent = d.students.length ? `${d.students.length} öğrenci bağlı` : '';
+
                 if (!d.students.length) {
-                    list.innerHTML = '<li>Henüz öğrenci yok. Davet kodunu paylaşın.</li>';
+                    list.innerHTML = '<li class="teacher-empty">Henüz öğrenci yok. Davet kodunu paylaşın.</li>';
                     return;
                 }
                 list.innerHTML = d.students.map(s => `
@@ -1424,19 +1441,6 @@ window.loadCoachingData = function () {
                     sel.innerHTML = '<option value="">Öğrenci seç...</option>' +
                         d.students.map(s => `<option value="${s.id}">${escapeHtml(s.full_name || s.username)}</option>`).join('');
                 }
-            });
-        fetch('/api/coaching/analytics')
-            .then(r => r.json())
-            .then(d => {
-                const box = document.getElementById('teacherAnalyticsSummary');
-                if (!box || !d.success) return;
-                const a = d.analytics;
-                box.innerHTML = `
-                    <div class="analytics-pill"><strong>${a.count}</strong><span>öğrenci</span></div>
-                    <div class="analytics-pill"><strong>${a.avgProgress}%</strong><span>ortalama</span></div>
-                    <div class="analytics-pill"><strong>${a.needsAttention.length}</strong><span>destek lazım</span></div>
-                    ${a.topStudent ? `<p class="analytics-note">En yüksek ilerleme: <strong>${escapeHtml(a.topStudent.full_name || a.topStudent.username)}</strong></p>` : ''}
-                `;
             });
     } else {
         fetch('/api/coaching/my-teacher')
