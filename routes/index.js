@@ -4,6 +4,8 @@ import { dbAll, dbGet, dbRun } from '../lib/db.js';
 import { getWeekPanelForUser } from '../lib/weekPanel.js';
 import { getPlanForUser, getPlanItemsWithNames, replacePlanItems } from '../lib/weeklyPlan.js';
 import { getDynamicMonths } from '../lib/calendarMonths.js';
+import { parseMonthSlot } from '../lib/calendarSlot.js';
+import { assignPlanToCalendarSlot } from '../lib/calendarAssign.js';
 const router = express.Router();
 
 router.get('/', requireAuth, (req, res) => {
@@ -124,10 +126,10 @@ router.post('/add-topic', requireAuth, (req, res) => {
     if (!course) return res.status(403).json({ success: false });
 
     try {
-        const { lastID } = dbRun(
-            'INSERT INTO topics (course_id, name, user_id) VALUES (?, ?, ?)',
-            [courseId, topicName, req.session.userId]
-        );
+        const { lastID } = dbRun('INSERT INTO topics (course_id, name) VALUES (?, ?)', [
+            courseId,
+            topicName
+        ]);
         res.json({ success: true, id: lastID, name: topicName, courseId });
     } catch {
         res.status(500).json({ success: false });
@@ -168,12 +170,11 @@ router.put('/api/plan/:id', requireAuth, (req, res) => {
     }
 
     try {
-        dbRun('UPDATE weekly_plans SET title = ?, date_range = ? WHERE id = ? AND user_id = ?', [
-            title,
-            dateRange,
-            planId,
-            userId
-        ]);
+        dbRun(
+            `UPDATE weekly_plans SET title = ?, date_range = ?, updated_at = datetime('now')
+             WHERE id = ? AND user_id = ?`,
+            [title, dateRange, planId, userId]
+        );
         replacePlanItems(planId, planData);
         res.json({ success: true, planId });
     } catch (e) {
@@ -250,27 +251,45 @@ router.post('/delete-weekly-plan', requireAuth, (req, res) => {
     const plan = getPlanForUser(planId, req.session.userId);
     if (!plan) return res.status(404).json({ success: false });
 
-    dbRun('DELETE FROM calendar_events WHERE plan_id = ?', [planId]);
-    dbRun('DELETE FROM plan_assignments WHERE student_plan_id = ?', [planId]);
-    dbRun('DELETE FROM weekly_plan_items WHERE plan_id = ?', [planId]);
     dbRun('DELETE FROM weekly_plans WHERE id = ?', [planId]);
     res.json({ success: true });
 });
 
 router.post('/assign-to-calendar', requireAuth, (req, res) => {
-    const { planId, month, week } = req.body;
+    const { planId, month, week, year } = req.body;
     const plan = getPlanForUser(planId, req.session.userId);
     if (!plan) return res.status(404).json({ success: false });
 
-    dbRun(
-        'DELETE FROM calendar_events WHERE user_id = ? AND target_month = ? AND target_week = ?',
-        [req.session.userId, month, week]
-    );
-    dbRun(
-        'INSERT INTO calendar_events (user_id, plan_id, target_month, target_week) VALUES (?, ?, ?, ?)',
-        [req.session.userId, planId, month, week]
-    );
-    res.json({ success: true });
+    const slot = parseMonthSlot(month);
+    const targetYear = year ?? slot.year;
+    const targetMonth = slot.month;
+    const targetWeek = Number(week);
+
+    if (!targetMonth || targetWeek < 1 || targetWeek > 4) {
+        return res.status(400).json({ success: false, message: 'Geçersiz takvim slotu.' });
+    }
+
+    const result = assignPlanToCalendarSlot({
+        userId: req.session.userId,
+        planId,
+        year: targetYear,
+        month: targetMonth,
+        week: targetWeek
+    });
+
+    if (!result.ok) {
+        return res.status(400).json({ success: false, message: result.message });
+    }
+
+    res.json({
+        success: true,
+        action: result.action,
+        message: result.message,
+        year: result.year,
+        month: result.month,
+        week: result.week,
+        previousSlot: result.previousSlot || null
+    });
 });
 
 router.get('/profile', requireAuth, (req, res) => {
@@ -282,7 +301,8 @@ router.get('/profile', requireAuth, (req, res) => {
 router.post('/profile/edit', requireAuth, (req, res) => {
     const { full_name, location, birth_date, grade, age, branch } = req.body;
     dbRun(
-        `UPDATE users SET full_name = ?, location = ?, birth_date = ?, grade = ?, age = ?, branch = ?
+        `UPDATE users SET full_name = ?, location = ?, birth_date = ?, grade = ?, age = ?, branch = ?,
+         updated_at = datetime('now')
          WHERE id = ?`,
         [full_name, location, birth_date, grade, age, branch, req.session.userId]
     );

@@ -10,7 +10,7 @@ const dbPath = path.join(__dirname, 'studynexus.db');
 export const db = new Database(dbPath);
 
 setDatabase(db);
-db.pragma('journal_mode = WAL'); 
+db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 db.pragma('busy_timeout = 10000');
 
@@ -18,9 +18,9 @@ function initSchema() {
     db.exec(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
+            username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            role TEXT CHECK(role IN ('student', 'teacher')) NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('student', 'teacher')),
             full_name TEXT,
             email TEXT,
             birth_date TEXT,
@@ -28,54 +28,106 @@ function initSchema() {
             grade TEXT,
             age INTEGER,
             branch TEXT,
-            is_verified INTEGER DEFAULT 0,
+            coach_code TEXT UNIQUE,
+            is_verified INTEGER NOT NULL DEFAULT 0,
             verification_token TEXT,
             reset_token TEXT,
-            reset_expires INTEGER
+            reset_expires INTEGER,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
         CREATE TABLE IF NOT EXISTS courses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            name TEXT NOT NULL
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE (user_id, name)
         );
 
         CREATE TABLE IF NOT EXISTS topics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            course_id INTEGER,
-            user_id INTEGER,
+            course_id INTEGER NOT NULL,
             name TEXT NOT NULL,
-            is_completed INTEGER DEFAULT 0,
-            FOREIGN KEY(course_id) REFERENCES courses(id)
+            is_completed INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+            UNIQUE (course_id, name)
         );
 
         CREATE TABLE IF NOT EXISTS weekly_plans (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
+            user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             date_range TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );
 
         CREATE TABLE IF NOT EXISTS weekly_plan_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            plan_id INTEGER,
+            plan_id INTEGER NOT NULL,
             day_name TEXT NOT NULL,
             topic_id INTEGER,
-            description TEXT,
-            FOREIGN KEY (plan_id) REFERENCES weekly_plans(id),
-            FOREIGN KEY (topic_id) REFERENCES topics(id)
+            description TEXT NOT NULL DEFAULT '',
+            topic_label TEXT NOT NULL DEFAULT '',
+            course_label TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (plan_id) REFERENCES weekly_plans(id) ON DELETE CASCADE,
+            FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL
         );
 
         CREATE TABLE IF NOT EXISTS calendar_events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            plan_id INTEGER,
+            user_id INTEGER NOT NULL,
+            plan_id INTEGER NOT NULL,
+            target_year INTEGER NOT NULL,
             target_month TEXT NOT NULL,
-            target_week INTEGER NOT NULL,
-            FOREIGN KEY (plan_id) REFERENCES weekly_plans(id)
+            target_week INTEGER NOT NULL CHECK(target_week BETWEEN 1 AND 4),
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (plan_id) REFERENCES weekly_plans(id) ON DELETE CASCADE,
+            UNIQUE (user_id, target_year, target_month, target_week)
+        );
+
+        CREATE TABLE IF NOT EXISTS teacher_student_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            teacher_id INTEGER NOT NULL,
+            student_id INTEGER NOT NULL,
+            joined_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE (teacher_id, student_id),
+            FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS plan_assignments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            teacher_id INTEGER NOT NULL,
+            student_id INTEGER NOT NULL,
+            source_plan_id INTEGER,
+            student_plan_id INTEGER NOT NULL,
+            target_year INTEGER NOT NULL,
+            target_month TEXT NOT NULL,
+            target_week INTEGER NOT NULL CHECK(target_week BETWEEN 1 AND 4),
+            assigned_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (source_plan_id) REFERENCES weekly_plans(id) ON DELETE SET NULL,
+            FOREIGN KEY (student_plan_id) REFERENCES weekly_plans(id) ON DELETE CASCADE
         );
     `);
+
+    dbRun('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_courses_user ON courses(user_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_topics_course ON topics(course_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_weekly_plans_user ON weekly_plans(user_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_plan_items_plan ON weekly_plan_items(plan_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_calendar_user ON calendar_events(user_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_tsl_teacher ON teacher_student_links(teacher_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_tsl_student ON teacher_student_links(student_id)');
 }
 
 try {

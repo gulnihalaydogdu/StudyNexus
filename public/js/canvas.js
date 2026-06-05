@@ -301,14 +301,44 @@ window.showToast = function (message, type = 'success') {
 
 // --- 4. ARAYÜZ (UI) ETKİLEŞİM FONKSİYONLARI ---
 
-// Ders etiketine tıklayınca Combo Box'tan (Select) otomatik seçme
+let activeCourseFilter = null;
+
+window.applyCourseTopicFilter = function () {
+    document.querySelectorAll('#courseTagsContainer .course-pill[data-course-id]').forEach((pill) => {
+        const pillId = pill.getAttribute('data-course-id');
+        pill.classList.toggle('active', activeCourseFilter !== null && pillId === activeCourseFilter);
+    });
+
+    const items = document.querySelectorAll('#topicsContainer .draggable-item');
+    let visibleCount = 0;
+    items.forEach((item) => {
+        const show = activeCourseFilter === null || item.getAttribute('data-course-id') === activeCourseFilter;
+        item.style.display = show ? '' : 'none';
+        if (show) visibleCount += 1;
+    });
+
+    const emptyHint = document.getElementById('topicsFilterEmpty');
+    if (emptyHint) {
+        emptyHint.style.display =
+            activeCourseFilter !== null && visibleCount === 0 ? 'block' : 'none';
+    }
+};
+
+// Ders etiketine tıklayınca: seç, filtrele (tekrar tıklayınca tüm konular)
 window.selectCourseInCombo = function (courseId) {
+    const id = String(courseId);
+    activeCourseFilter = activeCourseFilter === id ? null : id;
+
     const select = document.getElementById('topicCourseSelect');
     const input = document.getElementById('newTopicInput');
-    if (select && input) {
-        select.value = courseId;
-        input.focus(); // İmleci anında konu yazma kutusuna taşı
+    if (select) {
+        select.value = activeCourseFilter || courseId;
     }
+    if (input && activeCourseFilter) {
+        input.focus();
+    }
+
+    window.applyCourseTopicFilter();
 };
 
 // --- 5. VERİTABANI İŞLEM FONKSİYONLARI (AJAX) ---
@@ -403,6 +433,10 @@ window.deleteCourse = function (id, btnElement) {
                 if (option) option.remove();
                 document.querySelectorAll(`.draggable-item[data-course-id="${id}"]`).forEach(el => el.remove());
                 document.querySelectorAll(`.planned-item[data-course-id="${id}"]`).forEach(el => el.remove());
+                if (activeCourseFilter === String(id)) {
+                    activeCourseFilter = null;
+                    window.applyCourseTopicFilter?.();
+                }
                 window.showToast('Ders ve konuları silindi', 'success');
             }
         });
@@ -434,7 +468,7 @@ window.submitNewCourse = function () {
             const container = document.getElementById('courseTagsContainer');
             if (container) {
                 container.insertAdjacentHTML('beforeend', `
-                    <div class="course-pill" data-course-id="${data.id}" onclick="selectCourseInCombo(${data.id})" style="cursor: pointer;">
+                    <div class="course-pill" data-course-id="${data.id}" onclick="selectCourseInCombo(${data.id})" role="button" tabindex="0">
                         <span class="pill-text">${escapeHtml(data.name)}</span>
                         <button type="button" class="pill-delete-btn" onclick="event.stopPropagation(); deleteCourse(${data.id}, this)" title="Dersi Sil">×</button>
                     </div>
@@ -448,7 +482,9 @@ window.submitNewCourse = function () {
             }
 
             input.value = '';
-            document.getElementById('newTopicInput').focus(); // OTOMATİK ODAKLAN
+            activeCourseFilter = String(data.id);
+            window.applyCourseTopicFilter?.();
+            document.getElementById('newTopicInput')?.focus();
             window.showToast(`"${data.name}" eklendi, şimdi konu girebilirsiniz!`, 'success');
         }
     }).catch(err => console.error(err));
@@ -495,6 +531,7 @@ window.submitNewTopic = function () {
             newlyAdded.addEventListener('dragend', () => newlyAdded.classList.remove('dragging'));
 
             input.value = '';
+            window.applyCourseTopicFilter?.();
             window.showToast('Konu başarıyla eklendi', 'success');
         }
     }).catch(err => console.error(err));
@@ -926,25 +963,49 @@ window.selectWeek = function (btnElement, weekNumber) {
 };
 
 // --- 4. VERİTABANINA ONAYLAMA (AJAX) ---
+function parseMonthSlotValue(value) {
+    const raw = String(value || '');
+    const [yearPart, ...monthParts] = raw.split('|');
+    const month = monthParts.join('|') || raw;
+    const year = Number(yearPart);
+    return {
+        year: Number.isFinite(year) && year > 1970 ? year : new Date().getFullYear(),
+        month
+    };
+}
+
 window.confirmCalendarAssignment = function () {
     const planId = document.getElementById('calendarModal').getAttribute('data-plan-id');
-    const month = document.getElementById('calMonthSelect').value;
+    const monthValue = document.getElementById('calMonthSelect').value;
     const week = document.getElementById('selectedWeekValue').value;
+    const { year, month } = parseMonthSlotValue(monthValue);
 
     fetch('/assign-to-calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: planId, month: month, week: week })
+        body: JSON.stringify({ planId, month: monthValue, week, year })
     })
         .then(res => res.json())
         .then(data => {
 
             if (data.success) {
-                window.showToast(`Harika! Planınız ${month} ayı ${week}. Haftaya başarıyla atandı.`, 'success');
+                window.showToast(data.message || 'Plan takvime eklendi.', 'success');
                 window.closeCalendarModal();
 
-                // Sayfa yenilemeden Takvim Grid'inde o haftayı güncelleyelim
-                const boxId = `cal-box-${month}-${week}`;
+                if (data.previousSlot) {
+                    const oldBox = document.getElementById(
+                        `cal-box-${data.previousSlot.year}-${data.previousSlot.month}-${data.previousSlot.week}`
+                    );
+                    if (oldBox) {
+                        oldBox.classList.remove('filled');
+                        oldBox.classList.add('empty');
+                        oldBox.removeAttribute('data-plan-id');
+                        oldBox.removeAttribute('data-open-plan');
+                        oldBox.querySelector('.week-indicator')?.remove();
+                    }
+                }
+
+                const boxId = `cal-box-${data.year || year}-${data.month || month}-${data.week || week}`;
                 const box = document.getElementById(boxId);
                 if (box) {
                     box.classList.remove('empty');
@@ -1055,14 +1116,15 @@ window.confirmAssignPlan = function () {
     const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id')
         || document.getElementById('assignPlanModal').getAttribute('data-plan-id');
     const studentId = document.getElementById('assignStudentModalSelect').value;
-    const month = document.getElementById('assignMonthSelect').value;
+    const monthValue = document.getElementById('assignMonthSelect').value;
     const week = document.getElementById('assignWeekValue').value;
+    const { year } = parseMonthSlotValue(monthValue);
     if (!studentId) return window.showToast('Öğrenci seçin.', 'error');
 
     fetch('/api/coaching/assign-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, planId, month, week })
+        body: JSON.stringify({ studentId, planId, month: monthValue, week, year })
     }).then(r => r.json()).then(d => {
         if (d.success) {
             window.showToast('Plan öğrenciye atandı ve takvimine eklendi.', 'success');

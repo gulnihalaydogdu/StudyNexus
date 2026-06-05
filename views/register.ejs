@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyNexus - Kayıt Ol</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/register.css"> </head>
+    <link rel="stylesheet" href="/css/register.css">
+</head>
 <body>
-    
+    <% const f = typeof form !== 'undefined' && form ? form : {}; %>
+    <% const errField = typeof fieldError !== 'undefined' ? fieldError : ''; %>
+    <% const hasRole = f.role === 'student' || f.role === 'teacher'; %>
+
     <div class="auth-graphic">
         <h1>StudyNexus</h1>
         <p>Aramıza katıl. Takvimini oluştur, derslerini yönet ve başarını grafiğe dök.</p>
@@ -18,52 +22,52 @@
             <h2>Yeni Hesap Oluştur 🚀</h2>
             <p class="subtitle">Lütfen rolünüzü seçerek bilgilerinizi doldurun.</p>
             <% if (typeof error !== 'undefined' && error) { %>
-                <p class="subtitle" style="color:#ef4444;"><%= error %></p>
+                <p class="subtitle form-error-banner"><%= error %></p>
             <% } %>
             <% if (typeof requireMail !== 'undefined' && requireMail && typeof mailConfigured !== 'undefined' && !mailConfigured) { %>
                 <p class="subtitle" style="color:#ef4444; font-size:0.85rem;">Kayıt için sunucuda e-posta ayarı gerekli (.env → MAIL_USER, MAIL_PASS).</p>
             <% } else if (typeof mailConfigured !== 'undefined' && mailConfigured) { %>
                 <p class="subtitle" style="color:#10b981; font-size:0.85rem;">Kayıt sonrası doğrulama linki e-postanıza gönderilecek.</p>
             <% } %>
-            
-            <form action="/register" method="POST">
+
+            <form action="/register" method="POST" id="registerForm" novalidate>
                 <%- include('partials/csrf-field') %>
-                <select id="roleSelect" name="role" onchange="toggleFields()" required>
-                    <option value="" disabled selected>Ben bir...</option>
-                    <option value="student">Öğrenciyim</option>
-                    <option value="teacher">Öğretmenim</option>
+                <select id="roleSelect" name="role" class="<%= errField === 'role' ? 'field-error' : '' %>" onchange="toggleFields()" required>
+                    <option value="" disabled <%= !hasRole ? 'selected' : '' %>>Ben bir...</option>
+                    <option value="student" <%= f.role === 'student' ? 'selected' : '' %>>Öğrenciyim</option>
+                    <option value="teacher" <%= f.role === 'teacher' ? 'selected' : '' %>>Öğretmenim</option>
                 </select>
 
-                <div id="commonFields" style="display: none;">
+                <div id="commonFields" style="display: <%= hasRole ? 'block' : 'none' %>;">
                     <div class="form-row">
-                        <input type="text" name="username" placeholder="Kullanıcı Adı" required>
-                        <input type="password" name="password" placeholder="Şifre" required>
+                        <input type="text" name="username" placeholder="Kullanıcı Adı" value="<%= f.username || '' %>" class="<%= errField === 'username' ? 'field-error' : '' %>" required>
+                        <input type="password" name="password" placeholder="Şifre (en az 8 karakter)" class="<%= errField === 'password' ? 'field-error' : '' %>" autocomplete="new-password" required>
                     </div>
-                    <input type="text" name="full_name" placeholder="İsim Soyisim" required>
-                    <input type="email" name="email" placeholder="E-Posta Adresi" required>
+                    <input type="text" name="full_name" placeholder="İsim Soyisim" value="<%= f.full_name || '' %>" class="<%= errField === 'full_name' ? 'field-error' : '' %>" required>
+                    <input type="email" name="email" placeholder="E-Posta Adresi" value="<%= f.email || '' %>" class="<%= errField === 'email' ? 'field-error' : '' %>" required>
                     <div class="form-row">
-                        <input type="text" name="location" placeholder="Yaşadığınız Şehir" required>
+                        <input type="text" name="location" placeholder="Yaşadığınız Şehir" value="<%= f.location || '' %>" class="<%= errField === 'location' ? 'field-error' : '' %>" required>
                         <div>
                             <label>Doğum Tarihi</label>
-                            <input type="date" name="birth_date" required>
+                            <input type="date" name="birth_date" value="<%= f.birth_date || '' %>" class="<%= errField === 'birth_date' ? 'field-error' : '' %>" required>
                         </div>
                     </div>
                 </div>
 
-                <div id="studentFields" class="dynamic-field">
+                <div id="studentFields" class="dynamic-field" style="display: <%= f.role === 'student' ? 'block' : 'none' %>;">
                     <label>Öğrenci Bilgileri</label>
-                    <input type="text" name="grade" placeholder="Sınıfınız (Örn: 10. Sınıf, Üni 2)">
-                    <input type="number" name="age" placeholder="Yaşınız">
+                    <input type="text" name="grade" placeholder="Sınıfınız (Örn: 10. Sınıf, Üni 2)" value="<%= f.grade || '' %>">
+                    <input type="number" name="age" placeholder="Yaşınız" value="<%= f.age || '' %>">
                 </div>
 
-                <div id="teacherFields" class="dynamic-field">
+                <div id="teacherFields" class="dynamic-field" style="display: <%= f.role === 'teacher' ? 'block' : 'none' %>;">
                     <label>Öğretmen Bilgileri</label>
-                    <input type="text" name="branch" placeholder="Branşınız (Örn: Matematik)">
+                    <input type="text" name="branch" placeholder="Branşınız (Örn: Matematik)" value="<%= f.branch || '' %>">
                 </div>
 
-                <button type="submit" id="submitBtn" style="display: none;">Kayıt İşlemini Tamamla</button>
+                <button type="submit" id="submitBtn" style="display: <%= hasRole ? 'block' : 'none' %>;">Kayıt İşlemini Tamamla</button>
             </form>
-            
+
             <div class="switch-link">
                 Zaten hesabın var mı? <a href="/login">Giriş Yap</a>
             </div>
@@ -78,6 +82,14 @@
             const teacherFields = document.getElementById('teacherFields');
             const submitBtn = document.getElementById('submitBtn');
 
+            if (!role) {
+                commonFields.style.display = 'none';
+                studentFields.style.display = 'none';
+                teacherFields.style.display = 'none';
+                submitBtn.style.display = 'none';
+                return;
+            }
+
             commonFields.style.display = 'block';
             submitBtn.style.display = 'block';
 
@@ -89,6 +101,20 @@
                 teacherFields.style.display = 'block';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('roleSelect').value) {
+                toggleFields();
+            }
+            const errField = '<%= errField %>';
+            if (errField) {
+                const el = document.querySelector(`[name="${errField}"], #roleSelect`);
+                if (el) {
+                    el.focus();
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
     </script>
 </body>
 </html>

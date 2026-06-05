@@ -493,6 +493,8 @@ body {
     gap: 8px;
     border: 1px solid #dcd7ea;
     transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
 }
 
 .course-pill:hover {
@@ -500,6 +502,33 @@ body {
     background: white;
     box-shadow: 0 2px 6px rgba(139, 92, 246, 0.15);
     transform: translateY(-1px);
+}
+
+.course-pill.active {
+    background: var(--primary-gradient);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+    transform: translateY(-1px);
+}
+
+.course-pill.active .pill-delete-btn {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.course-pill.active .pill-delete-btn:hover {
+    color: #fecaca;
+}
+
+.topics-filter-empty {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    background: #f5f3ff;
+    border-radius: 10px;
+    border: 1px dashed #dcd7ea;
+    text-align: center;
 }
 
 .pill-delete-btn {

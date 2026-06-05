@@ -6,17 +6,22 @@
             <p class="week-panel-empty">Henüz ders eklenmemiş.</p>
         <% } else { %>
             <div class="course-tags-wrapper">
-                <div class="tags-container">
+                <span class="tags-title">Dersler</span>
+                <div id="courseTagsContainer" class="tags-container">
                     <% courses.forEach(course => { %>
-                        <span class="course-pill readonly-pill"><%= course.name %></span>
+                        <div class="course-pill readonly-pill" data-course-id="<%= course.id %>" onclick="selectCourseInCombo(<%= course.id %>)" role="button" tabindex="0">
+                            <span class="pill-text"><%= course.name %></span>
+                        </div>
                     <% }) %>
                 </div>
             </div>
             <div class="unassigned-topics topics-scroll">
                 <h3>📌 Konular</h3>
-                <div class="draggable-list readonly-topics">
+                <p id="topicsFilterEmpty" class="topics-filter-empty" style="display:none;">Bu derste konu yok.</p>
+                <div class="draggable-list readonly-topics" id="topicsContainer">
                     <% topics.forEach(topic => { %>
-                        <div class="draggable-item readonly-item<%= topic.is_completed ? ' is-done' : '' %>">
+                        <div class="draggable-item readonly-item<%= topic.is_completed ? ' is-done' : '' %>"
+                             data-course-id="<%= topic.course_id %>">
                             <span class="topic-label<%= topic.is_completed ? ' done' : '' %>">
                                 <small class="topic-course-tag"><%= topic.course_name %></small>
                                 <%= topic.name %>

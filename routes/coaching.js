@@ -9,6 +9,7 @@ import {
 } from '../lib/coaching.js';
 import { getPlanItemsWithNames } from '../lib/weeklyPlan.js';
 import { getDynamicMonths } from '../lib/calendarMonths.js';
+import { parseMonthSlot } from '../lib/calendarSlot.js';
 
 const router = express.Router();
 
@@ -184,12 +185,14 @@ router.post('/api/coaching/assign-plan', requireAuth, (req, res) => {
         return res.status(403).json({ success: false });
     }
 
-    const { studentId, planId, month, week } = req.body;
+    const { studentId, planId, month, week, year } = req.body;
+    const slot = parseMonthSlot(month);
     const result = assignPlanToStudent({
         teacherId: req.session.userId,
         studentId: Number(studentId),
         planId: Number(planId),
-        month,
+        year: year ?? slot.year,
+        month: slot.month,
         week: Number(week)
     });
 

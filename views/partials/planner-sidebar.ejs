@@ -28,11 +28,13 @@
                     <div class="cal-month-name"><%= m.name %> <%= m.year %></div>
                     <div class="cal-weeks-grid">
                         <% for(let w=1; w<=4; w++) {
-                            let event = calendarEvents.find(e => e.target_month === m.name && e.target_week == w);
+                            let event = calendarEvents.find(e =>
+                                e.target_year == m.year && e.target_month === m.name && e.target_week == w
+                            );
                             if (event && !weeklyPlans.some(p => p.id === event.plan_id)) event = null;
                         %>
                             <div class="cal-week-box <%= event ? 'filled' : 'empty' %>"
-                                 id="cal-box-<%= m.name %>-<%= w %>"
+                                 id="cal-box-<%= m.year %>-<%= m.name %>-<%= w %>"
                                  <% if (event) { %>
                                  data-plan-id="<%= event.plan_id %>"
                                  data-open-plan

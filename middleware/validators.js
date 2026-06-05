@@ -1,16 +1,24 @@
 import { body, validationResult } from 'express-validator';
+import {
+    pickRegisterForm,
+    pickForgotForm,
+    pickLoginForm,
+    pickResetForm
+} from '../lib/formStick.js';
 
 function handleValidationErrors(req, res, next) {
     const errors = validationResult(req);
     if (errors.isEmpty()) return next();
 
-    const message = errors.array()[0]?.msg || 'Geçersiz bilgi girdiniz.';
+    const first = errors.array()[0];
+    const message = first?.msg || 'Geçersiz bilgi girdiniz.';
+    const fieldError = first?.path || '';
     const wantsJson =
         req.path.startsWith('/api/') ||
         (req.headers.accept && req.headers.accept.includes('application/json'));
 
     if (wantsJson) {
-        return res.status(400).json({ success: false, message });
+        return res.status(400).json({ success: false, message, field: fieldError });
     }
 
     const view = req.authView || 'login';
@@ -18,17 +26,29 @@ function handleValidationErrors(req, res, next) {
         mailConfigured: req.mailConfigured,
         requireMail: req.requireMail,
         error: message,
+        fieldError,
         csrfToken: res.locals.csrfToken
     };
 
-    if (view === 'register') return res.render('register', base);
+    if (view === 'register') {
+        return res.render('register', { ...base, form: pickRegisterForm(req.body) });
+    }
     if (view === 'forgot-password') {
-        return res.render('forgot-password', { ...base, message: null });
+        return res.render('forgot-password', {
+            ...base,
+            message: null,
+            form: pickForgotForm(req.body)
+        });
     }
     if (view === 'reset-password') {
-        return res.render('reset-password', { token: req.body.token, error: message });
+        return res.render('reset-password', {
+            ...pickResetForm(req.body),
+            error: message,
+            fieldError,
+            csrfToken: res.locals.csrfToken
+        });
     }
-    return res.render('login', { ...base, flash: null });
+    return res.render('login', { ...base, flash: null, form: pickLoginForm(req.body) });
 }
 
 export const registerValidators = [

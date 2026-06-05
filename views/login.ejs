@@ -24,10 +24,12 @@
                 <p class="subtitle" style="color:#ef4444;"><%= error %></p>
             <% } %>
             
+            <% const f = typeof form !== 'undefined' && form ? form : {}; %>
+            <% const errField = typeof fieldError !== 'undefined' ? fieldError : ''; %>
             <form action="/login" method="POST">
                 <%- include('partials/csrf-field') %>
-                <input type="text" name="username" placeholder="Kullanıcı Adı" required>
-                <input type="password" name="password" placeholder="Şifre" required>
+                <input type="text" name="username" placeholder="Kullanıcı Adı" value="<%= f.username || '' %>" class="<%= errField === 'username' ? 'field-error' : '' %>" required>
+                <input type="password" name="password" placeholder="Şifre" class="<%= errField === 'password' ? 'field-error' : '' %>" required>
                 <button type="submit">Giriş Yap</button>
             </form>
             

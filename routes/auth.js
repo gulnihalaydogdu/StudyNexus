@@ -12,6 +12,7 @@ import {
     forgotPasswordValidators,
     resetPasswordValidators
 } from '../middleware/validators.js';
+import { pickRegisterForm, pickForgotForm, pickLoginForm } from '../lib/formStick.js';
 
 const router = express.Router();
 
@@ -82,7 +83,8 @@ router.post(
         if (requireMail && !isMailConfigured() && !autoVerifyWhenNoMail) {
             return res.render('register', {
                 ...authLocals(req, res),
-                error: mailRequiredMessage()
+                error: mailRequiredMessage(),
+                form: pickRegisterForm(req.body)
             });
         }
 
@@ -139,7 +141,8 @@ router.post(
                         : mailRequiredMessage();
                 return res.render('register', {
                     ...authLocals(req, res),
-                    error: `Doğrulama e-postası gönderilemedi. ${reason}`
+                    error: `Doğrulama e-postası gönderilemedi. ${reason}`,
+                    form: pickRegisterForm(req.body)
                 });
             }
 
@@ -152,13 +155,15 @@ router.post(
             if (error.code === 'SQLITE_CONSTRAINT_UNIQUE' || error.message?.includes('UNIQUE')) {
                 return res.render('register', {
                     ...authLocals(req, res),
-                    error: 'Kayıt oluşturulamadı. Bilgileri kontrol edip tekrar deneyin.'
+                    error: 'Kayıt oluşturulamadı. Bilgileri kontrol edip tekrar deneyin.',
+                    form: pickRegisterForm(req.body)
                 });
             }
             console.error('Kayıt hatası:', error);
             return res.render('register', {
                 ...authLocals(req, res),
-                error: 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.'
+                error: 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.',
+                form: pickRegisterForm(req.body)
             });
         }
     }
@@ -208,7 +213,8 @@ router.post(
             return res.status(503).render('login', {
                 ...authLocals(req, res),
                 flash: null,
-                error: 'Sunucu geçici olarak kullanılamıyor. Lütfen tekrar deneyin.'
+                error: 'Sunucu geçici olarak kullanılamıyor. Lütfen tekrar deneyin.',
+                form: pickLoginForm(req.body)
             });
         }
 
@@ -216,7 +222,8 @@ router.post(
             return res.render('login', {
                 ...authLocals(req, res),
                 flash: null,
-                error: LOGIN_FAIL_MSG
+                error: LOGIN_FAIL_MSG,
+                form: pickLoginForm(req.body)
             });
         }
 
@@ -229,7 +236,8 @@ router.post(
                 return res.render('login', {
                     ...authLocals(req, res),
                     flash: null,
-                    error: LOGIN_FAIL_MSG
+                    error: LOGIN_FAIL_MSG,
+                    form: pickLoginForm(req.body)
                 });
             }
         }
@@ -239,7 +247,9 @@ router.post(
             return res.render('login', {
                 ...authLocals(req, res),
                 flash: null,
-                error: LOGIN_FAIL_MSG
+                error: LOGIN_FAIL_MSG,
+                form: pickLoginForm(req.body),
+                fieldError: 'password'
             });
         }
 
@@ -275,7 +285,8 @@ router.post(
             return res.render('forgot-password', {
                 ...authLocals(req, res),
                 message: null,
-                error: mailRequiredMessage()
+                error: mailRequiredMessage(),
+                form: pickForgotForm(req.body)
             });
         }
 
@@ -313,7 +324,8 @@ router.post(
             return res.render('forgot-password', {
                 ...authLocals(req, res),
                 message: null,
-                error: 'Sıfırlama e-postası gönderilemedi. Mail ayarlarını kontrol edin.'
+                error: 'Sıfırlama e-postası gönderilemedi. Mail ayarlarını kontrol edin.',
+                form: pickForgotForm(req.body)
             });
         }
 

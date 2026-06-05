@@ -5,7 +5,7 @@
         <div class="modal-body">
             <select id="calMonthSelect" class="modal-select">
                 <% if (typeof dynamicMonths !== 'undefined') { dynamicMonths.forEach(m => { %>
-                    <option value="<%= m.name %>"><%= m.name %> <%= m.year %></option>
+                    <option value="<%= m.year %>|<%= m.name %>"><%= m.name %> <%= m.year %></option>
                 <% }) } %>
             </select>
             <div class="week-selector-container">
@@ -28,7 +28,7 @@
             <select id="assignStudentModalSelect" class="modal-select"></select>
             <select id="assignMonthSelect" class="modal-select">
                 <% if (typeof dynamicMonths !== 'undefined') { dynamicMonths.forEach(m => { %>
-                    <option value="<%= m.name %>"><%= m.name %> <%= m.year %></option>
+                    <option value="<%= m.year %>|<%= m.name %>"><%= m.name %> <%= m.year %></option>
                 <% }) } %>
             </select>
             <div class="week-selector-container">

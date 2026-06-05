@@ -19,7 +19,7 @@
             <span class="tags-title">Dersler</span>
             <div id="courseTagsContainer" class="tags-container">
                 <% courses.forEach(course => { %>
-                    <div class="course-pill" data-course-id="<%= course.id %>" onclick="selectCourseInCombo(<%= course.id %>)">
+                    <div class="course-pill" data-course-id="<%= course.id %>" onclick="selectCourseInCombo(<%= course.id %>)" role="button" tabindex="0">
                         <span class="pill-text"><%= course.name %></span>
                         <button type="button" class="pill-delete-btn" onclick="event.stopPropagation(); deleteCourse(<%= course.id %>, this)">×</button>
                     </div>
@@ -28,6 +28,7 @@
         </div>
         <div class="unassigned-topics topics-scroll">
             <h3>📌 Sürükle — Kağıda Yerleştir</h3>
+            <p id="topicsFilterEmpty" class="topics-filter-empty" style="display:none;">Bu derste henüz konu yok.</p>
             <div class="draggable-list" id="topicsContainer">
                 <% topics.forEach(topic => { %>
                     <div class="draggable-item<%= topic.is_completed ? ' is-done' : '' %>"
