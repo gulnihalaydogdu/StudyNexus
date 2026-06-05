@@ -155,3 +155,62 @@ button:active { transform: scale(0.98); }
 }
 
 .switch-link a:hover { color: #7c3aed; text-decoration: underline; }
+
+/* Mobil & tablet */
+@media (max-width: 900px) {
+    body {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .auth-graphic {
+        flex: none;
+        padding: 32px 24px;
+        min-height: 180px;
+    }
+
+    .auth-graphic h1 {
+        font-size: 2rem;
+    }
+
+    .auth-graphic p {
+        font-size: 0.95rem;
+        max-width: 100%;
+    }
+
+    .auth-form-section {
+        flex: 1;
+        padding: 24px 16px;
+        align-items: stretch;
+    }
+
+    .auth-box {
+        max-width: 100%;
+        padding: 28px 22px;
+    }
+
+    .auth-box h2 {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-graphic {
+        padding: 24px 16px;
+        min-height: 140px;
+    }
+
+    .auth-graphic h1 {
+        font-size: 1.65rem;
+    }
+
+    .auth-box {
+        padding: 22px 18px;
+        border-radius: 16px;
+    }
+
+    input, button {
+        font-size: 16px; /* iOS zoom önleme */
+    }
+}

@@ -6,8 +6,9 @@
     <title><%= student.full_name || student.username %> — StudyNexus</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/responsive.css">
 </head>
-<body class="role-teacher teacher-student-page">
+<body class="role-teacher teacher-student-page" data-student-view-id="<%= student.id %>">
 <header class="navbar">
     <div class="teacher-student-nav-left">
         <a href="/" class="back-dashboard-link">← Öğrencilerim</a>
@@ -30,7 +31,10 @@
     <p class="teacher-student-hint">Öğrencinin kayıtlı programları ve takvimi. Bir plana veya takvim haftasına tıklayarak tam tuvalde görüntüleyin.</p>
     <div class="canvas-area">
         <%- include('partials/planner-sidebar', {
-            studentViewId: studentViewId,
+            weeklyPlans,
+            calendarEvents,
+            dynamicMonths,
+            studentViewId: student.id,
             pileEmptyHint: 'Bu öğrencinin henüz kayıtlı planı yok.'
         }) %>
         <%- include('partials/a4-canvas', {

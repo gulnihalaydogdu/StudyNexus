@@ -155,3 +155,43 @@ button:active { transform: scale(0.98); }
 .switch-link { text-align: center; margin-top: 25px; color: var(--text-muted); font-size: 0.9rem; }
 .switch-link a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
 .switch-link a:hover { color: #7c3aed; text-decoration: underline; }
+
+@media (max-width: 900px) {
+    body {
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .auth-graphic {
+        flex: none;
+        padding: 28px 20px;
+        min-height: 160px;
+    }
+
+    .auth-graphic h1 {
+        font-size: 2rem;
+    }
+
+    .auth-form-section {
+        padding: 20px 16px;
+    }
+
+    .auth-box {
+        max-width: 100%;
+        padding: 26px 20px;
+    }
+
+    .role-toggle {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 20px 16px;
+    }
+
+    input, select, button {
+        font-size: 16px;
+    }
+}

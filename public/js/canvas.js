@@ -8,7 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('closeCanvasBtn');
     const workspacePoster = document.getElementById('workspaceEmptyState'); // YENİ: Posteri seçtik
 
-    if (createBtn && a4Canvas && closeBtn) {
+    if (a4Canvas && closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            window.closeCanvasEditor?.();
+        });
+    }
+
+    if (createBtn && a4Canvas) {
         createBtn.addEventListener('click', function () {
             a4Canvas.setAttribute('data-editing-id', '');
             a4Canvas.setAttribute('data-read-only', '0');
@@ -23,85 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
             createBtn.style.display = 'none';
             if (workspacePoster) workspacePoster.style.display = 'none';
         });
-
-        closeBtn.addEventListener('click', function () {
-            window.closeCanvasEditor?.();
-        });
     }
 
-    // --- PDF İNDİRME MOTORU (Yüksek Çözünürlüklü ve Net) ---
+    window.bindPlanOpenHandlers?.();
+
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-
     if (downloadPdfBtn) {
-        downloadPdfBtn.addEventListener('click', function () {
-            window.showToast('PDF hazırlanıyor, lütfen bekleyin...', 'success');
-
-            const toolbar = a4Canvas.querySelector('.canvas-toolbar');
-            const toolbarDisplay = toolbar ? toolbar.style.display : '';
-            if (toolbar) toolbar.style.display = 'none';
-            const deleteBtns = document.querySelectorAll('.delete-item-btn');
-            deleteBtns.forEach(btn => btn.style.display = 'none');
-
-            // 2. PERDE/SOLUKLUK SORUNUNUN ÇÖZÜMÜ:
-            // Animasyonlar html2canvas'ın saydamlık hesaplamasını bozar. 
-            // Fotoğraf çekmeden önce animasyonu ve gölgeyi tamamen kapatıyoruz.
-            const originalAnimation = a4Canvas.style.animation;
-            const originalTransform = a4Canvas.style.transform;
-            const originalBoxShadow = a4Canvas.style.boxShadow;
-
-            a4Canvas.style.animation = 'none';
-            a4Canvas.style.transform = 'none';
-            a4Canvas.style.boxShadow = 'none';
-
-            // 3. EKSTRA NETLİK: Kullanıcının yazdığı açıklamaları (input) 
-            // PDF'te soluk gri görünmesin diye anlık simsiyah yapıyoruz.
-            const inputs = a4Canvas.querySelectorAll('input[type="text"]');
-            inputs.forEach(input => {
-                input.style.color = '#222222'; // Kalem siyahı
-                input.style.fontWeight = '500';
-                input.style.borderBottom = 'none'; // Kesik çizgileri PDF'te gizle
-            });
-
-            // 4. Fotoğrafı Çek (HD Kalite)
-            html2canvas(a4Canvas, {
-                scale: 4,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-
-                if (toolbar) toolbar.style.display = toolbarDisplay || '';
-                deleteBtns.forEach(btn => btn.style.display = 'flex');
-
-                a4Canvas.style.animation = originalAnimation;
-                a4Canvas.style.transform = originalTransform;
-                a4Canvas.style.boxShadow = originalBoxShadow;
-
-                inputs.forEach(input => {
-                    input.style.color = ''; // CSS'teki orijinal rengine dön
-                    input.style.fontWeight = '';
-                    input.style.borderBottom = '';
-                });
-
-                // 6. PDF'i Oluştur ve İndir
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-
-                const imgData = canvas.toDataURL('image/png');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-                pdf.save('StudyNexus-Haftalik-Plan.pdf');
-                window.showToast('Harika! Planınız cam gibi net indirildi.', 'success');
-            }).catch(err => {
-                console.error("PDF hatası:", err);
-                window.showToast('PDF oluşturulurken hata oluştu.', 'error');
-
-                // Hata olsa bile ekranı düzelt
-                if (toolbar) toolbar.style.display = toolbarDisplay || '';
-            });
-        });
+        downloadPdfBtn.addEventListener('click', () => window.exportPlanToPdf?.());
     }
 
     const deletePlanBtn = document.getElementById('deletePlanBtn');
@@ -215,6 +149,133 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 });
+
+/** Tuvalde gördüğünüz planın ekran görüntüsünü A4 PDF'e sığdırır */
+window.exportPlanToPdf = async function () {
+    const a4Canvas = document.getElementById('a4Canvas');
+    const paper = document.getElementById('a4PaperExport');
+
+    if (!a4Canvas?.classList.contains('active') || !paper) {
+        window.showToast('PDF için önce planı tuvalde açın.', 'error');
+        return;
+    }
+
+    window.showToast('PDF hazırlanıyor, lütfen bekleyin...', 'success');
+
+    const hideSelectors = [
+        '.canvas-toolbar',
+        '#closeCanvasBtn',
+        '.delete-item-btn',
+        '.planned-item input[type="checkbox"]'
+    ];
+    const hidden = [];
+    hideSelectors.forEach((sel) => {
+        a4Canvas.querySelectorAll(sel).forEach((el) => {
+            hidden.push({ el, display: el.style.display });
+            el.style.display = 'none';
+        });
+    });
+
+    const canvasStyleBackup = {
+        animation: a4Canvas.style.animation,
+        transform: a4Canvas.style.transform,
+        boxShadow: a4Canvas.style.boxShadow
+    };
+    a4Canvas.style.animation = 'none';
+    a4Canvas.style.transform = 'none';
+    a4Canvas.style.boxShadow = 'none';
+
+    const textInputs = paper.querySelectorAll('input[type="text"]');
+    const inputBackup = [...textInputs].map((inp) => ({
+        inp,
+        color: inp.style.color,
+        fontWeight: inp.style.fontWeight,
+        borderBottom: inp.style.borderBottom
+    }));
+    textInputs.forEach((inp) => {
+        inp.style.color = inp.classList.contains('plan-title-input') ? '#2e1065' : '#6b7280';
+        inp.style.fontWeight = inp.classList.contains('plan-title-input') ? '800' : '500';
+        inp.style.borderBottom = 'none';
+    });
+
+    const prevMinHeight = a4Canvas.style.minHeight;
+    const prevMarginBottom = a4Canvas.style.marginBottom;
+    a4Canvas.style.minHeight = 'auto';
+    a4Canvas.style.marginBottom = '0';
+
+    try {
+        const captureWidth = a4Canvas.scrollWidth;
+        const captureHeight = a4Canvas.scrollHeight;
+
+        const snapshot = await html2canvas(a4Canvas, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: captureWidth,
+            height: captureHeight,
+            windowWidth: captureWidth,
+            windowHeight: captureHeight,
+            scrollX: 0,
+            scrollY: 0,
+            onclone: (clonedDoc) => {
+                const clonedCanvas = clonedDoc.getElementById('a4Canvas');
+                if (!clonedCanvas) return;
+                clonedCanvas.style.minHeight = 'auto';
+                clonedCanvas.style.height = 'auto';
+                clonedCanvas.style.marginBottom = '0';
+                clonedCanvas.style.overflow = 'visible';
+                clonedCanvas.style.animation = 'none';
+                clonedCanvas.style.transform = 'none';
+                clonedCanvas.style.boxShadow = 'none';
+                clonedDoc
+                    .querySelectorAll('.canvas-toolbar, #closeCanvasBtn, .delete-item-btn, .planned-item input[type="checkbox"]')
+                    .forEach((el) => el.remove());
+            }
+        });
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const margin = 8;
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2;
+
+        const imgData = snapshot.toDataURL('image/png', 1.0);
+        let drawW = maxW;
+        let drawH = (snapshot.height * drawW) / snapshot.width;
+
+        if (drawH > maxH) {
+            drawH = maxH;
+            drawW = (snapshot.width * drawH) / snapshot.height;
+        }
+
+        const offsetX = (pageW - drawW) / 2;
+        const offsetY = margin;
+
+        pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
+        pdf.save('StudyNexus-Haftalik-Plan.pdf');
+        window.showToast('Plan tuvaldeki gibi PDF olarak indirildi.', 'success');
+    } catch (err) {
+        console.error('PDF hatası:', err);
+        window.showToast('PDF oluşturulurken hata oluştu.', 'error');
+    } finally {
+        a4Canvas.style.minHeight = prevMinHeight;
+        a4Canvas.style.marginBottom = prevMarginBottom;
+        hidden.forEach(({ el, display }) => {
+            el.style.display = display;
+        });
+        a4Canvas.style.animation = canvasStyleBackup.animation;
+        a4Canvas.style.transform = canvasStyleBackup.transform;
+        a4Canvas.style.boxShadow = canvasStyleBackup.boxShadow;
+        inputBackup.forEach(({ inp, color, fontWeight, borderBottom }) => {
+            inp.style.color = color;
+            inp.style.fontWeight = fontWeight;
+            inp.style.borderBottom = borderBottom;
+        });
+    }
+};
 
 // --- 3. DİNAMİK BİLDİRİM (TOAST) SİSTEMİ ---
 window.showToast = function (message, type = 'success') {
@@ -479,7 +540,7 @@ window.createPlannedItemElement = function (topicId, courseId, topicName, descri
     plannedItem.innerHTML = `
         <input type="checkbox" title="Tamamlandı">
         <span class="item-title">${topicName}</span>
-        <input type="text" placeholder="Açıklama ekleyin..." value="${description.replace(/"/g, '&quot;')}">
+        <input type="text" placeholder="Açıklama ekleyin..." value="${String(description ?? '').replace(/"/g, '&quot;')}">
         <button class="delete-item-btn" title="Bu planı sil">✕</button>
     `;
 
@@ -540,7 +601,8 @@ window.closeCanvasEditor = function () {
     a4Canvas.setAttribute('data-read-only', '0');
     window.setReadOnlyMode(false);
     window.updateCanvasPlanActions('');
-    document.getElementById('createNewBtn').style.display = 'flex';
+    const createNewBtn = document.getElementById('createNewBtn');
+    if (createNewBtn) createNewBtn.style.display = 'flex';
     const wEmptyState = document.getElementById('workspaceEmptyState');
     if (wEmptyState) wEmptyState.style.display = 'flex';
     const savePlanBtn = document.getElementById('savePlanBtn');
@@ -559,8 +621,10 @@ window.prependPilePaper = function (planId, title, dateRange) {
         <div class="pile-title">${title}</div>
         <div class="pile-date">${dateRange}</div>
     `;
-    newPaper.setAttribute('onclick', `editWeeklyPlan(${planId})`);
+    newPaper.setAttribute('data-open-plan', '');
+    newPaper.setAttribute('data-plan-id', planId);
     newPaper.setAttribute('role', 'button');
+    newPaper.setAttribute('tabindex', '0');
     pileContainer.prepend(newPaper);
     pileContainer.querySelectorAll('.pile-paper').forEach((paper, index) => {
         paper.style.setProperty('--index', index);
@@ -657,7 +721,8 @@ window.applyPlanToCanvas = function (data, options = {}) {
     window.updateCanvasPlanActions(editingId, readOnly);
 
     a4Canvas.classList.add('active');
-    document.getElementById('createNewBtn').style.display = 'none';
+    const createNewBtn = document.getElementById('createNewBtn');
+    if (createNewBtn) createNewBtn.style.display = 'none';
     const wEmptyState = document.getElementById('workspaceEmptyState');
     if (wEmptyState) wEmptyState.style.display = 'none';
 
@@ -671,10 +736,48 @@ window.applyPlanToCanvas = function (data, options = {}) {
 
 window.getStudentViewContext = function () {
     const view = window.STUDYNEXUS_VIEW;
-    if (view?.mode === 'teacher-student' && view.studentId) {
-        return { studentId: view.studentId, readOnly: view.readOnly !== false };
+    const fromBody = document.body?.dataset?.studentViewId;
+    const studentId = view?.studentId || (fromBody ? Number(fromBody) : null);
+    if (studentId && (view?.mode === 'teacher-student' || fromBody)) {
+        return {
+            studentId,
+            readOnly: view?.readOnly !== false || !!fromBody
+        };
     }
     return null;
+};
+
+window.bindPlanOpenHandlers = function () {
+    if (document.body.dataset.planOpenBound === '1') return;
+    document.body.dataset.planOpenBound = '1';
+
+    document.body.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-open-plan][data-plan-id]');
+        if (!target) return;
+
+        const planId = target.getAttribute('data-plan-id');
+        const studentId =
+            target.getAttribute('data-student-plan-for') ||
+            document.body.dataset.studentViewId ||
+            window.getStudentViewContext()?.studentId;
+
+        if (studentId) {
+            window.editWeeklyPlan(planId, {
+                studentId: Number(studentId),
+                readOnly: true
+            });
+        } else {
+            window.editWeeklyPlan(planId);
+        }
+    });
+
+    document.body.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const target = e.target.closest('.pile-paper[data-open-plan][data-plan-id]');
+        if (!target) return;
+        e.preventDefault();
+        target.click();
+    });
 };
 
 window.openStudentPlan = function (planId) {
@@ -695,34 +798,48 @@ window.editWeeklyPlan = function (planId, options = {}) {
         ? `/api/coaching/students/${studentId}/plan/${planId}`
         : `/api/plan/${planId}`;
 
-    fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-            if (!data.success) {
-                window.showToast('Plan yüklenemedi.', 'error');
+    fetch(url, { headers: { Accept: 'application/json' } })
+        .then(async (res) => {
+            let data;
+            try {
+                data = await res.json();
+            } catch {
+                throw new Error('invalid_json');
+            }
+            if (!res.ok || !data.success) {
+                window.showToast(data?.message || 'Plan yüklenemedi.', 'error');
                 return;
             }
 
             const readOnly = forceReadOnly || !!data.readOnly;
 
-            window.applyPlanToCanvas(data, {
-                readOnly,
-                editingId: readOnly ? '' : String(planId)
-            });
+            try {
+                window.applyPlanToCanvas(data, {
+                    readOnly,
+                    editingId: readOnly ? '' : String(planId)
+                });
+            } catch (applyErr) {
+                console.error('Tuval güncellenemedi:', applyErr);
+                window.showToast('Plan yüklendi ama tuvalde gösterilemedi.', 'error');
+                return;
+            }
 
             const canvasEl = document.getElementById('a4Canvas');
             if (studentId) canvasEl.setAttribute('data-view-student-id', studentId);
             else canvasEl.removeAttribute('data-view-student-id');
 
             window.showAppPanel?.('planner');
-            const label = viewCtx?.studentName || 'Öğrenci';
+            const label = viewCtx?.studentName || window.STUDYNEXUS_VIEW?.studentName || 'Öğrenci';
             if (readOnly && studentId) {
                 window.showToast(`${label} — program görüntüleniyor.`, 'success');
             } else if (!readOnly) {
                 window.showToast('Plan düzenleme modunda.', 'success');
             }
         })
-        .catch(() => window.showToast('Sunucu bağlantı hatası', 'error'));
+        .catch((err) => {
+            console.error('Plan yükleme hatası:', err, url);
+            window.showToast('Sunucu bağlantı hatası.', 'error');
+        });
 };
 
 window.deleteWeeklyPlan = function () {
@@ -833,7 +950,8 @@ window.confirmCalendarAssignment = function () {
                     box.classList.add('filled');
                     box.title = 'Atanan Plan';
 
-                    box.setAttribute('onclick', `editWeeklyPlan(${planId})`);
+                    box.setAttribute('data-plan-id', planId);
+                    box.setAttribute('data-open-plan', '');
 
                     if (!box.querySelector('.week-indicator')) {
                         box.insertAdjacentHTML('beforeend', '<div class="week-indicator"></div>');

@@ -1,0 +1,468 @@
+/* StudyNexus — tablet & mobil uyumluluk */
+
+/* ========== TABLET (≤1024px) ========== */
+@media (max-width: 1024px) {
+    .canvas-area {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 24px 20px;
+        gap: 24px;
+        min-height: auto;
+    }
+
+    .left-sidebar,
+    .workspace,
+    .toolbox {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        position: static;
+        top: auto;
+        height: auto;
+        max-height: none;
+        order: unset;
+    }
+
+    .left-sidebar { order: 1; }
+    .workspace { order: 2; }
+    .toolbox { order: 3; }
+
+    .pile-container {
+        width: 100%;
+        min-height: 420px;
+    }
+
+    .a4-template {
+        max-width: 100%;
+    }
+
+    .teacher-home {
+        grid-template-columns: 1fr;
+        padding: 24px 20px;
+        gap: 20px;
+    }
+
+    .panel-center-card {
+        margin: 24px 16px;
+        padding: 22px 20px;
+    }
+
+    .teacher-student-page .navbar {
+        flex-wrap: wrap;
+    }
+
+    .teacher-student-nav-left {
+        flex: 1 1 100%;
+    }
+
+    .teacher-student-nav-stats {
+        flex: 1 1 auto;
+    }
+}
+
+/* ========== MOBİL (≤768px) ========== */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+        padding: 12px 16px;
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+        gap: 10px;
+    }
+
+    .brand {
+        font-size: 1.25rem;
+        flex: 1 1 auto;
+    }
+
+    .brand-sub {
+        display: block;
+        margin-left: 0;
+        margin-top: 2px;
+        font-size: 0.65rem;
+    }
+
+    .app-nav {
+        order: 3;
+        flex: 1 1 100%;
+        margin: 0;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+        padding-bottom: 2px;
+    }
+
+    .app-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .app-nav .nav-chip {
+        flex-shrink: 0;
+        font-size: 0.75rem;
+        padding: 8px 12px;
+    }
+
+    .user-menu {
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    .profile-link {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+
+    .profile-link .role-tag {
+        display: none;
+    }
+
+    .logout-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .canvas-area {
+        padding: 16px 12px;
+        gap: 16px;
+    }
+
+    /* Plan destesi — dokunmatik liste (hover yığını kapalı) */
+    .pile-container {
+        min-height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .pile-empty-state {
+        height: auto;
+        min-height: 140px;
+        padding: 20px;
+    }
+
+    .pile-paper {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 88px;
+        transform: none !important;
+        opacity: 1 !important;
+        z-index: auto !important;
+        padding: 16px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .pile-container:hover .pile-paper,
+    .pile-container .pile-paper:hover {
+        transform: none !important;
+        box-shadow: var(--shadow-md);
+    }
+
+    .pile-title {
+        font-size: 1rem;
+    }
+
+    .left-sidebar {
+        gap: 14px;
+        padding-bottom: 0;
+    }
+
+    .calendar-widget {
+        padding: 14px;
+    }
+
+    .cal-weeks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    .cal-week-box {
+        padding: 8px;
+        min-height: 44px;
+    }
+
+    /* Tuval */
+    .workspace {
+        padding-bottom: 60px;
+    }
+
+    .workspace-empty-state {
+        margin-top: 24px;
+        padding: 0 8px;
+    }
+
+    .workspace-hint {
+        font-size: 0.85rem;
+        padding: 0 8px;
+    }
+
+    .welcome-poster {
+        max-width: 100%;
+    }
+
+    .add-btn {
+        width: 72px;
+        height: 44px;
+        font-size: 1.6rem;
+        border-radius: 22px;
+    }
+
+    .a4-template {
+        padding: 20px 14px;
+        min-height: auto;
+        border-radius: 6px;
+    }
+
+    .a4-template.active {
+        margin-bottom: 72px;
+    }
+
+    .plan-title-input {
+        font-size: 1.35rem;
+    }
+
+    .plan-date-input {
+        font-size: 0.9rem;
+    }
+
+    .cancel-canvas-btn {
+        top: 12px;
+        right: 12px;
+        padding: 6px 12px;
+        font-size: 0.78rem;
+    }
+
+    .day-letter {
+        font-size: 2rem;
+        width: 36px;
+    }
+
+    .day-row {
+        gap: 4px;
+    }
+
+    .planned-item {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 6px 8px;
+    }
+
+    .planned-item .item-title {
+        min-width: 0;
+        max-width: 100%;
+        font-size: 0.72rem;
+    }
+
+    .planned-item input[type="text"] {
+        width: 100%;
+        flex: 1 1 100%;
+        font-size: 0.8rem;
+    }
+
+    .canvas-toolbar-bottom {
+        top: calc(100% + 12px);
+        justify-content: center;
+    }
+
+    .canvas-toolbar-group {
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .canvas-toolbar-bottom .save-plan-btn,
+    .canvas-toolbar-bottom .download-pdf-btn,
+    .canvas-toolbar-bottom .canvas-action-btn {
+        font-size: 0.72rem;
+        padding: 8px 10px;
+    }
+
+    /* Ders/konu paneli */
+    .toolbox-drag-panel {
+        padding: 14px;
+    }
+
+    .topics-scroll {
+        max-height: 220px;
+    }
+
+    .toolbox-inline-form {
+        flex-wrap: wrap;
+    }
+
+    .toolbox-inline-form input,
+    .toolbox-inline-form select {
+        min-width: calc(50% - 28px);
+    }
+
+    /* Paneller */
+    .panel-center-card {
+        margin: 16px 12px;
+        padding: 18px 16px;
+    }
+
+    .stats-card-wide .stats-ring {
+        width: 88px;
+        height: 88px;
+    }
+
+    .stats-course-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .stats-course-row .stats-bar {
+        order: 2;
+    }
+
+    .stats-pct {
+        text-align: left;
+    }
+
+    .teacher-home {
+        padding: 16px 12px;
+    }
+
+    .teacher-student-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .invite-code-big {
+        font-size: 1.35rem;
+        word-break: break-all;
+    }
+
+    .teacher-student-hint {
+        margin: 12px 16px 0;
+        font-size: 0.82rem;
+    }
+
+    .teacher-student-page .navbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .teacher-student-nav-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .teacher-student-nav-stats {
+        width: 100%;
+        justify-content: flex-start;
+        padding-top: 4px;
+        border-top: 1px solid var(--border);
+    }
+
+    .user-menu {
+        width: 100%;
+        justify-content: space-between;
+        order: 4;
+    }
+
+    .student-plan-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    /* Modaller */
+    .modal-overlay {
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 16px 16px 0 0;
+        margin: 0;
+    }
+
+    .modal-header {
+        padding: 20px 16px 14px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        padding: 14px 16px;
+    }
+
+    .modal-lg {
+        max-width: 100%;
+    }
+
+    /* Toast */
+    .toast-message {
+        left: 12px !important;
+        right: 12px !important;
+        max-width: none;
+    }
+}
+
+/* ========== KÜÇÜK MOBİL (≤480px) ========== */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 10px 12px;
+    }
+
+    .app-nav .nav-chip {
+        font-size: 0.7rem;
+        padding: 7px 10px;
+    }
+
+    .canvas-toolbar-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+    }
+
+    .canvas-toolbar-bottom .save-plan-btn,
+    .canvas-toolbar-bottom .download-pdf-btn,
+    .canvas-toolbar-bottom .canvas-action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .role-teacher .canvas-toolbar-group {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .cal-weeks-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .coaching-form {
+        flex-direction: column;
+    }
+
+    .coaching-form input,
+    .coaching-form button {
+        width: 100%;
+    }
+}
+
+/* Dokunmatik cihazlarda hover yığın efektini kapat */
+@media (hover: none) and (pointer: coarse) {
+    .pile-container:hover .pile-paper,
+    .pile-container .pile-paper:hover {
+        transform: none !important;
+        opacity: 1 !important;
+    }
+
+    .pile-paper {
+        position: relative !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+}

@@ -8,18 +8,20 @@
     <% } %>
     <div class="a4-template" id="a4Canvas" data-editing-id="" data-read-only="0">
         <button type="button" class="cancel-canvas-btn" id="closeCanvasBtn">Vazgeç</button>
-        <div class="a4-header">
-            <input type="text" id="planTitleInput" placeholder="Plan Başlığı" class="plan-title-input">
-            <input type="text" id="planDateInput" placeholder="Tarih (Örn: 18 Mayıs - 25 Mayıs)" class="plan-date-input">
-        </div>
-        <div class="planner-rows">
-            <div class="day-row"><div class="day-letter" style="color:#ef4444;">P</div><div class="drop-zone" data-day="Pazartesi"></div></div>
-            <div class="day-row"><div class="day-letter" style="color:#8b5cf6;">S</div><div class="drop-zone" data-day="Salı"></div></div>
-            <div class="day-row"><div class="day-letter" style="color:#06b6d4;">Ç</div><div class="drop-zone" data-day="Çarşamba"></div></div>
-            <div class="day-row"><div class="day-letter" style="color:#d946ef;">P</div><div class="drop-zone" data-day="Perşembe"></div></div>
-            <div class="day-row"><div class="day-letter" style="color:#f59e0b;">C</div><div class="drop-zone" data-day="Cuma"></div></div>
-            <div class="day-row"><div class="day-letter" style="color:#10b981;">C</div><div class="drop-zone" data-day="Cumartesi"></div></div>
-            <div class="day-row"><div class="day-letter" style="color:#f97316;">P</div><div class="drop-zone" data-day="Pazar"></div></div>
+        <div class="a4-paper-export" id="a4PaperExport">
+            <div class="a4-header">
+                <input type="text" id="planTitleInput" placeholder="Plan Başlığı" class="plan-title-input">
+                <input type="text" id="planDateInput" placeholder="Tarih (Örn: 18 Mayıs - 25 Mayıs)" class="plan-date-input">
+            </div>
+            <div class="planner-rows">
+                <div class="day-row"><div class="day-letter" style="color:#ef4444;">P</div><div class="drop-zone" data-day="Pazartesi"></div></div>
+                <div class="day-row"><div class="day-letter" style="color:#8b5cf6;">S</div><div class="drop-zone" data-day="Salı"></div></div>
+                <div class="day-row"><div class="day-letter" style="color:#06b6d4;">Ç</div><div class="drop-zone" data-day="Çarşamba"></div></div>
+                <div class="day-row"><div class="day-letter" style="color:#d946ef;">P</div><div class="drop-zone" data-day="Perşembe"></div></div>
+                <div class="day-row"><div class="day-letter" style="color:#f59e0b;">C</div><div class="drop-zone" data-day="Cuma"></div></div>
+                <div class="day-row"><div class="day-letter" style="color:#10b981;">C</div><div class="drop-zone" data-day="Cumartesi"></div></div>
+                <div class="day-row"><div class="day-letter" style="color:#f97316;">P</div><div class="drop-zone" data-day="Pazar"></div></div>
+            </div>
         </div>
         <div class="canvas-toolbar canvas-toolbar-bottom">
             <div class="canvas-toolbar-group">

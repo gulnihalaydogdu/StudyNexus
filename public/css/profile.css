@@ -123,3 +123,39 @@ button, .back-btn {
     background-color: #fcfbfe; 
     transform: translateY(-2px); 
 }
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+        align-items: flex-start;
+        padding-top: max(16px, env(safe-area-inset-top));
+    }
+
+    .profile-box {
+        padding: 28px 20px;
+        border-radius: 16px;
+    }
+
+    .profile-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group a,
+    .btn-group button {
+        width: 100%;
+        text-align: center;
+    }
+
+    input, select, button {
+        font-size: 16px;
+    }
+}

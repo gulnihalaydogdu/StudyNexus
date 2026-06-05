@@ -184,24 +184,36 @@ router.get('/api/coaching/students/:id/overview', requireAuth, (req, res) => {
 });
 
 router.get('/api/coaching/students/:id/plan/:planId', requireAuth, (req, res) => {
-    if (req.session.role !== 'teacher') {
-        return res.status(403).json({ success: false });
+    try {
+        if (req.session.role !== 'teacher') {
+            return res.status(403).json({ success: false, message: 'Yetkisiz.' });
+        }
+
+        const studentId = Number(req.params.id);
+        const planId = Number(req.params.planId);
+        if (!Number.isFinite(studentId) || !Number.isFinite(planId)) {
+            return res.status(400).json({ success: false, message: 'Geçersiz istek.' });
+        }
+
+        const link = getTeacherStudentLink(req.session.userId, studentId);
+        if (!link) {
+            return res.status(403).json({ success: false, message: 'Bu öğrenciye erişim yok.' });
+        }
+
+        const plan = dbGet('SELECT * FROM weekly_plans WHERE id = ? AND user_id = ?', [
+            planId,
+            studentId
+        ]);
+        if (!plan) {
+            return res.status(404).json({ success: false, message: 'Plan bulunamadı.' });
+        }
+
+        const items = getPlanItemsWithNames(planId);
+        res.json({ success: true, plan, items, readOnly: true });
+    } catch (err) {
+        console.error('Öğrenci planı yüklenemedi:', err);
+        res.status(500).json({ success: false, message: 'Sunucu hatası.' });
     }
-
-    const studentId = Number(req.params.id);
-    const planId = Number(req.params.planId);
-
-    const link = dbGet(
-        'SELECT id FROM teacher_student_links WHERE teacher_id = ? AND student_id = ?',
-        [req.session.userId, studentId]
-    );
-    if (!link) return res.status(403).json({ success: false });
-
-    const plan = dbGet('SELECT * FROM weekly_plans WHERE id = ? AND user_id = ?', [planId, studentId]);
-    if (!plan) return res.status(404).json({ success: false });
-
-    const items = getPlanItemsWithNames(planId);
-    res.json({ success: true, plan, items, readOnly: true });
 });
 
 router.post('/api/coaching/assign-plan', requireAuth, (req, res) => {
