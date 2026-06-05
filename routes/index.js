@@ -6,6 +6,7 @@ import { getPlanForUser, getPlanItemsWithNames, replacePlanItems } from '../lib/
 import { getDynamicMonths } from '../lib/calendarMonths.js';
 import { parseMonthSlot } from '../lib/calendarSlot.js';
 import { assignPlanToCalendarSlot } from '../lib/calendarAssign.js';
+import { getProgressTrend, localDateKey, recordProgressSnapshot } from '../lib/progress.js';
 const router = express.Router();
 
 router.get('/', requireAuth, (req, res) => {
@@ -33,7 +34,7 @@ router.get('/', requireAuth, (req, res) => {
             [userId]
         );
 
-        const stats = buildStats(courses, topics);
+        const stats = buildStats(courses, topics, userId);
         const weekPanel = getWeekPanelForUser(userId, calendarEvents);
 
         const dynamicMonths = getDynamicMonths();
@@ -67,7 +68,7 @@ router.get('/', requireAuth, (req, res) => {
     }
 });
 
-function buildStats(courses, topics) {
+function buildStats(courses, topics, userId = null) {
     const totalTopics = topics.length;
     const completedTopics = topics.filter((t) => t.is_completed).length;
     const overallPercent = totalTopics ? Math.round((completedTopics / totalTopics) * 100) : 0;
@@ -85,7 +86,27 @@ function buildStats(courses, topics) {
         };
     });
 
-    return { overallPercent, completedTopics, totalTopics, byCourse };
+    return {
+        overallPercent,
+        completedTopics,
+        totalTopics,
+        byCourse,
+        trend: userId ? getProgressTrend(userId) : []
+    };
+}
+
+function getStatsForUser(userId) {
+    const courses = dbAll('SELECT * FROM courses WHERE user_id = ?', [userId]);
+    const topics = dbAll(
+        `SELECT t.* FROM topics t JOIN courses c ON t.course_id = c.id WHERE c.user_id = ?`,
+        [userId]
+    );
+    return buildStats(courses, topics, userId);
+}
+
+function getWeekPanelForResponse(userId) {
+    const calendarEvents = dbAll('SELECT * FROM calendar_events WHERE user_id = ?', [userId]);
+    return getWeekPanelForUser(userId, calendarEvents);
 }
 
 router.get('/api/stats', requireAuth, (req, res) => {
@@ -95,7 +116,7 @@ router.get('/api/stats', requireAuth, (req, res) => {
         `SELECT t.* FROM topics t JOIN courses c ON t.course_id = c.id WHERE c.user_id = ?`,
         [userId]
     );
-    res.json({ success: true, stats: buildStats(courses, topics) });
+    res.json({ success: true, stats: buildStats(courses, topics, userId) });
 });
 
 router.get('/api/week-panel', requireAuth, (req, res) => {
@@ -150,7 +171,7 @@ router.post('/save-weekly-plan', requireAuth, (req, res) => {
             [userId, title, dateRange]
         );
         replacePlanItems(lastID, planData);
-        res.json({ success: true, planId: lastID });
+        res.json({ success: true, planId: lastID, weekPanel: getWeekPanelForResponse(userId) });
     } catch (e) {
         console.error(e);
         res.status(500).json({ success: false });
@@ -176,7 +197,7 @@ router.put('/api/plan/:id', requireAuth, (req, res) => {
             [title, dateRange, planId, userId]
         );
         replacePlanItems(planId, planData);
-        res.json({ success: true, planId });
+        res.json({ success: true, planId, weekPanel: getWeekPanelForResponse(userId) });
     } catch (e) {
         console.error(e);
         res.status(500).json({ success: false });
@@ -190,7 +211,7 @@ router.get('/api/plan/:id', requireAuth, (req, res) => {
     const plan = getPlanForUser(planId, userId);
     if (!plan) return res.status(404).json({ success: false });
 
-    const items = getPlanItemsWithNames(planId);
+    const items = getPlanItemsWithNames(planId, userId);
     res.json({ success: true, plan, items });
 });
 
@@ -223,7 +244,9 @@ router.post('/delete-topic', requireAuth, (req, res) => {
         `SELECT t.* FROM topics t JOIN courses c ON t.course_id = c.id WHERE c.user_id = ?`,
         [req.session.userId]
     );
-    res.json({ success: true, stats: buildStats(courses, topics) });
+    const stats = buildStats(courses, topics, req.session.userId);
+    recordProgressSnapshot(req.session.userId, stats);
+    res.json({ success: true, stats });
 });
 
 router.post('/toggle-topic', requireAuth, (req, res) => {
@@ -236,14 +259,70 @@ router.post('/toggle-topic', requireAuth, (req, res) => {
     );
     if (!topic) return res.status(403).json({ success: false });
 
-    dbRun('UPDATE topics SET is_completed = ? WHERE id = ?', [isCompleted, topicId]);
+    dbRun('UPDATE topics SET is_completed = ?, updated_at = datetime(\'now\') WHERE id = ?', [
+        isCompleted,
+        topicId
+    ]);
 
-    const courses = dbAll('SELECT * FROM courses WHERE user_id = ?', [req.session.userId]);
-    const topics = dbAll(
-        `SELECT t.* FROM topics t JOIN courses c ON t.course_id = c.id WHERE c.user_id = ?`,
-        [req.session.userId]
+    const stats = getStatsForUser(req.session.userId);
+    recordProgressSnapshot(req.session.userId, stats);
+    res.json({ success: true, stats });
+});
+
+router.post('/api/week-item/:id/toggle', requireAuth, (req, res) => {
+    if (req.session.role !== 'student') {
+        return res.status(403).json({ success: false, message: 'Sadece öğrenciler işaretleyebilir.' });
+    }
+
+    const itemId = Number(req.params.id);
+    const completed = req.body.completed ? 1 : 0;
+    if (!Number.isFinite(itemId)) {
+        return res.status(400).json({ success: false, message: 'Geçersiz görev.' });
+    }
+
+    const item = dbGet(
+        `SELECT wpi.id, wpi.topic_id
+         FROM weekly_plan_items wpi
+         JOIN weekly_plans wp ON wp.id = wpi.plan_id
+         WHERE wpi.id = ? AND wp.user_id = ?`,
+        [itemId, req.session.userId]
     );
-    res.json({ success: true, stats: buildStats(courses, topics) });
+    if (!item) {
+        return res.status(404).json({
+            success: false,
+            stale: true,
+            message: 'Görev listesi güncel değil.'
+        });
+    }
+
+    const today = localDateKey();
+    if (completed) {
+        dbRun(
+            `INSERT OR IGNORE INTO daily_task_completions (user_id, plan_item_id, completed_on)
+             VALUES (?, ?, ?)`,
+            [req.session.userId, itemId, today]
+        );
+    } else {
+        dbRun(
+            `DELETE FROM daily_task_completions
+             WHERE user_id = ? AND plan_item_id = ? AND completed_on = ?`,
+            [req.session.userId, itemId, today]
+        );
+    }
+
+    dbRun('UPDATE weekly_plan_items SET is_completed = ? WHERE id = ?', [completed, itemId]);
+
+    const stats = getStatsForUser(req.session.userId);
+    recordProgressSnapshot(req.session.userId, stats);
+
+    res.json({
+        success: true,
+        completed: Boolean(completed),
+        itemId,
+        topicId: item.topic_id,
+        stats,
+        weekPanel: getWeekPanelForResponse(req.session.userId)
+    });
 });
 
 router.post('/delete-weekly-plan', requireAuth, (req, res) => {

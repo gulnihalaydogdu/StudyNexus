@@ -128,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
             plannedItem.addEventListener('dragend', () => {
                 plannedItem.classList.remove('dragging');
             });
+            plannedItem.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
+                plannedItem.classList.toggle('is-done', event.target.checked);
+            });
 
             const deleteBtn = plannedItem.querySelector('.delete-item-btn');
             deleteBtn.addEventListener('click', () => {
@@ -151,130 +154,128 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/** Tuvalde gördüğünüz planın ekran görüntüsünü A4 PDF'e sığdırır */
-window.exportPlanToPdf = async function () {
-    const a4Canvas = document.getElementById('a4Canvas');
-    const paper = document.getElementById('a4PaperExport');
+function createPdfTextNode(input, clonedDoc) {
+    const value = input.value || input.getAttribute('placeholder') || '';
+    const replacement = clonedDoc.createElement('div');
+    replacement.textContent = value;
+    replacement.className = input.className;
+    replacement.style.fontFamily = "'Poppins', sans-serif";
+    replacement.style.boxSizing = 'border-box';
+    replacement.style.width = '100%';
+    replacement.style.textAlign = 'center';
+    replacement.style.background = 'transparent';
+    replacement.style.border = 'none';
+    replacement.style.outline = 'none';
+    replacement.style.color = input.classList.contains('plan-title-input') ? '#2e1065' : '#7c7b9b';
+    replacement.style.fontWeight = input.classList.contains('plan-title-input') ? '800' : '500';
+    replacement.style.fontSize = input.classList.contains('plan-title-input') ? '1.8rem' : '1rem';
+    replacement.style.lineHeight = '1.25';
+    replacement.style.minHeight = input.classList.contains('plan-title-input') ? '44px' : '24px';
+    replacement.style.marginTop = input.classList.contains('plan-date-input') ? '8px' : '0';
+    return replacement;
+}
 
-    if (!a4Canvas?.classList.contains('active') || !paper) {
+function buildPdfExportClone() {
+    const source = document.getElementById('a4Canvas');
+    if (!source?.classList.contains('active')) return null;
+
+    const stage = document.createElement('div');
+    stage.className = 'pdf-export-stage';
+    stage.style.position = 'fixed';
+    stage.style.left = '-10000px';
+    stage.style.top = '0';
+    stage.style.width = '794px';
+    stage.style.background = '#ffffff';
+    stage.style.zIndex = '-1';
+
+    const clone = source.cloneNode(true);
+    clone.id = 'a4CanvasPdfClone';
+    clone.classList.add('active', 'pdf-export-canvas');
+    clone.style.display = 'block';
+    clone.style.width = '794px';
+    clone.style.maxWidth = '794px';
+    clone.style.minHeight = '1123px';
+    clone.style.margin = '0';
+    clone.style.marginBottom = '0';
+    clone.style.padding = '56px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.background = '#ffffff';
+    clone.style.borderRadius = '0';
+    clone.style.boxShadow = 'none';
+    clone.style.animation = 'none';
+    clone.style.transform = 'none';
+    clone.style.overflow = 'visible';
+
+    clone
+        .querySelectorAll('.canvas-toolbar, #closeCanvasBtn, .delete-item-btn, .planned-item input[type="checkbox"]')
+        .forEach((el) => el.remove());
+
+    clone.querySelectorAll('input[type="text"]').forEach((input) => {
+        input.replaceWith(createPdfTextNode(input, document));
+    });
+
+    clone.querySelectorAll('.drop-zone').forEach((zone) => {
+        zone.style.border = '2px dashed transparent';
+        zone.style.overflow = 'visible';
+    });
+
+    stage.appendChild(clone);
+    document.body.appendChild(stage);
+    return { stage, clone };
+}
+
+/** Planı görünür editörden bağımsız, sabit A4 kopya üzerinden PDF'e aktarır. */
+window.exportPlanToPdf = async function () {
+    if (!window.html2canvas || !window.jspdf?.jsPDF) {
+        window.showToast('PDF kütüphaneleri yüklenemedi. Sayfayı yenileyin.', 'error');
+        return;
+    }
+
+    const exportNode = buildPdfExportClone();
+    if (!exportNode) {
         window.showToast('PDF için önce planı tuvalde açın.', 'error');
         return;
     }
 
     window.showToast('PDF hazırlanıyor, lütfen bekleyin...', 'success');
 
-    const hideSelectors = [
-        '.canvas-toolbar',
-        '#closeCanvasBtn',
-        '.delete-item-btn',
-        '.planned-item input[type="checkbox"]'
-    ];
-    const hidden = [];
-    hideSelectors.forEach((sel) => {
-        a4Canvas.querySelectorAll(sel).forEach((el) => {
-            hidden.push({ el, display: el.style.display });
-            el.style.display = 'none';
-        });
-    });
-
-    const canvasStyleBackup = {
-        animation: a4Canvas.style.animation,
-        transform: a4Canvas.style.transform,
-        boxShadow: a4Canvas.style.boxShadow
-    };
-    a4Canvas.style.animation = 'none';
-    a4Canvas.style.transform = 'none';
-    a4Canvas.style.boxShadow = 'none';
-
-    const textInputs = paper.querySelectorAll('input[type="text"]');
-    const inputBackup = [...textInputs].map((inp) => ({
-        inp,
-        color: inp.style.color,
-        fontWeight: inp.style.fontWeight,
-        borderBottom: inp.style.borderBottom
-    }));
-    textInputs.forEach((inp) => {
-        inp.style.color = inp.classList.contains('plan-title-input') ? '#2e1065' : '#6b7280';
-        inp.style.fontWeight = inp.classList.contains('plan-title-input') ? '800' : '500';
-        inp.style.borderBottom = 'none';
-    });
-
-    const prevMinHeight = a4Canvas.style.minHeight;
-    const prevMarginBottom = a4Canvas.style.marginBottom;
-    a4Canvas.style.minHeight = 'auto';
-    a4Canvas.style.marginBottom = '0';
-
     try {
-        const captureWidth = a4Canvas.scrollWidth;
-        const captureHeight = a4Canvas.scrollHeight;
+        await document.fonts?.ready;
 
-        const snapshot = await html2canvas(a4Canvas, {
+        const { clone } = exportNode;
+        const snapshot = await html2canvas(clone, {
             scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
-            width: captureWidth,
-            height: captureHeight,
-            windowWidth: captureWidth,
-            windowHeight: captureHeight,
+            width: clone.offsetWidth,
+            height: clone.scrollHeight,
+            windowWidth: clone.offsetWidth,
+            windowHeight: clone.scrollHeight,
             scrollX: 0,
-            scrollY: 0,
-            onclone: (clonedDoc) => {
-                const clonedCanvas = clonedDoc.getElementById('a4Canvas');
-                if (!clonedCanvas) return;
-                clonedCanvas.style.minHeight = 'auto';
-                clonedCanvas.style.height = 'auto';
-                clonedCanvas.style.marginBottom = '0';
-                clonedCanvas.style.overflow = 'visible';
-                clonedCanvas.style.animation = 'none';
-                clonedCanvas.style.transform = 'none';
-                clonedCanvas.style.boxShadow = 'none';
-                clonedDoc
-                    .querySelectorAll('.canvas-toolbar, #closeCanvasBtn, .delete-item-btn, .planned-item input[type="checkbox"]')
-                    .forEach((el) => el.remove());
-            }
+            scrollY: 0
         });
 
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = pdf.internal.pageSize.getWidth();
         const pageH = pdf.internal.pageSize.getHeight();
-        const margin = 8;
-        const maxW = pageW - margin * 2;
-        const maxH = pageH - margin * 2;
 
         const imgData = snapshot.toDataURL('image/png', 1.0);
-        let drawW = maxW;
-        let drawH = (snapshot.height * drawW) / snapshot.width;
-
-        if (drawH > maxH) {
-            drawH = maxH;
-            drawW = (snapshot.width * drawH) / snapshot.height;
-        }
-
+        const ratio = Math.min(pageW / snapshot.width, pageH / snapshot.height);
+        const drawW = snapshot.width * ratio;
+        const drawH = snapshot.height * ratio;
         const offsetX = (pageW - drawW) / 2;
-        const offsetY = margin;
+        const offsetY = (pageH - drawH) / 2;
 
         pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
         pdf.save('StudyNexus-Haftalik-Plan.pdf');
-        window.showToast('Plan tuvaldeki gibi PDF olarak indirildi.', 'success');
+        window.showToast('PDF tam sayfa olarak indirildi.', 'success');
     } catch (err) {
         console.error('PDF hatası:', err);
         window.showToast('PDF oluşturulurken hata oluştu.', 'error');
     } finally {
-        a4Canvas.style.minHeight = prevMinHeight;
-        a4Canvas.style.marginBottom = prevMarginBottom;
-        hidden.forEach(({ el, display }) => {
-            el.style.display = display;
-        });
-        a4Canvas.style.animation = canvasStyleBackup.animation;
-        a4Canvas.style.transform = canvasStyleBackup.transform;
-        a4Canvas.style.boxShadow = canvasStyleBackup.boxShadow;
-        inputBackup.forEach(({ inp, color, fontWeight, borderBottom }) => {
-            inp.style.color = color;
-            inp.style.fontWeight = fontWeight;
-            inp.style.borderBottom = borderBottom;
-        });
+        exportNode.stage.remove();
     }
 };
 
@@ -349,6 +350,7 @@ window.updateStatsUI = function (stats) {
     const pct = document.getElementById('statsPercentText');
     const count = document.getElementById('statsCountText');
     const rows = document.getElementById('statsCourseRows');
+    const trendBars = document.getElementById('statsTrendBars');
     if (ring) {
         const prev = parseFloat(ring.style.getPropertyValue('--p')) || 0;
         ring.classList.add('ring-animate');
@@ -370,6 +372,96 @@ window.updateStatsUI = function (stats) {
                 <span class="stats-pct">${c.percent}%</span>
             </div>`).join('');
     }
+    if (trendBars && stats.trend) {
+        trendBars.innerHTML = stats.trend.length
+            ? stats.trend.map(point => `
+                <div class="trend-bar-item" title="${escapeHtml(point.snapshot_date)} · ${point.overall_percent}%">
+                    <div class="trend-bar-track">
+                        <div class="trend-bar-fill" style="height:${Math.max(6, point.overall_percent)}%"></div>
+                    </div>
+                    <span>${escapeHtml(String(point.snapshot_date).slice(5))}</span>
+                </div>`).join('')
+            : '<p class="stats-muted">Trend için birkaç tamamlama kaydı oluşmalı.</p>';
+    }
+};
+
+window.renderWeekPanelUI = function (weekPanel) {
+    const list = document.getElementById('weekTaskList');
+    if (!list || !weekPanel?.hasPlan) return;
+
+    if (!weekPanel.todayItems?.length) {
+        list.innerHTML = '';
+        return;
+    }
+
+    list.innerHTML = weekPanel.todayItems.map((item) => `
+        <li class="${item.daily_completed ? 'is-done' : ''}" data-week-item-id="${item.id}">
+            <button
+                type="button"
+                class="week-task-toggle"
+                onclick="toggleWeekItemDone(${item.id}, ${item.daily_completed ? 'false' : 'true'}, this)"
+                title="${item.daily_completed ? 'Geri al' : 'Bugün tamamlandı'}">
+                ${item.daily_completed ? '✓' : '○'}
+            </button>
+            <span class="week-task-content">
+                <strong>${escapeHtml(item.course_name)}</strong> — ${escapeHtml(item.topic_name)}
+                ${item.description ? `<span class="week-task-desc">${escapeHtml(item.description)}</span>` : ''}
+            </span>
+        </li>
+    `).join('');
+};
+
+window.refreshWeekPanelUI = function () {
+    return fetch('/api/week-panel', { headers: { Accept: 'application/json' } })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) window.renderWeekPanelUI(data.weekPanel);
+            return data;
+        });
+};
+
+window.toggleWeekItemDone = function (itemId, completed, btnElement) {
+    fetch(`/api/week-item/${itemId}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                if (data.stale) {
+                    window.refreshWeekPanelUI?.();
+                    window.showToast('Görev listesi güncellendi. Tekrar deneyin.', 'error');
+                    return;
+                }
+                window.showToast(data.message || 'Görev güncellenemedi.', 'error');
+                return;
+            }
+
+            const li = btnElement.closest('li');
+            li?.classList.toggle('is-done', data.completed);
+            btnElement.textContent = data.completed ? '✓' : '○';
+            btnElement.title = data.completed ? 'Geri al' : 'Bugün tamamlandı';
+            btnElement.setAttribute(
+                'onclick',
+                `toggleWeekItemDone(${itemId}, ${data.completed ? 'false' : 'true'}, this)`
+            );
+            window.setCanvasItemCompleted?.({
+                planItemId: data.itemId,
+                completed: data.completed
+            });
+            window.setWeekListItemCompleted?.({
+                planItemId: data.itemId,
+                completed: data.completed
+            });
+            window.updateStatsUI(data.stats);
+            window.renderWeekPanelUI?.(data.weekPanel);
+            window.showToast(data.completed ? 'Bugünkü görev tamamlandı.' : 'Görev geri alındı.', 'success');
+        })
+        .catch(err => {
+            console.error(err);
+            window.showToast('Sunucu bağlantısı koptu.', 'error');
+        });
 };
 
 window.toggleTopicDone = function (id, isCompleted, btnElement) {
@@ -395,6 +487,10 @@ window.toggleTopicDone = function (id, isCompleted, btnElement) {
                     topicDiv.setAttribute('draggable', 'true');
                     btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, true, this)`);
                 }
+                window.setCanvasItemCompleted?.({
+                    topicId: id,
+                    completed: isCompleted
+                });
                 window.updateStatsUI(data.stats);
             }
         }).catch(err => console.error(err));
@@ -561,22 +657,98 @@ window.collectPlanData = function () {
             planData.push({
                 day: dayName,
                 topicId: item.getAttribute('data-topic-id'),
-                description: item.querySelector('input[type="text"]')?.value.trim() || ''
+                description: item.querySelector('input[type="text"]')?.value.trim() || '',
+                completed: item.querySelector('input[type="checkbox"]')?.checked || false
             });
         });
     });
     return planData;
 };
 
-window.createPlannedItemElement = function (topicId, courseId, topicName, description = '') {
+window.setCanvasItemCompleted = function ({ topicId, planItemId, completed }) {
+    const selectors = [];
+    if (planItemId != null) {
+        selectors.push(`.planned-item[data-plan-item-id="${planItemId}"]`);
+    } else if (topicId != null) {
+        selectors.push(`.planned-item[data-topic-id="${topicId}"]`);
+    }
+    if (!selectors.length) return;
+
+    document.querySelectorAll(selectors.join(',')).forEach((item) => {
+        item.classList.toggle('is-done', !!completed);
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox) checkbox.checked = !!completed;
+    });
+};
+
+window.setWeekListItemCompleted = function ({ planItemId, completed }) {
+    if (planItemId == null) return;
+    const li = document.querySelector(`#weekTaskList li[data-week-item-id="${planItemId}"]`);
+    if (!li) return;
+
+    const btn = li.querySelector('.week-task-toggle');
+    li.classList.toggle('is-done', !!completed);
+    if (btn) {
+        btn.textContent = completed ? '✓' : '○';
+        btn.title = completed ? 'Geri al' : 'Bugün tamamlandı';
+        btn.setAttribute(
+            'onclick',
+            `toggleWeekItemDone(${planItemId}, ${completed ? 'false' : 'true'}, this)`
+        );
+    }
+};
+
+window.syncCanvasItemCompletion = function (plannedItem, completed) {
+    const planItemId = plannedItem.getAttribute('data-plan-item-id');
+    if (!planItemId || window.STUDYNEXUS_USER?.role !== 'student') {
+        plannedItem.classList.toggle('is-done', completed);
+        return;
+    }
+
+    fetch(`/api/week-item/${planItemId}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                plannedItem.querySelector('input[type="checkbox"]').checked = !completed;
+                plannedItem.classList.toggle('is-done', !completed);
+                window.showToast(data.message || 'Görev güncellenemedi.', 'error');
+                return;
+            }
+
+            window.setCanvasItemCompleted?.({
+                planItemId: data.itemId,
+                completed: data.completed
+            });
+            window.setWeekListItemCompleted?.({
+                planItemId: data.itemId,
+                completed: data.completed
+            });
+            window.updateStatsUI(data.stats);
+            window.showToast(data.completed ? 'Bugünkü görev tamamlandı.' : 'Görev geri alındı.', 'success');
+        })
+        .catch(err => {
+            console.error(err);
+            plannedItem.querySelector('input[type="checkbox"]').checked = !completed;
+            plannedItem.classList.toggle('is-done', !completed);
+            window.showToast('Sunucu bağlantısı koptu.', 'error');
+        });
+};
+
+window.createPlannedItemElement = function (topicId, courseId, topicName, description = '', options = {}) {
     const plannedItem = document.createElement('div');
     plannedItem.classList.add('planned-item');
+    if (options.completed) plannedItem.classList.add('is-done');
     plannedItem.setAttribute('draggable', 'true');
     plannedItem.setAttribute('data-topic-id', topicId);
     plannedItem.setAttribute('data-course-id', courseId || '');
+    if (options.planItemId) plannedItem.setAttribute('data-plan-item-id', options.planItemId);
 
     plannedItem.innerHTML = `
-        <input type="checkbox" title="Tamamlandı">
+        <input type="checkbox" title="Tamamlandı" ${options.completed ? 'checked' : ''}>
         <span class="item-title">${escapeHtml(topicName)}</span>
         <input type="text" placeholder="Açıklama ekleyin..." value="${escapeHtml(description ?? '')}">
         <button class="delete-item-btn" title="Bu planı sil">✕</button>
@@ -584,6 +756,11 @@ window.createPlannedItemElement = function (topicId, courseId, topicName, descri
 
     plannedItem.addEventListener('dragstart', () => plannedItem.classList.add('dragging'));
     plannedItem.addEventListener('dragend', () => plannedItem.classList.remove('dragging'));
+    plannedItem.querySelector('input[type="checkbox"]').addEventListener('change', (event) => {
+        const checked = event.target.checked;
+        plannedItem.classList.toggle('is-done', checked);
+        window.syncCanvasItemCompletion?.(plannedItem, checked);
+    });
     plannedItem.querySelector('.delete-item-btn').addEventListener('click', () => {
         const zone = plannedItem.parentElement;
         plannedItem.remove();
@@ -718,6 +895,8 @@ if (savePlanBtn) {
                     }
                 }
 
+                window.renderWeekPanelUI?.(data.weekPanel);
+
                 document.getElementById('planTitleInput').value = '';
                 document.getElementById('planDateInput').value = '';
                 window.clearCanvasZones();
@@ -749,7 +928,11 @@ window.applyPlanToCanvas = function (data, options = {}) {
             item.topic_id,
             null,
             item.topic_name || 'Konu',
-            item.description || ''
+            item.description || '',
+            {
+                planItemId: item.id,
+                completed: Boolean(item.daily_completed || item.is_completed)
+            }
         );
         zone.appendChild(el);
         window.updateZoneLayout(zone);

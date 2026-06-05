@@ -172,7 +172,7 @@ router.get('/api/coaching/students/:id/plan/:planId', requireAuth, (req, res) =>
             return res.status(404).json({ success: false, message: 'Plan bulunamadı.' });
         }
 
-        const items = getPlanItemsWithNames(planId);
+        const items = getPlanItemsWithNames(planId, studentId);
         res.json({ success: true, plan, items, readOnly: true });
     } catch (err) {
         console.error('Öğrenci planı yüklenemedi:', err);

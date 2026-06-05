@@ -8,6 +8,10 @@ export const config = {
         user: (process.env.MAIL_USER || '').trim(),
         pass: (process.env.MAIL_PASS || '').replace(/\s/g, ''),
         from: (process.env.MAIL_FROM || process.env.MAIL_USER || '').trim()
+    },
+    reminders: {
+        initialDelayMs: Number(process.env.REMINDER_INITIAL_DELAY_MS) || 15000,
+        intervalMs: Number(process.env.REMINDER_INTERVAL_MS) || 60 * 60 * 1000
     }
 };
 

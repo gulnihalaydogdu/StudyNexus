@@ -43,10 +43,20 @@
                 <% if (weekPanel.todayItems.length === 0) { %>
                     <p class="week-panel-empty">Bugün için planlanmış konu yok.</p>
                 <% } else { %>
-                    <ul class="week-task-list">
+                    <ul class="week-task-list" id="weekTaskList">
                         <% weekPanel.todayItems.forEach(item => { %>
-                            <li><strong><%= item.course_name %></strong> — <%= item.topic_name %>
-                                <% if (item.description) { %><span class="week-task-desc"><%= item.description %></span><% } %>
+                            <li class="<%= item.daily_completed ? 'is-done' : '' %>" data-week-item-id="<%= item.id %>">
+                                <button
+                                    type="button"
+                                    class="week-task-toggle"
+                                    onclick="toggleWeekItemDone(<%= item.id %>, <%= item.daily_completed ? 'false' : 'true' %>, this)"
+                                    title="<%= item.daily_completed ? 'Geri al' : 'Bugün tamamlandı' %>">
+                                    <%= item.daily_completed ? '✓' : '○' %>
+                                </button>
+                                <span class="week-task-content">
+                                    <strong><%= item.course_name %></strong> — <%= item.topic_name %>
+                                    <% if (item.description) { %><span class="week-task-desc"><%= item.description %></span><% } %>
+                                </span>
                             </li>
                         <% }) %>
                     </ul>
@@ -75,6 +85,26 @@
                         <span class="stats-pct"><%= c.percent %>%</span>
                     </div>
                 <% }) %>
+            </div>
+            <div class="stats-trend-card">
+                <div class="stats-trend-head">
+                    <h3>Son İlerleme</h3>
+                    <span>Günlük trend</span>
+                </div>
+                <div class="stats-trend-bars" id="statsTrendBars">
+                    <% if (!stats.trend || stats.trend.length === 0) { %>
+                        <p class="stats-muted">Trend için birkaç tamamlama kaydı oluşmalı.</p>
+                    <% } else { %>
+                        <% stats.trend.forEach(point => { %>
+                            <div class="trend-bar-item" title="<%= point.snapshot_date %> · <%= point.overall_percent %>%">
+                                <div class="trend-bar-track">
+                                    <div class="trend-bar-fill" style="height:<%= Math.max(6, point.overall_percent) %>%"></div>
+                                </div>
+                                <span><%= point.snapshot_date.slice(5) %></span>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                </div>
             </div>
         </div>
     </section>

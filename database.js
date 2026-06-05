@@ -76,6 +76,7 @@ function initSchema() {
             description TEXT NOT NULL DEFAULT '',
             topic_label TEXT NOT NULL DEFAULT '',
             course_label TEXT NOT NULL DEFAULT '',
+            is_completed INTEGER NOT NULL DEFAULT 0,
             FOREIGN KEY (plan_id) REFERENCES weekly_plans(id) ON DELETE CASCADE,
             FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE SET NULL
         );
@@ -118,6 +119,39 @@ function initSchema() {
             FOREIGN KEY (source_plan_id) REFERENCES weekly_plans(id) ON DELETE SET NULL,
             FOREIGN KEY (student_plan_id) REFERENCES weekly_plans(id) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS daily_task_completions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            plan_item_id INTEGER NOT NULL,
+            completed_on TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE (user_id, plan_item_id, completed_on),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (plan_item_id) REFERENCES weekly_plan_items(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS progress_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            snapshot_date TEXT NOT NULL,
+            total_topics INTEGER NOT NULL DEFAULT 0,
+            completed_topics INTEGER NOT NULL DEFAULT 0,
+            overall_percent INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE (user_id, snapshot_date),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS study_reminder_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            reminder_date TEXT NOT NULL,
+            reminder_type TEXT NOT NULL DEFAULT 'daily_plan',
+            sent_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE (user_id, reminder_date, reminder_type),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
     `);
 
     dbRun('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL');
@@ -126,6 +160,10 @@ function initSchema() {
     dbRun('CREATE INDEX IF NOT EXISTS idx_weekly_plans_user ON weekly_plans(user_id)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_plan_items_plan ON weekly_plan_items(plan_id)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_calendar_user ON calendar_events(user_id)');
+    dbRun('CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_plan_unique ON calendar_events(plan_id)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_daily_task_user_date ON daily_task_completions(user_id, completed_on)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_progress_user_date ON progress_snapshots(user_id, snapshot_date)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_reminder_user_date ON study_reminder_log(user_id, reminder_date)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_tsl_teacher ON teacher_student_links(teacher_id)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_tsl_student ON teacher_student_links(student_id)');
 }

@@ -369,6 +369,16 @@ body {
     cursor: pointer;
 }
 
+.planned-item.is-done {
+    background: #ecfdf5;
+}
+
+.planned-item.is-done .item-title,
+.planned-item.is-done input[type="text"] {
+    color: #64748b;
+    text-decoration: line-through;
+}
+
 .planned-item .item-title {
     font-weight: 600;
     font-size: 0.8rem; /* 0.9rem'den küçülttük, daha kibar duracak */
@@ -958,6 +968,132 @@ body {
 .stats-card-wide .stats-ring { width: 110px; height: 110px; }
 .stats-card-wide .stats-ring::before { inset: 12px; }
 .stats-card-wide .stats-ring span { font-size: 1.1rem; }
+
+.week-task-list {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.week-task-list li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    background: #faf8ff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition: all 0.2s ease;
+}
+
+.week-task-list li.is-done {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+}
+
+.week-task-list li.is-done .week-task-content {
+    color: #64748b;
+    text-decoration: line-through;
+}
+
+.week-task-toggle {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid var(--primary);
+    background: white;
+    color: var(--primary);
+    font-weight: 800;
+    cursor: pointer;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.week-task-toggle:hover,
+.week-task-list li.is-done .week-task-toggle {
+    background: var(--primary-gradient);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
+}
+
+.week-task-content {
+    flex: 1;
+}
+
+.week-task-desc {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.stats-trend-card {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.stats-trend-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
+    margin-bottom: 14px;
+}
+
+.stats-trend-head h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.stats-trend-head span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.stats-trend-bars {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+    min-height: 110px;
+}
+
+.trend-bar-item {
+    flex: 1;
+    min-width: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.trend-bar-track {
+    width: 100%;
+    height: 88px;
+    border-radius: 999px;
+    background: #f1eefb;
+    display: flex;
+    align-items: end;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.trend-bar-fill {
+    width: 100%;
+    min-height: 6px;
+    background: var(--primary-gradient);
+    border-radius: 999px 999px 0 0;
+    transition: height 0.4s ease;
+}
+
+.trend-bar-item span {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
 
 @property --p {
     syntax: '<number>';

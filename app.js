@@ -6,6 +6,7 @@ import { db, dbReady } from './database.js';
 import indexRoutes from './routes/index.js';
 import authRoutes from './routes/auth.js';
 import coachingRoutes from './routes/coaching.js';
+import { startDailyReminderScheduler } from './lib/reminders.js';
 import {
     helmetMiddleware,
     globalLimiter,
@@ -66,6 +67,7 @@ dbReady
             } else if (isMailConfigured()) {
                 console.log('✉️  E-posta gönderimi aktif:', config.mail.user);
             }
+            startDailyReminderScheduler();
         });
     })
     .catch(() => {
