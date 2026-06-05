@@ -47,7 +47,7 @@ window.STUDYNEXUS_USER = { id: <%= user.id %>, role: 'teacher' };
 window.STUDYNEXUS_VIEW = {
     mode: 'teacher-student',
     studentId: <%= student.id %>,
-    studentName: '<%= (student.full_name || student.username).replace(/'/g, "\\'") %>',
+    studentName: <%- JSON.stringify(student.full_name || student.username) %>,
     readOnly: true
 };
 </script>

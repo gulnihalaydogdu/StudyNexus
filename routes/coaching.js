@@ -201,7 +201,7 @@ router.get('/api/coaching/students/:id/plan/:planId', requireAuth, (req, res) =>
     if (!plan) return res.status(404).json({ success: false });
 
     const items = getPlanItemsWithNames(planId);
-    res.json({ success: true, plan, items });
+    res.json({ success: true, plan, items, readOnly: true });
 });
 
 router.post('/api/coaching/assign-plan', requireAuth, (req, res) => {

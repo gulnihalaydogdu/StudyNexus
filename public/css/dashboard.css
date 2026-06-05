@@ -1038,23 +1038,55 @@ body {
 }
 .toolbox-add-btn:hover { background: #111; }
 
-/* Tuval araç çubuğu — kağıdın altında */
+/* Tuval araç çubuğu — kağıdın hemen altında, tek satır */
 .workspace { position: relative; }
-.a4-template { position: relative; margin-bottom: 80px; }
+.a4-template {
+    position: relative;
+    margin-bottom: 0;
+    overflow: visible;
+}
+.a4-template.active {
+    margin-bottom: 58px;
+}
 .canvas-toolbar-bottom {
     position: absolute;
-    bottom: -65px;
+    top: calc(100% + 18px);
     left: 0;
     right: 0;
-    top: auto;
+    bottom: auto;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
     z-index: 20;
+    pointer-events: none;
 }
-.canvas-toolbar-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.canvas-toolbar-bottom .canvas-toolbar-group {
+    pointer-events: auto;
+}
+.canvas-toolbar-group {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 100%;
+}
+.canvas-toolbar-bottom .save-plan-btn,
+.canvas-toolbar-bottom .download-pdf-btn,
+.canvas-toolbar-bottom .canvas-action-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+}
+.role-teacher .canvas-toolbar-bottom {
+    justify-content: center;
+}
+.role-teacher .canvas-toolbar-group {
+    justify-content: center;
+    flex-wrap: nowrap;
+}
 .canvas-action-btn {
     background: white;
     color: var(--text-main);
@@ -1096,6 +1128,82 @@ body {
 .coaching-form input { flex: 1; min-width: 140px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
 .coaching-list { list-style: none; padding: 0; margin: 16px 0 0; }
 .coaching-hint { color: var(--text-muted); font-size: 0.9rem; }
+
+/* Öğretmen — öğrenci detay sayfası */
+.teacher-student-page .navbar { flex-wrap: wrap; gap: 12px; }
+.teacher-student-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.back-dashboard-link {
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary);
+    padding: 6px 12px;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+}
+.back-dashboard-link:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+.brand-inline { font-size: 1.2rem; }
+.student-grade-tag {
+    font-size: 0.75rem;
+    background: #f3f0ff;
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+.teacher-student-nav-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.stats-ring-sm { width: 48px; height: 48px; }
+.stats-ring-sm::before { inset: 6px; }
+.stats-ring-sm span { font-size: 0.7rem; }
+.stats-inline-text { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+.teacher-student-hint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 16px 40px 0;
+}
+.teacher-student-main .canvas-area { padding-top: 24px; }
+.teacher-student-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.teacher-student-card-link:hover .teacher-student-head strong { color: var(--primary); }
+.teacher-student-meta {
+    margin: 8px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+.toolbox-readonly-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+}
+.readonly-pill {
+    cursor: default;
+    pointer-events: none;
+}
+.readonly-item {
+    cursor: default;
+    pointer-events: none;
+}
+.readonly-topics .topic-course-tag {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+.topic-done-badge { color: #10b981; font-weight: 700; flex-shrink: 0; }
 
 .stats-card h3, .daily-card h3, .class-card h3 { margin-top: 0; font-size: 1.1rem; color: #333; }
 .stats-overall { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }

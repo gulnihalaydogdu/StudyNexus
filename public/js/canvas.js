@@ -669,9 +669,30 @@ window.applyPlanToCanvas = function (data, options = {}) {
     return true;
 };
 
+window.getStudentViewContext = function () {
+    const view = window.STUDYNEXUS_VIEW;
+    if (view?.mode === 'teacher-student' && view.studentId) {
+        return { studentId: view.studentId, readOnly: view.readOnly !== false };
+    }
+    return null;
+};
+
+window.openStudentPlan = function (planId) {
+    const ctx = window.getStudentViewContext();
+    if (!ctx) {
+        window.editWeeklyPlan(planId);
+        return;
+    }
+    window.editWeeklyPlan(planId, { studentId: ctx.studentId, readOnly: true });
+};
+
 window.editWeeklyPlan = function (planId, options = {}) {
-    const url = options.studentId
-        ? `/api/coaching/students/${options.studentId}/plan/${planId}`
+    const viewCtx = window.getStudentViewContext();
+    const studentId = options.studentId ?? viewCtx?.studentId;
+    const forceReadOnly = options.readOnly ?? (viewCtx?.readOnly && !!studentId);
+
+    const url = studentId
+        ? `/api/coaching/students/${studentId}/plan/${planId}`
         : `/api/plan/${planId}`;
 
     fetch(url)
@@ -682,7 +703,7 @@ window.editWeeklyPlan = function (planId, options = {}) {
                 return;
             }
 
-            const readOnly = options.readOnly || !!data.readOnly;
+            const readOnly = forceReadOnly || !!data.readOnly;
 
             window.applyPlanToCanvas(data, {
                 readOnly,
@@ -690,11 +711,16 @@ window.editWeeklyPlan = function (planId, options = {}) {
             });
 
             const canvasEl = document.getElementById('a4Canvas');
-            if (options.studentId) canvasEl.setAttribute('data-view-student-id', options.studentId);
+            if (studentId) canvasEl.setAttribute('data-view-student-id', studentId);
             else canvasEl.removeAttribute('data-view-student-id');
 
             window.showAppPanel?.('planner');
-            if (!readOnly) window.showToast('Plan düzenleme modunda.', 'success');
+            const label = viewCtx?.studentName || 'Öğrenci';
+            if (readOnly && studentId) {
+                window.showToast(`${label} — program görüntüleniyor.`, 'success');
+            } else if (!readOnly) {
+                window.showToast('Plan düzenleme modunda.', 'success');
+            }
         })
         .catch(() => window.showToast('Sunucu bağlantı hatası', 'error'));
 };
@@ -845,13 +871,13 @@ window.loadCoachingData = function () {
                 }
                 list.innerHTML = d.students.map(s => `
                     <li class="teacher-student-card">
-                        <div class="teacher-student-head">
-                            <strong>${s.full_name || s.username}</strong>
-                            <span class="teacher-student-pct">${s.stats.percent}%</span>
-                        </div>
-                        <div class="teacher-student-actions">
-                            <button type="button" class="view-plan-btn" onclick="viewStudentOverview(${s.id})">Programlar</button>
-                        </div>
+                        <a href="/teacher/student/${s.id}" class="teacher-student-card-link">
+                            <div class="teacher-student-head">
+                                <strong>${s.full_name || s.username}</strong>
+                                <span class="teacher-student-pct">${s.stats.percent}%</span>
+                            </div>
+                            <p class="teacher-student-meta">${s.stats.completedTopics}/${s.stats.totalTopics} konu · Programlar & takvim</p>
+                        </a>
                     </li>`).join('');
                 const sel = document.getElementById('assignStudentModalSelect');
                 if (sel) {

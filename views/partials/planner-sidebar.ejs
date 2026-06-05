@@ -15,6 +15,7 @@
             </div>
         <% }) } %>
     </div>
+    <% if (typeof hideCalendar === 'undefined' || !hideCalendar) { %>
     <div class="calendar-widget">
         <div class="cal-header"><h3>🗓️ Takvim</h3></div>
         <div class="cal-body">
@@ -43,4 +44,5 @@
             <% }) %>
         </div>
     </div>
+    <% } %>
 </div>

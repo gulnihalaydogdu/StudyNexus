@@ -37,8 +37,8 @@
 
     <section id="panel-planner" class="app-panel">
         <div class="canvas-area">
-            <%- include('partials/planner-sidebar') %>
-            <%- include('partials/a4-canvas', { workspaceHint: 'Öğrencilere atayacağınız haftalık planı burada oluşturun.', showAssignBtn: true }) %>
+            <%- include('partials/planner-sidebar', { hideCalendar: true }) %>
+            <%- include('partials/a4-canvas', { workspaceHint: 'Öğrencilere atayacağınız haftalık planı burada oluşturun.', showAssignBtn: true, compactToolbar: true }) %>
             <%- include('partials/topic-toolbox') %>
         </div>
     </section>
