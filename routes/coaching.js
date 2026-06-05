@@ -146,43 +146,6 @@ router.get('/api/coaching/students', requireAuth, (req, res) => {
     res.json({ success: true, students });
 });
 
-router.get('/api/coaching/students/:id/overview', requireAuth, (req, res) => {
-    if (req.session.role !== 'teacher') {
-        return res.status(403).json({ success: false });
-    }
-
-    const studentId = Number(req.params.id);
-    const link = dbGet(
-        'SELECT id FROM teacher_student_links WHERE teacher_id = ? AND student_id = ?',
-        [req.session.userId, studentId]
-    );
-    if (!link) return res.status(403).json({ success: false });
-
-    const student = dbGet('SELECT id, username, full_name, grade FROM users WHERE id = ?', [studentId]);
-    const stats = getStudentStats(studentId);
-    const weeklyPlans = dbAll(
-        'SELECT * FROM weekly_plans WHERE user_id = ? ORDER BY id DESC',
-        [studentId]
-    );
-    const calendarEvents = dbAll('SELECT * FROM calendar_events WHERE user_id = ?', [studentId]);
-    const courses = dbAll('SELECT * FROM courses WHERE user_id = ?', [studentId]);
-    const topics = dbAll(
-        `SELECT t.*, c.name as course_name FROM topics t
-         JOIN courses c ON t.course_id = c.id WHERE c.user_id = ?`,
-        [studentId]
-    );
-
-    res.json({
-        success: true,
-        student,
-        stats,
-        weeklyPlans,
-        calendarEvents,
-        courses,
-        topics
-    });
-});
-
 router.get('/api/coaching/students/:id/plan/:planId', requireAuth, (req, res) => {
     try {
         if (req.session.role !== 'teacher') {

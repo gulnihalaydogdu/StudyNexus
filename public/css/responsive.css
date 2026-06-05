@@ -367,12 +367,6 @@
         order: 4;
     }
 
-    .student-plan-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
     /* Modaller */
     .modal-overlay {
         align-items: flex-end;
@@ -396,10 +390,6 @@
 
     .modal-footer {
         padding: 14px 16px;
-    }
-
-    .modal-lg {
-        max-width: 100%;
     }
 
     /* Toast */

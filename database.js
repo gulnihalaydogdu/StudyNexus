@@ -46,23 +46,7 @@ function initSchema() {
             user_id INTEGER,
             name TEXT NOT NULL,
             is_completed INTEGER DEFAULT 0,
-            estimated_minutes INTEGER DEFAULT 0,
-            note TEXT,
             FOREIGN KEY(course_id) REFERENCES courses(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS study_plans (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            topic_id INTEGER,
-            plan_date TEXT NOT NULL,
-            start_time TEXT,
-            end_time TEXT,
-            activity_type TEXT,
-            question_count INTEGER,
-            page_count INTEGER,
-            is_done INTEGER DEFAULT 0,
-            FOREIGN KEY(topic_id) REFERENCES topics(id)
         );
 
         CREATE TABLE IF NOT EXISTS weekly_plans (

@@ -126,10 +126,6 @@ body {
 .coaching-list li { padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; }
 .coaching-form { display: flex; gap: 8px; margin-top: 8px; }
 .coaching-form input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
-.student-overview-stats { display: flex; gap: 16px; margin-bottom: 16px; }
-.student-plan-row { padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
-
-
 .pile-title { font-weight: 700; color: var(--text-main); font-size: 1.2rem; margin-bottom: 10px; }
 .pile-date { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
 
@@ -565,15 +561,13 @@ body {
 }
 
 /* KADEME 1: KOMPAKT MOD (3 veya 4 eleman varken) */
-.drop-zone.compact .planned-item,
-.read-only-zone.compact .planned-item {
+.drop-zone.compact .planned-item {
     padding: 4px 10px;
     gap: 8px;
     min-height: 32px; 
 }
 
-.drop-zone.compact .item-title,
-.read-only-zone.compact .item-title {
+.drop-zone.compact .item-title {
     font-size: 0.75rem; 
     min-width: 80px;    
     max-width: 100px;
@@ -588,22 +582,19 @@ body {
 }
 
 /* KADEME 2: İKİ SÜTUNLU MOD (5 ve üzeri eleman varken) */
-.drop-zone.two-columns,
-.read-only-zone.two-columns {
+.drop-zone.two-columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); 
     gap: 6px 12px; 
     align-content: start;
 }
 
-.drop-zone.two-columns .planned-item,
-.read-only-zone.two-columns .planned-item {
+.drop-zone.two-columns .planned-item {
     gap: 4px; 
     padding: 4px 6px;
 }
 
-.drop-zone.two-columns .item-title,
-.read-only-zone.two-columns .item-title {
+.drop-zone.two-columns .item-title {
     font-size: 0.55rem;  
     min-width: 60px; 
     max-width: 80px; 
@@ -718,33 +709,7 @@ body {
     z-index: 200; /* Seçilen kağıt diğerlerinin üstüne çıkar */
 }
 
-/* Yığındaki Hızlı Bakış Butonu */
-.view-plan-btn {
-    position: absolute;
-    bottom: 25px;
-    right: 25px;
-    background: #f5f3f9;
-    color: var(--primary);
-    border: 1px solid #e9e4f4;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    opacity: 0; /* Normalde gizli */
-}
-
-/* Sadece o kağıdın üzerindeyken butonu göster */
-.pile-container .pile-paper:hover .view-plan-btn {
-    opacity: 1;
-}
-
-.view-plan-btn:hover {
-    background: var(--primary);
-    color: white;
-}
-
-/* --- HIZLI BAKIŞ MODALI --- */
+/* --- MODALLER --- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(46, 16, 101, 0.4);
@@ -778,14 +743,6 @@ body {
 
 .modal-body { padding: 20px 30px; overflow-y: auto; flex: 1; background: #faf9fc; }
 
-/* Gün Grupları ve Satırlar */
-.ql-day-group { margin-bottom: 20px; }
-.ql-day-name { font-weight: 700; color: var(--primary); border-bottom: 2px solid #e9e4f4; padding-bottom: 5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-.ql-item { display: flex; align-items: center; padding: 10px 15px; background: white; border: 1px solid #e9e4f4; border-radius: 10px; margin-bottom: 8px; gap: 12px; box-shadow: var(--shadow-sm); }
-.ql-course { font-size: 0.7rem; background: var(--primary-gradient); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600; }
-.ql-topic { font-size: 0.85rem; font-weight: 700; color: var(--text-main); min-width: 110px; }
-.ql-desc { font-size: 0.8rem; color: var(--text-muted); flex: 1; }
-
 .modal-footer { padding: 20px 30px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; background: white; }
 
 .add-to-calendar-btn {
@@ -794,12 +751,6 @@ body {
     box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2); transition: all 0.2s;
 }
 .add-to-calendar-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(139, 92, 246, 0.3); }
-
-.delete-plan-btn:hover {
-    background: #fef2f2 !important;
-    border-color: #fca5a5 !important;
-    transform: translateY(-2px);
-}
 
 /* --- TAKVİM HAFTA SEÇİCİ (PILLS) --- */
 .week-selector-container {
@@ -1113,21 +1064,6 @@ body {
 .canvas-action-btn.accent:hover { filter: brightness(1.05); }
 
 .topic-label.done { text-decoration: line-through; color: #999; }
-.student-plans-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.student-plan-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    background: #f9f7ff;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-}
-.student-plan-row small { display: block; color: var(--text-muted); margin-top: 4px; }
-.so-section-title { margin: 16px 0 10px; font-size: 0.95rem; }
-.so-topic-list .done { opacity: 0.5; text-decoration: line-through; }
-.student-overview-stats { display: flex; gap: 16px; align-items: center; margin-bottom: 8px; }
 .coaching-form { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .coaching-form input { flex: 1; min-width: 140px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
 .coaching-list { list-style: none; padding: 0; margin: 16px 0 0; }
@@ -1209,7 +1145,6 @@ body {
 }
 .topic-done-badge { color: #10b981; font-weight: 700; flex-shrink: 0; }
 
-.stats-card h3, .daily-card h3, .class-card h3 { margin-top: 0; font-size: 1.1rem; color: #333; }
 .stats-overall { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
 .stats-ring { width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--primary) calc(var(--p) * 1%), #e9e4f4 0); display: flex; align-items: center; justify-content: center; position: relative; }
 .stats-ring::before { content: ''; position: absolute; inset: 8px; background: white; border-radius: 50%; }
@@ -1220,26 +1155,4 @@ body {
 .stats-bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 4px; transition: width 0.75s cubic-bezier(0.34, 1.1, 0.64, 1); }
 .stats-pct { font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
 
-.daily-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.daily-form input, .daily-form select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
-.daily-form-row { display: flex; gap: 8px; }
 .daily-submit-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.today-tasks { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
-.today-task { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
-.today-task.done { opacity: 0.55; }
-.today-task.done span { text-decoration: line-through; }
-.today-meta { font-size: 0.75rem; color: var(--text-muted); flex: 1; }
-.today-delete { background: none; border: none; color: #ef4444; cursor: pointer; }
-.today-empty { color: var(--text-muted); font-size: 0.85rem; padding: 8px 0; }
-
-.pile-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-.edit-plan-btn { background: white; color: var(--primary); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
-.edit-plan-btn:hover { background: #f5f3ff; }
-.edit-plan-btn-modal { background: white; color: var(--primary); border: 1px solid var(--border); padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
-
-.class-list, .shared-plans-list { list-style: none; padding: 0; margin: 0 0 12px; }
-.class-list li, .shared-plans-list li { padding: 8px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; font-size: 0.85rem; }
-.shared-title { font-size: 0.9rem; margin: 12px 0 8px; color: var(--text-muted); }
-.share-class-select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; }
-.share-plan-btn { background: #06b6d4; color: white; border: none; padding: 12px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.copy-plan-btn { margin-top: 6px; background: var(--primary); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }

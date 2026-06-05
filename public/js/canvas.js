@@ -1033,42 +1033,6 @@ window.linkToCoach = function () {
     });
 };
 
-window.viewStudentOverview = function (studentId) {
-    fetch(`/api/coaching/students/${studentId}/overview`)
-        .then(r => r.json())
-        .then(d => {
-            if (!d.success) return;
-            document.getElementById('soStudentName').textContent = d.student.full_name || d.student.username;
-            const done = d.topics.filter(t => t.is_completed).length;
-            const body = document.getElementById('studentOverviewBody');
-            body.innerHTML = `
-                <h4 class="so-section-title">Haftalık programlar</h4>
-                ${d.weeklyPlans.length ? `<div class="student-plans-grid">${d.weeklyPlans.map(p =>
-                    `<div class="student-plan-row">
-                        <div><strong>${p.title}</strong><small>${p.date_range}</small></div>
-                        <button type="button" class="view-plan-btn" onclick="viewStudentPlan(${studentId},${p.id})">Programı aç</button>
-                    </div>`).join('')}</div>` : '<p class="week-panel-empty">Henüz plan yok.</p>'}
-                <h4 class="so-section-title">İlerleme özeti</h4>
-                <div class="student-overview-stats">
-                    <div class="stats-ring ring-animate" style="--p:${d.stats.percent}"><span>${d.stats.percent}%</span></div>
-                    <div><strong>${done}/${d.topics.length}</strong> konu tamamlandı<br>${d.stats.courseCount} ders</div>
-                </div>
-                <ul class="week-task-list so-topic-list">${d.topics.slice(0, 12).map(t =>
-                    `<li class="${t.is_completed ? 'done' : ''}">${t.course_name} — ${t.name}</li>`).join('')}
-                    ${d.topics.length > 12 ? '<li class="week-panel-empty">…ve diğer konular</li>' : ''}</ul>`;
-            document.getElementById('studentOverviewModal').classList.add('active');
-        });
-};
-
-window.closeStudentOverview = function () {
-    document.getElementById('studentOverviewModal').classList.remove('active');
-};
-
-window.viewStudentPlan = function (studentId, planId) {
-    window.closeStudentOverview();
-    window.editWeeklyPlan(planId, { studentId, readOnly: true });
-};
-
 window.openAssignPlanModal = function () {
     const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
     if (!planId) return window.showToast('Önce bir plan kaydedin veya açın.', 'error');
