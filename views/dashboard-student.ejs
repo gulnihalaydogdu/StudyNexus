@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus — Öğrenci</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="role-student">
+<header class="navbar">
+    <h1 class="brand">StudyNexus</h1>
+    <nav class="app-nav" data-default-panel="planner">
+        <button type="button" class="nav-chip active" data-panel="planner">📝 Planlarım</button>
+        <button type="button" class="nav-chip" data-panel="week">📋 Bu Hafta</button>
+        <button type="button" class="nav-chip" data-panel="stats">📊 İlerleme</button>
+        <button type="button" class="nav-chip" data-panel="coaching">👩‍🏫 Koçum</button>
+    </nav>
+    <div class="user-menu">
+        <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğrenci</span></a>
+        <a href="/logout" class="logout-btn">Çıkış</a>
+    </div>
+</header>
+
+<main class="app-shell">
+    <section id="panel-planner" class="app-panel active">
+        <div class="canvas-area">
+            <%- include('partials/planner-sidebar') %>
+            <%- include('partials/a4-canvas', { workspaceHint: 'Haftalık planınızı oluşturun veya soldan bir plana tıklayın.', showAssignBtn: false }) %>
+            <%- include('partials/topic-toolbox') %>
+        </div>
+    </section>
+
+    <section id="panel-week" class="app-panel">
+        <div class="panel-center-card">
+            <h2>📋 Bu Hafta — <%= weekPanel.todayName %></h2>
+            <% if (!weekPanel.hasPlan) { %>
+                <p class="week-panel-empty">Bu ayın <%= weekPanel.week %>. haftası için takvimde atanmış plan yok.</p>
+            <% } else { %>
+                <p class="week-panel-sub"><%= weekPanel.planTitle %> · <%= weekPanel.month %> · <%= weekPanel.week %>. Hafta</p>
+                <% if (weekPanel.todayItems.length === 0) { %>
+                    <p class="week-panel-empty">Bugün için planlanmış konu yok.</p>
+                <% } else { %>
+                    <ul class="week-task-list">
+                        <% weekPanel.todayItems.forEach(item => { %>
+                            <li><strong><%= item.course_name %></strong> — <%= item.topic_name %>
+                                <% if (item.description) { %><span class="week-task-desc"><%= item.description %></span><% } %>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+            <% } %>
+        </div>
+    </section>
+
+    <section id="panel-stats" class="app-panel">
+        <div class="panel-center-card stats-card-wide">
+            <h2>📊 İlerleme</h2>
+            <div class="stats-overall">
+                <div class="stats-ring" id="statsRing" style="--p: <%= stats.overallPercent %>;">
+                    <span id="statsPercentText"><%= stats.overallPercent %>%</span>
+                </div>
+                <div>
+                    <strong id="statsCountText"><%= stats.completedTopics %> / <%= stats.totalTopics %></strong>
+                    <p class="stats-muted">konu tamamlandı</p>
+                </div>
+            </div>
+            <div id="statsCourseRows">
+                <% stats.byCourse.forEach(c => { %>
+                    <div class="stats-course-row" data-course-id="<%= c.id %>">
+                        <span><%= c.name %></span>
+                        <div class="stats-bar"><div class="stats-bar-fill" style="width:<%= c.percent %>%"></div></div>
+                        <span class="stats-pct"><%= c.percent %>%</span>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+
+    <section id="panel-coaching" class="app-panel">
+        <div class="panel-center-card">
+            <h2>👩‍🏫 Koçuma Bağlan</h2>
+            <p class="coaching-hint">Koçunuzun verdiği kodu girerek programa erişim ve plan atamaları alırsınız.</p>
+            <form class="coaching-form" onsubmit="event.preventDefault(); linkToCoach();">
+                <input type="text" id="coachCodeInput" placeholder="Koç kodu" required style="text-transform:uppercase;">
+                <button type="submit" class="daily-submit-btn">Bağlan</button>
+            </form>
+            <ul id="myTeachersList" class="coaching-list"></ul>
+        </div>
+    </section>
+</main>
+
+<% if (flashMsg) { %>
+    <div class="toast-message" id="toastMsg"><%= flashMsg %></div>
+<% } %>
+<%- include('partials/modals') %>
+
+<script>window.STUDYNEXUS_USER = { id: <%= user.id %>, role: 'student' };</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

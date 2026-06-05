@@ -11,20 +11,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (createBtn && a4Canvas && closeBtn) {
         createBtn.addEventListener('click', function () {
             a4Canvas.setAttribute('data-editing-id', '');
+            a4Canvas.setAttribute('data-read-only', '0');
             document.getElementById('planTitleInput').value = '';
             document.getElementById('planDateInput').value = '';
             window.clearCanvasZones?.();
+            window.setReadOnlyMode?.(false);
             const saveBtn = document.getElementById('savePlanBtn');
             if (saveBtn) saveBtn.textContent = '💾 Kaydet';
+            window.updateCanvasPlanActions?.('');
             a4Canvas.classList.add('active');
             createBtn.style.display = 'none';
             if (workspacePoster) workspacePoster.style.display = 'none';
         });
 
         closeBtn.addEventListener('click', function () {
-            a4Canvas.classList.remove('active');
-            createBtn.style.display = 'flex';
-            if (workspacePoster) workspacePoster.style.display = 'flex'; // Vazgeçilirse posteri geri getir
+            window.closeCanvasEditor?.();
         });
     }
 
@@ -35,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadPdfBtn.addEventListener('click', function () {
             window.showToast('PDF hazırlanıyor, lütfen bekleyin...', 'success');
 
-            // 1. Görünmemesi gereken butonları gizle
-            downloadPdfBtn.style.display = 'none';
-            closeCanvasBtn.style.display = 'none';
+            const toolbar = a4Canvas.querySelector('.canvas-toolbar');
+            const toolbarDisplay = toolbar ? toolbar.style.display : '';
+            if (toolbar) toolbar.style.display = 'none';
             const deleteBtns = document.querySelectorAll('.delete-item-btn');
             deleteBtns.forEach(btn => btn.style.display = 'none');
 
@@ -68,9 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 backgroundColor: '#ffffff'
             }).then(canvas => {
 
-                // 5. Her şeyi anında eski haline (Ekranda göründüğü duruma) getir
-                downloadPdfBtn.style.display = 'block';
-                closeCanvasBtn.style.display = 'block';
+                if (toolbar) toolbar.style.display = toolbarDisplay || '';
                 deleteBtns.forEach(btn => btn.style.display = 'flex');
 
                 a4Canvas.style.animation = originalAnimation;
@@ -100,11 +99,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.showToast('PDF oluşturulurken hata oluştu.', 'error');
 
                 // Hata olsa bile ekranı düzelt
-                downloadPdfBtn.style.display = 'block';
-                closeCanvasBtn.style.display = 'block';
+                if (toolbar) toolbar.style.display = toolbarDisplay || '';
             });
         });
     }
+
+    const deletePlanBtn = document.getElementById('deletePlanBtn');
+    const calendarPlanBtn = document.getElementById('calendarPlanBtn');
+    const assignPlanBtn = document.getElementById('assignPlanBtn');
+    if (deletePlanBtn) deletePlanBtn.addEventListener('click', () => window.deleteWeeklyPlan());
+    if (calendarPlanBtn) calendarPlanBtn.addEventListener('click', () => window.addToCalendar());
+    if (assignPlanBtn) assignPlanBtn.addEventListener('click', () => window.openAssignPlanModal());
 
     // --- 2. SÜRÜKLE BIRAK (DRAG & DROP) MOTORU ---
     const draggables = document.querySelectorAll('.draggable-item');
@@ -252,14 +257,24 @@ window.updateStatsUI = function (stats) {
     const pct = document.getElementById('statsPercentText');
     const count = document.getElementById('statsCountText');
     const rows = document.getElementById('statsCourseRows');
-    if (ring) ring.style.setProperty('--p', stats.overallPercent);
+    if (ring) {
+        const prev = parseFloat(ring.style.getPropertyValue('--p')) || 0;
+        ring.classList.add('ring-animate');
+        ring.style.setProperty('--p', prev);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                ring.style.setProperty('--p', stats.overallPercent);
+            });
+        });
+        setTimeout(() => ring.classList.remove('ring-animate'), 900);
+    }
     if (pct) pct.textContent = `${stats.overallPercent}%`;
     if (count) count.textContent = `${stats.completedTopics} / ${stats.totalTopics}`;
     if (rows && stats.byCourse) {
         rows.innerHTML = stats.byCourse.map(c => `
             <div class="stats-course-row" data-course-id="${c.id}">
                 <span>${c.name}</span>
-                <div class="stats-bar"><div class="stats-bar-fill" style="width:${c.percent}%"></div></div>
+                <div class="stats-bar"><div class="stats-bar-fill stats-bar-animated" style="width:${c.percent}%"></div></div>
                 <span class="stats-pct">${c.percent}%</span>
             </div>`).join('');
     }
@@ -275,21 +290,17 @@ window.toggleTopicDone = function (id, isCompleted, btnElement) {
         .then(data => {
             if (data.success) {
                 const topicDiv = btnElement.closest('.draggable-item');
-                const span = topicDiv.querySelector('span');
+                const span = topicDiv.querySelector('.topic-label');
 
                 if (isCompleted) {
-                    span.style.textDecoration = 'line-through';
-                    span.style.color = '#999';
-                    topicDiv.style.opacity = '0.5';
+                    span?.classList.add('done');
+                    topicDiv.classList.add('is-done');
                     topicDiv.setAttribute('draggable', 'false');
-                    topicDiv.style.cursor = 'default';
                     btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, false, this)`);
                 } else {
-                    span.style.textDecoration = 'none';
-                    span.style.color = 'inherit';
-                    topicDiv.style.opacity = '1';
+                    span?.classList.remove('done');
+                    topicDiv.classList.remove('is-done');
                     topicDiv.setAttribute('draggable', 'true');
-                    topicDiv.style.cursor = 'grab';
                     btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, true, this)`);
                 }
                 window.updateStatsUI(data.stats);
@@ -407,11 +418,11 @@ window.submitNewTopic = function () {
         if (data.success) {
             const container = document.getElementById('topicsContainer');
             const newItemHTML = `
-                <div class="draggable-item" draggable="true" data-topic-id="${data.id}" data-course-id="${data.courseId}" data-topic-name="${data.name}" style="background: #f9fafb; border: 1px solid #eee; padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: grab;">
-                    <span style="flex: 1; font-size: 0.9rem;">${data.name}</span>
-                    <div style="display: flex; gap: 8px;">
-                        <button onclick="event.stopPropagation(); toggleTopicDone(${data.id}, true, this)" style="background: none; border: none; cursor: pointer; color: #10b981; font-weight: bold; font-size: 1.1rem;" title="Yeterince ekledim">✓</button>
-                        <button onclick="event.stopPropagation(); deleteTopic(${data.id}, this)" style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: bold; font-size: 1.1rem;" title="Konuyu sil">✕</button>
+                <div class="draggable-item" draggable="true" data-topic-id="${data.id}" data-course-id="${data.courseId}" data-topic-name="${data.name}">
+                    <span class="topic-label">${data.name}</span>
+                    <div class="topic-actions">
+                        <button type="button" class="topic-done-btn" onclick="event.stopPropagation(); toggleTopicDone(${data.id}, true, this)" title="Tamamlandı">✓</button>
+                        <button type="button" class="topic-delete-btn" onclick="event.stopPropagation(); deleteTopic(${data.id}, this)" title="Konuyu sil">✕</button>
                     </div>
                 </div>
             `;
@@ -490,10 +501,45 @@ window.clearCanvasZones = function () {
     });
 };
 
+window.updateCanvasPlanActions = function (planId, readOnly = false) {
+    const show = !!planId && !readOnly;
+    const del = document.getElementById('deletePlanBtn');
+    const cal = document.getElementById('calendarPlanBtn');
+    const assign = document.getElementById('assignPlanBtn');
+    if (del) del.style.display = show ? 'inline-flex' : 'none';
+    if (cal) cal.style.display = show ? 'inline-flex' : 'none';
+    if (assign) assign.style.display = show && window.STUDYNEXUS_USER?.role === 'teacher' ? 'inline-flex' : 'none';
+};
+
+window.setReadOnlyMode = function (readonly) {
+    const a4Canvas = document.getElementById('a4Canvas');
+    if (!a4Canvas) return;
+    a4Canvas.setAttribute('data-read-only', readonly ? '1' : '0');
+    const savePlanBtn = document.getElementById('savePlanBtn');
+    const toolbox = document.querySelector('.toolbox-planner');
+    if (savePlanBtn) savePlanBtn.style.display = readonly ? 'none' : 'inline-flex';
+    if (toolbox) toolbox.style.pointerEvents = readonly ? 'none' : '';
+    if (toolbox) toolbox.style.opacity = readonly ? '0.55' : '';
+    a4Canvas.querySelectorAll('.drop-zone input, .drop-zone button, .planned-item input, .planned-item button').forEach((el) => {
+        if (readonly) el.setAttribute('disabled', 'disabled');
+        else el.removeAttribute('disabled');
+    });
+    a4Canvas.querySelectorAll('.planned-item').forEach((item) => {
+        item.setAttribute('draggable', readonly ? 'false' : 'true');
+    });
+    const titleIn = document.getElementById('planTitleInput');
+    const dateIn = document.getElementById('planDateInput');
+    if (titleIn) titleIn.readOnly = !!readonly;
+    if (dateIn) dateIn.readOnly = !!readonly;
+};
+
 window.closeCanvasEditor = function () {
     const a4Canvas = document.getElementById('a4Canvas');
     a4Canvas.classList.remove('active');
     a4Canvas.setAttribute('data-editing-id', '');
+    a4Canvas.setAttribute('data-read-only', '0');
+    window.setReadOnlyMode(false);
+    window.updateCanvasPlanActions('');
     document.getElementById('createNewBtn').style.display = 'flex';
     const wEmptyState = document.getElementById('workspaceEmptyState');
     if (wEmptyState) wEmptyState.style.display = 'flex';
@@ -512,11 +558,9 @@ window.prependPilePaper = function (planId, title, dateRange) {
     newPaper.innerHTML = `
         <div class="pile-title">${title}</div>
         <div class="pile-date">${dateRange}</div>
-        <div class="pile-actions">
-            <button class="view-plan-btn" onclick="openQuickLook(${planId})">Hızlı Bakış</button>
-            <button class="edit-plan-btn" onclick="editWeeklyPlan(${planId})">Düzenle</button>
-        </div>
     `;
+    newPaper.setAttribute('onclick', `editWeeklyPlan(${planId})`);
+    newPaper.setAttribute('role', 'button');
     pileContainer.prepend(newPaper);
     pileContainer.querySelectorAll('.pile-paper').forEach((paper, index) => {
         paper.style.setProperty('--index', index);
@@ -586,232 +630,139 @@ if (savePlanBtn) {
     });
 }
 
-// --- HIZLI BAKIŞ (QUICK LOOK) FONKSİYONLARI ---
-window.openQuickLook = function(planId) {
-    window.showToast('Plan yükleniyor...', 'success');
-    
-    fetch(`/api/plan/${planId}`)
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            const modal = document.getElementById('quickLookModal');
-            document.getElementById('qlTitle').textContent = data.plan.title;
-            document.getElementById('qlDate').textContent = data.plan.date_range;
-            
-            // 1. KRİTİK NOKTA: Artık içeriği silmiyoruz, sadece günlerin içini (Pazartesi, Salı vb.) temizliyoruz
-            document.querySelectorAll('.read-only-zone').forEach(zone => {
-                zone.innerHTML = '';
-            });
+window.applyPlanToCanvas = function (data, options = {}) {
+    const { readOnly = false, editingId = '' } = options;
+    const a4Canvas = document.getElementById('a4Canvas');
+    if (!a4Canvas || !data.success) return false;
 
-            // 2. Veritabanından gelen dersleri ilgili günün satırına yerleştir
-            if (data.items && data.items.length > 0) {
-                data.items.forEach(item => {
-                    const zone = document.querySelector(`.read-only-zone[data-day="${item.day_name}"]`);
-                    if (zone) {
-                        const readOnlyItem = document.createElement('div');
-                        readOnlyItem.className = 'planned-item';
-                        
-                        // İçeriği tıpkı tuvalde tasarladığın gibi oluştur
-                        readOnlyItem.innerHTML = `
-                            <span class="course-pill" style="font-size: 0.7rem; padding: 4px 8px;">${item.course_name}</span>
-                            <span class="item-title" style="font-weight: 600; color: #333;">${item.topic_name}</span>
-                            <span style="font-size: 0.8rem; color: #888; flex: 1; text-align: left; margin-left: 5px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;">
-                                ${item.description ? item.description : 'Açıklama yok'}
-                            </span>
-                        `;
-                        zone.appendChild(readOnlyItem);
-                    }
-                });
-            }
+    a4Canvas.setAttribute('data-editing-id', editingId || '');
+    document.getElementById('planTitleInput').value = data.plan.title;
+    document.getElementById('planDateInput').value = data.plan.date_range;
+    window.clearCanvasZones();
 
-            // 3. Tasarımın bozulmaması için çok ders olan günleri (Kompakt/İki Sütunlu) ayarla
-            document.querySelectorAll('.read-only-zone').forEach(zone => {
-                const count = zone.children.length;
-                zone.classList.remove('compact', 'two-columns');
-                if (count >= 3 && count <= 4) zone.classList.add('compact');
-                if (count >= 5) zone.classList.add('two-columns');
-            });
-
-            modal.setAttribute('data-current-plan-id', planId);
-            modal.setAttribute('data-read-only', data.readOnly ? '1' : '0');
-
-            const editBtn = document.querySelector('.edit-plan-btn-modal');
-            const delBtn = document.getElementById('qlDeleteBtn');
-            const shareSelect = document.getElementById('shareClassSelect');
-            const shareBtn = document.getElementById('sharePlanBtn');
-
-            const assignBtn = document.getElementById('assignPlanBtn');
-            if (data.readOnly) {
-                if (editBtn) editBtn.style.display = 'none';
-                if (delBtn) delBtn.style.display = 'none';
-                if (assignBtn) assignBtn.style.display = 'none';
-            } else {
-                if (editBtn) editBtn.style.display = 'inline-block';
-                if (delBtn) delBtn.style.display = 'inline-block';
-                if (assignBtn && window.STUDYNEXUS_USER?.role === 'teacher') {
-                    assignBtn.style.display = 'inline-block';
-                }
-            }
-
-            modal.classList.add('active');
-        } else {
-            window.showToast('Plan detayları alınamadı!', 'error');
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        window.showToast('Sunucu bağlantı hatası', 'error');
+    (data.items || []).forEach((item) => {
+        const zone = document.querySelector(`.drop-zone[data-day="${item.day_name}"]`);
+        if (!zone) return;
+        const el = window.createPlannedItemElement(
+            item.topic_id,
+            null,
+            item.topic_name || 'Konu',
+            item.description || ''
+        );
+        zone.appendChild(el);
+        window.updateZoneLayout(zone);
     });
+
+    window.setReadOnlyMode(readOnly);
+    window.updateCanvasPlanActions(editingId, readOnly);
+
+    a4Canvas.classList.add('active');
+    document.getElementById('createNewBtn').style.display = 'none';
+    const wEmptyState = document.getElementById('workspaceEmptyState');
+    if (wEmptyState) wEmptyState.style.display = 'none';
+
+    const savePlanBtn = document.getElementById('savePlanBtn');
+    if (savePlanBtn) {
+        savePlanBtn.textContent = readOnly ? '👁️ Görüntüleme' : (editingId ? '💾 Güncelle' : '💾 Kaydet');
+        savePlanBtn.style.display = readOnly ? 'none' : 'inline-flex';
+    }
+    return true;
 };
 
-// Modal Kapatma
-window.closeQuickLook = function () {
-    document.getElementById('quickLookModal').classList.remove('active');
-};
+window.editWeeklyPlan = function (planId, options = {}) {
+    const url = options.studentId
+        ? `/api/coaching/students/${options.studentId}/plan/${planId}`
+        : `/api/plan/${planId}`;
 
-window.editWeeklyPlan = function (planId) {
-    fetch(`/api/plan/${planId}`)
+    fetch(url)
         .then((res) => res.json())
         .then((data) => {
-            if (!data.success || data.readOnly) {
-                window.showToast('Bu plan düzenlenemez.', 'error');
+            if (!data.success) {
+                window.showToast('Plan yüklenemedi.', 'error');
                 return;
             }
 
-            window.closeQuickLook();
-            const a4Canvas = document.getElementById('a4Canvas');
-            a4Canvas.setAttribute('data-editing-id', planId);
-            document.getElementById('planTitleInput').value = data.plan.title;
-            document.getElementById('planDateInput').value = data.plan.date_range;
-            window.clearCanvasZones();
+            const readOnly = options.readOnly || !!data.readOnly;
 
-            (data.items || []).forEach((item) => {
-                const zone = document.querySelector(`.drop-zone[data-day="${item.day_name}"]`);
-                if (!zone) return;
-                const el = window.createPlannedItemElement(
-                    item.topic_id,
-                    null,
-                    item.topic_name || 'Konu',
-                    item.description || ''
-                );
-                zone.appendChild(el);
-                window.updateZoneLayout(zone);
+            window.applyPlanToCanvas(data, {
+                readOnly,
+                editingId: readOnly ? '' : String(planId)
             });
 
-            a4Canvas.classList.add('active');
-            document.getElementById('createNewBtn').style.display = 'none';
-            const wEmptyState = document.getElementById('workspaceEmptyState');
-            if (wEmptyState) wEmptyState.style.display = 'none';
-            document.getElementById('savePlanBtn').textContent = '💾 Güncelle';
-            window.showToast('Plan düzenleme modunda.', 'success');
-        });
-};
+            const canvasEl = document.getElementById('a4Canvas');
+            if (options.studentId) canvasEl.setAttribute('data-view-student-id', options.studentId);
+            else canvasEl.removeAttribute('data-view-student-id');
 
-window.editFromQuickLook = function () {
-    const planId = document.getElementById('quickLookModal').getAttribute('data-current-plan-id');
-    window.editWeeklyPlan(planId);
-};
-
-// --- VERİTABANINDAN HAFTALIK PLAN SİLME ---
-window.deleteWeeklyPlan = function () {
-    const modal = document.getElementById('quickLookModal');
-    const planId = modal.getAttribute('data-current-plan-id');
-
-    if (!planId) return;
-
-    if (confirm('Bu planı ve içindeki tüm programı kalıcı olarak silmek istediğinize emin misiniz?')) {
-        fetch('/delete-weekly-plan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ planId: planId })
+            window.showAppPanel?.('planner');
+            if (!readOnly) window.showToast('Plan düzenleme modunda.', 'success');
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    window.showToast('Plan başarıyla silindi.', 'success');
-                    window.closeQuickLook(); // Pencereyi kapat
-
-                    // --- 1. SAYFA YENİLEMEDEN YIĞINDAN (PILE) UÇURMA SİHRİ ---
-                    const pileContainer = document.querySelector('.pile-container');
-                    const papers = pileContainer.querySelectorAll('.pile-paper');
-
-                    papers.forEach(paper => {
-                        const btn = paper.querySelector('.view-plan-btn');
-                        if (btn && btn.getAttribute('onclick').includes(planId)) {
-
-                            paper.style.transition = 'all 0.3s ease';
-                            paper.style.transform = 'scale(0.8) rotate(-5deg)';
-                            paper.style.opacity = '0';
-
-                            setTimeout(() => {
-                                paper.remove();
-
-                                const remainingPapers = pileContainer.querySelectorAll('.pile-paper');
-                                if (remainingPapers.length === 0) {
-                                    pileContainer.innerHTML = `
-                                    <div class="pile-empty-state">
-                                        <div style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;">🗂️</div>
-                                        <div class="pile-title" style="color: #a39fbb;">Kayıtlı Plan Yok</div>
-                                        <div class="pile-date">İlk haftalık planınızı oluşturup kaydedin.</div>
-                                    </div>
-                                `;
-                                } else {
-                                    remainingPapers.forEach((p, idx) => {
-                                        p.style.setProperty('--index', idx);
-                                        p.style.zIndex = 100 - idx;
-                                    });
-                                }
-                            }, 300);
-                        }
-                    });
-
-                    // --- 2. YENİ: TAKVİMDEKİ MOR NOKTAYI VE DOLU KUTUYU TEMİZLEME SİHRİ ---
-                    const calendarBoxes = document.querySelectorAll('.cal-week-box');
-                    calendarBoxes.forEach(box => {
-                        const onclickAttr = box.getAttribute('onclick');
-
-                        // Eğer takvimdeki bu kutu, az önce sildiğimiz plana aitse...
-                        if (onclickAttr && onclickAttr.includes(`openQuickLook(${planId})`)) {
-
-                            // Kutunun mor tasarımını sil, eski kesik çizgili haline getir
-                            box.classList.remove('filled');
-                            box.classList.add('empty');
-                            box.title = 'Boş Hafta';
-
-                            // Tıklanabilirlik özelliğini kaldır (Çünkü plan artık yok)
-                            box.removeAttribute('onclick');
-
-                            // İçindeki mor noktayı bul ve yok et
-                            const indicator = box.querySelector('.week-indicator');
-                            if (indicator) {
-                                // Tatlı bir küçülme efektiyle kaybolsun
-                                indicator.style.transition = 'all 0.2s ease';
-                                indicator.style.transform = 'scale(0)';
-                                setTimeout(() => indicator.remove(), 200);
-                            }
-                        }
-                    });
-
-                } else {
-                    window.showToast(data.message || 'Plan silinirken bir hata meydana geldi.', 'error');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                window.showToast('Sunucu bağlantısı koptu.', 'error');
-            });
-    }
+        .catch(() => window.showToast('Sunucu bağlantı hatası', 'error'));
 };
 
-// --- 1. TAKVİME EKLE BUTONUNA BASILINCA (Hızlı Bakış içinden) ---
+window.deleteWeeklyPlan = function () {
+    const a4Canvas = document.getElementById('a4Canvas');
+    const planId = a4Canvas?.getAttribute('data-editing-id');
+    if (!planId || a4Canvas.getAttribute('data-read-only') === '1') return;
+
+    if (!confirm('Bu planı ve içindeki tüm programı kalıcı olarak silmek istediğinize emin misiniz?')) return;
+
+    fetch('/delete-weekly-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId })
+    })
+        .then((res) => res.json())
+        .then((data) => {
+            if (!data.success) {
+                window.showToast(data.message || 'Plan silinemedi.', 'error');
+                return;
+            }
+            window.showToast('Plan silindi.', 'success');
+            window.closeCanvasEditor();
+
+            const pileContainer = document.querySelector('.pile-container');
+            const paper = pileContainer?.querySelector(`.pile-paper[data-plan-id="${planId}"]`);
+            if (paper) {
+                paper.style.transition = 'all 0.3s ease';
+                paper.style.transform = 'scale(0.85) rotate(-4deg)';
+                paper.style.opacity = '0';
+                setTimeout(() => {
+                    paper.remove();
+                    const remaining = pileContainer.querySelectorAll('.pile-paper');
+                    if (remaining.length === 0) {
+                        pileContainer.innerHTML = `
+                            <div class="pile-empty-state">
+                                <div style="font-size:3rem;margin-bottom:10px;opacity:0.5;">🗂️</div>
+                                <div class="pile-title" style="color:#a39fbb;">Kayıtlı Plan Yok</div>
+                                <div class="pile-date">İlk haftalık planınızı oluşturup kaydedin.</div>
+                            </div>`;
+                    } else {
+                        remaining.forEach((p, idx) => {
+                            p.style.setProperty('--index', idx);
+                            p.style.zIndex = 100 - idx;
+                        });
+                    }
+                }, 300);
+            }
+
+            document.querySelectorAll('.cal-week-box').forEach((box) => {
+                const onclickAttr = box.getAttribute('onclick') || '';
+                if (!onclickAttr.includes(`editWeeklyPlan(${planId})`)) return;
+                box.classList.remove('filled');
+                box.classList.add('empty');
+                box.removeAttribute('onclick');
+                const indicator = box.querySelector('.week-indicator');
+                if (indicator) indicator.remove();
+            });
+        })
+        .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
+};
+
 window.addToCalendar = function () {
-    const planId = document.getElementById('quickLookModal').getAttribute('data-current-plan-id');
-
-    // Hızlı Bakış penceresini kapat, Takvim penceresini aç
-    window.closeQuickLook();
-
+    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
+    if (!planId) return;
     const calModal = document.getElementById('calendarModal');
-    calModal.setAttribute('data-plan-id', planId); // ID'yi yeni pencereye taşıdık
+    calModal.setAttribute('data-plan-id', planId);
     calModal.classList.add('active');
 };
 
@@ -856,8 +807,7 @@ window.confirmCalendarAssignment = function () {
                     box.classList.add('filled');
                     box.title = 'Atanan Plan';
 
-                    // YENİ: Kutuyu anında tıklanabilir yap ve Hızlı Bakış'a bağla!
-                    box.setAttribute('onclick', `openQuickLook(${planId})`);
+                    box.setAttribute('onclick', `editWeeklyPlan(${planId})`);
 
                     if (!box.querySelector('.week-indicator')) {
                         box.insertAdjacentHTML('beforeend', '<div class="week-indicator"></div>');
@@ -894,11 +844,13 @@ window.loadCoachingData = function () {
                     return;
                 }
                 list.innerHTML = d.students.map(s => `
-                    <li>
-                        <strong>${s.full_name || s.username}</strong>
-                        <span style="color:#8b5cf6;font-weight:600;"> ${s.stats.percent}%</span>
-                        <div style="margin-top:6px;">
-                            <button class="view-plan-btn" onclick="viewStudentOverview(${s.id})">Program & İlerleme</button>
+                    <li class="teacher-student-card">
+                        <div class="teacher-student-head">
+                            <strong>${s.full_name || s.username}</strong>
+                            <span class="teacher-student-pct">${s.stats.percent}%</span>
+                        </div>
+                        <div class="teacher-student-actions">
+                            <button type="button" class="view-plan-btn" onclick="viewStudentOverview(${s.id})">Programlar</button>
                         </div>
                     </li>`).join('');
                 const sel = document.getElementById('assignStudentModalSelect');
@@ -946,19 +898,20 @@ window.viewStudentOverview = function (studentId) {
             const done = d.topics.filter(t => t.is_completed).length;
             const body = document.getElementById('studentOverviewBody');
             body.innerHTML = `
+                <h4 class="so-section-title">Haftalık programlar</h4>
+                ${d.weeklyPlans.length ? `<div class="student-plans-grid">${d.weeklyPlans.map(p =>
+                    `<div class="student-plan-row">
+                        <div><strong>${p.title}</strong><small>${p.date_range}</small></div>
+                        <button type="button" class="view-plan-btn" onclick="viewStudentPlan(${studentId},${p.id})">Programı aç</button>
+                    </div>`).join('')}</div>` : '<p class="week-panel-empty">Henüz plan yok.</p>'}
+                <h4 class="so-section-title">İlerleme özeti</h4>
                 <div class="student-overview-stats">
-                    <div class="stats-ring" style="--p:${d.stats.percent}"><span>${d.stats.percent}%</span></div>
-                    <div><strong>${done}/${d.topics.length}</strong> konu<br>${d.stats.courseCount} ders</div>
+                    <div class="stats-ring ring-animate" style="--p:${d.stats.percent}"><span>${d.stats.percent}%</span></div>
+                    <div><strong>${done}/${d.topics.length}</strong> konu tamamlandı<br>${d.stats.courseCount} ders</div>
                 </div>
-                <h4>Haftalık Planlar</h4>
-                ${d.weeklyPlans.length ? d.weeklyPlans.map(p =>
-                    `<div class="student-plan-row">${p.title} <small>${p.date_range}</small>
-                     <button class="view-plan-btn" onclick="viewStudentPlan(${studentId},${p.id})">Gör</button></div>`
-                ).join('') : '<p>Plan yok.</p>'}
-                <h4>Konular</h4>
-                <ul class="week-task-list">${d.topics.map(t =>
-                    `<li style="${t.is_completed ? 'opacity:0.5;text-decoration:line-through' : ''}">
-                     ${t.course_name} — ${t.name}</li>`).join('')}</ul>`;
+                <ul class="week-task-list so-topic-list">${d.topics.slice(0, 12).map(t =>
+                    `<li class="${t.is_completed ? 'done' : ''}">${t.course_name} — ${t.name}</li>`).join('')}
+                    ${d.topics.length > 12 ? '<li class="week-panel-empty">…ve diğer konular</li>' : ''}</ul>`;
             document.getElementById('studentOverviewModal').classList.add('active');
         });
 };
@@ -968,36 +921,14 @@ window.closeStudentOverview = function () {
 };
 
 window.viewStudentPlan = function (studentId, planId) {
-    fetch(`/api/coaching/students/${studentId}/plan/${planId}`)
-        .then(r => r.json())
-        .then(d => {
-            if (!d.success) return;
-            window.closeStudentOverview();
-            document.getElementById('qlTitle').textContent = d.plan.title + ' (Öğrenci)';
-            document.getElementById('qlDate').textContent = d.plan.date_range;
-            document.querySelectorAll('.read-only-zone').forEach(z => z.innerHTML = '');
-            d.items.forEach(item => {
-                const zone = document.querySelector(`.read-only-zone[data-day="${item.day_name}"]`);
-                if (!zone) return;
-                const el = document.createElement('div');
-                el.className = 'planned-item';
-                el.innerHTML = `<span class="course-pill" style="font-size:0.7rem">${item.course_name}</span>
-                    <span class="item-title">${item.topic_name}</span>
-                    <span style="font-size:0.8rem;color:#888">${item.description || ''}</span>`;
-                zone.appendChild(el);
-            });
-            document.getElementById('quickLookModal').setAttribute('data-read-only', '1');
-            document.getElementById('qlDeleteBtn').style.display = 'none';
-            document.querySelector('.edit-plan-btn-modal').style.display = 'none';
-            document.getElementById('assignPlanBtn').style.display = 'none';
-            document.getElementById('quickLookModal').classList.add('active');
-        });
+    window.closeStudentOverview();
+    window.editWeeklyPlan(planId, { studentId, readOnly: true });
 };
 
 window.openAssignPlanModal = function () {
-    const planId = document.getElementById('quickLookModal').getAttribute('data-current-plan-id');
+    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
+    if (!planId) return window.showToast('Önce bir plan kaydedin veya açın.', 'error');
     document.getElementById('assignPlanModal').setAttribute('data-plan-id', planId);
-    window.closeQuickLook();
     document.getElementById('assignPlanModal').classList.add('active');
 };
 
@@ -1012,7 +943,7 @@ window.selectAssignWeek = function (btn, n) {
 };
 
 window.confirmAssignPlan = function () {
-    const planId = document.getElementById('quickLookModal').getAttribute('data-current-plan-id')
+    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id')
         || document.getElementById('assignPlanModal').getAttribute('data-plan-id');
     const studentId = document.getElementById('assignStudentModalSelect').value;
     const month = document.getElementById('assignMonthSelect').value;

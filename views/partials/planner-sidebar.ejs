@@ -1,0 +1,39 @@
+<div class="left-sidebar">
+    <div class="pile-container">
+        <% if (!weeklyPlans || weeklyPlans.length === 0) { %>
+            <div class="pile-empty-state">
+                <div style="font-size:3rem;margin-bottom:10px;opacity:0.5;">🗂️</div>
+                <div class="pile-title" style="color:#a39fbb;">Kayıtlı Plan Yok</div>
+                <div class="pile-date">İlk haftalık planınızı oluşturup kaydedin.</div>
+            </div>
+        <% } else { weeklyPlans.forEach((plan, index) => { %>
+            <div class="pile-paper" style="--index:<%= index %>;" data-plan-id="<%= plan.id %>" onclick="editWeeklyPlan(<%= plan.id %>)" role="button" tabindex="0">
+                <div class="pile-title"><%= plan.title %></div>
+                <div class="pile-date"><%= plan.date_range %></div>
+            </div>
+        <% }) } %>
+    </div>
+    <div class="calendar-widget">
+        <div class="cal-header"><h3>🗓️ Takvim</h3></div>
+        <div class="cal-body">
+            <% dynamicMonths.forEach(m => { %>
+                <div class="cal-month-group">
+                    <div class="cal-month-name"><%= m.name %> <%= m.year %></div>
+                    <div class="cal-weeks-grid">
+                        <% for(let w=1; w<=4; w++) {
+                            let event = calendarEvents.find(e => e.target_month === m.name && e.target_week == w);
+                            if (event && !weeklyPlans.some(p => p.id === event.plan_id)) event = null;
+                        %>
+                            <div class="cal-week-box <%= event ? 'filled' : 'empty' %>"
+                                 id="cal-box-<%= m.name %>-<%= w %>"
+                                 <% if(event) { %> onclick="editWeeklyPlan(<%= event.plan_id %>)" <% } %>>
+                                <span class="week-num"><%= w %>. Hafta</span>
+                                <% if(event) { %><div class="week-indicator"></div><% } %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</div>

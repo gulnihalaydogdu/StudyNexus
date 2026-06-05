@@ -1,0 +1,48 @@
+<aside class="toolbox toolbox-planner">
+    <div class="toolbox-drag-panel action-card">
+        <h3>📘 Ders & Konu</h3>
+        <form id="addCourseForm" class="toolbox-inline-form toolbox-form-course" onsubmit="event.preventDefault(); submitNewCourse();">
+            <input type="text" id="newCourseInput" placeholder="Yeni Ders (Örn: Kimya)" required>
+            <button type="submit" class="toolbox-add-btn">+</button>
+        </form>
+        <form id="addTopicForm" class="toolbox-inline-form" onsubmit="event.preventDefault(); submitNewTopic();">
+            <select id="topicCourseSelect" required>
+                <option value="" disabled selected>Ders...</option>
+                <% courses.forEach(course => { %>
+                    <option value="<%= course.id %>"><%= course.name %></option>
+                <% }) %>
+            </select>
+            <input type="text" id="newTopicInput" placeholder="Konu" required>
+            <button type="submit" class="toolbox-add-btn">+</button>
+        </form>
+        <div class="course-tags-wrapper">
+            <span class="tags-title">Dersler</span>
+            <div id="courseTagsContainer" class="tags-container">
+                <% courses.forEach(course => { %>
+                    <div class="course-pill" data-course-id="<%= course.id %>" onclick="selectCourseInCombo(<%= course.id %>)">
+                        <span class="pill-text"><%= course.name %></span>
+                        <button type="button" class="pill-delete-btn" onclick="event.stopPropagation(); deleteCourse(<%= course.id %>, this)">×</button>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+        <div class="unassigned-topics topics-scroll">
+            <h3>📌 Sürükle — Kağıda Yerleştir</h3>
+            <div class="draggable-list" id="topicsContainer">
+                <% topics.forEach(topic => { %>
+                    <div class="draggable-item<%= topic.is_completed ? ' is-done' : '' %>"
+                         draggable="<%= topic.is_completed ? 'false' : 'true' %>"
+                         data-topic-id="<%= topic.id %>"
+                         data-course-id="<%= topic.course_id %>"
+                         data-topic-name="<%= topic.name %>">
+                        <span class="topic-label<%= topic.is_completed ? ' done' : '' %>"><%= topic.name %></span>
+                        <div class="topic-actions">
+                            <button type="button" class="topic-done-btn" onclick="event.stopPropagation(); toggleTopicDone(<%= topic.id %>, <%= topic.is_completed ? 'false' : 'true' %>, this)" title="Tamamlandı">✓</button>
+                            <button type="button" class="topic-delete-btn" onclick="event.stopPropagation(); deleteTopic(<%= topic.id %>, this)" title="Konuyu sil">✕</button>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+</aside>

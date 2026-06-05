@@ -177,6 +177,35 @@ body {
 .a4-header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
 .a4-header h2 { margin: 0; color: var(--text-main); font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
 
+.plan-title-input {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.5px;
+}
+.plan-date-input {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    border: none;
+    outline: none;
+    background: transparent;
+    margin-top: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+.plan-title-input::placeholder { color: #c4b5fd; font-weight: 600; }
+.plan-date-input::placeholder { color: #d1d5db; font-weight: 500; }
+
 /* Büyük Mor Artı Butonunu Sağ Üste Taşıyoruz (Tasarımdaki gibi) */
 /* Büyük Mor Artı Butonu (Tam Sağ Üst Köşe) */
 .add-btn {
@@ -283,6 +312,48 @@ body {
     border-bottom: 1px solid var(--border); /* PDF satırı hissiyatı */
     animation: fadeIn 0.3s ease;
 }
+
+.draggable-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #f9fafb;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: grab;
+    transition: opacity 0.2s ease;
+}
+.draggable-item.is-done {
+    opacity: 0.5;
+    cursor: default;
+}
+.draggable-item .topic-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+.draggable-item .topic-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+}
+.topic-done-btn,
+.topic-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0 2px;
+}
+.topic-done-btn { color: #10b981; }
+.topic-delete-btn { color: #ef4444; }
 
 /* Sürüklenen orijinal öğenin kaybolmaması ama görsel bir efekt vermesi için */
 .draggable-item.dragging {
@@ -451,11 +522,9 @@ body {
     transform: scale(1.2) rotate(90deg); /* Küçük tatlı bir animasyon */
 }
 
-/* --- PDF İNDİR BUTONU (Kağıdın altına, sağ köşeye taşındı) --- */
+/* --- PDF / Kaydet (tuval araç çubuğunda) --- */
 .download-pdf-btn {
-    position: absolute;
-    bottom: -65px; /* Butonu kağıdın sınırlarından çıkarıp hemen altına iter */
-    right: 0;      /* Kağıdın sağ kenarıyla jilet gibi hizalar */
+    position: static;
     background: var(--primary-gradient);
     color: white;
     border: none;
@@ -539,11 +608,8 @@ body {
     text-overflow: ellipsis;
 }
 
-/* --- KAYDET BUTONU (PDF butonunun solunda, kağıdın altında) --- */
 .save-plan-btn {
-    position: absolute;
-    bottom: -65px; /* PDF butonu ile aynı hizada aşağıda */
-    right: 150px;  /* PDF butonunun hemen solunda durması için boşluk */
+    position: static;
     background: #10b981; /* Başarı yeşili */
     color: white;
     border: none;
@@ -864,37 +930,172 @@ body {
     filter: drop-shadow(0 15px 25px rgba(139, 92, 246, 0.15));
 }
 
-/* --- HIZLI BAKIŞ (QUICK LOOK) A4 ADAPTASYONU --- */
-#quickLookModal .modal-content {
-    max-width: 850px; /* A4 kağıdının sığması için pencereyi genişlettik */
-    max-height: 90vh;
-    background: #fcfbfe;
+/* --- Sekme tabanlı ana sayfa --- */
+.app-shell { width: 100%; }
+.app-panel { display: none; animation: panelFade 0.25s ease; }
+.app-panel.active { display: block; }
+@keyframes panelFade {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.read-only-zone {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 5px 10px;
-    align-content: flex-start;
-    min-height: 40px;
-}
-
-/* Okunabilir A4 modunda satırların içine eklenen ders kutuları */
-.read-only-zone .planned-item {
-    cursor: default; 
-    box-shadow: none;
-    border: 1px solid #e9e4f4;
+.app-nav { display: flex; gap: 8px; flex: 1; justify-content: center; flex-wrap: wrap; margin: 0 16px; }
+.app-nav .nav-chip {
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 8px 14px;
     background: white;
-    border-radius: 8px;
-    padding: 4px 10px;
-    margin-bottom: 4px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+.app-nav .nav-chip:hover { border-color: var(--primary); color: var(--primary); }
+.app-nav .nav-chip.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
-.nav-links { display: flex; gap: 8px; flex: 1; justify-content: center; flex-wrap: wrap; }
-.nav-chip { text-decoration: none; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); padding: 6px 12px; background: white; border-radius: 20px; border: 1px solid var(--border); }
-.nav-chip:hover { border-color: var(--primary); color: var(--primary); }
+.brand-sub { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); -webkit-text-fill-color: var(--text-muted); margin-left: 8px; }
+.panel-center-card {
+    max-width: 720px;
+    margin: 32px auto;
+    padding: 28px 32px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+}
+.stats-card-wide { max-width: 560px; }
+.stats-card-wide .stats-ring { width: 110px; height: 110px; }
+.stats-card-wide .stats-ring::before { inset: 12px; }
+.stats-card-wide .stats-ring span { font-size: 1.1rem; }
+
+@property --p {
+    syntax: '<number>';
+    inherits: true;
+    initial-value: 0;
+}
+.stats-ring.ring-animate {
+    transition: --p 0.85s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+
+.teacher-home {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) 2fr;
+    gap: 24px;
+    padding: 32px 40px;
+    align-items: start;
+}
+.teacher-student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.teacher-student-card {
+    background: #faf8ff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+}
+.teacher-student-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.teacher-student-pct { color: var(--primary); font-weight: 700; }
+.invite-code-big { display: block; font-size: 1.8rem; letter-spacing: 0.12em; padding: 16px; background: #f5f3ff; border-radius: 12px; margin-top: 12px; }
+
+/* Sağ panel — ders/konu formları */
+.toolbox-inline-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 0;
+}
+.toolbox-form-course {
+    margin-bottom: 15px;
+}
+.toolbox-inline-form + .toolbox-inline-form,
+.toolbox-form-course + .toolbox-inline-form {
+    margin-bottom: 18px;
+}
+.toolbox-inline-form input,
+.toolbox-inline-form select {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+}
+.toolbox-add-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.toolbox-add-btn:hover { background: #111; }
+
+/* Tuval araç çubuğu — kağıdın altında */
+.workspace { position: relative; }
+.a4-template { position: relative; margin-bottom: 80px; }
+.canvas-toolbar-bottom {
+    position: absolute;
+    bottom: -65px;
+    left: 0;
+    right: 0;
+    top: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    z-index: 20;
+}
+.canvas-toolbar-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.canvas-action-btn {
+    background: white;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.canvas-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+.canvas-action-btn.danger { color: #ef4444; border-color: #fecaca; }
+.canvas-action-btn.danger:hover { background: #fef2f2; }
+.canvas-action-btn.accent { background: #06b6d4; color: white; border-color: transparent; }
+.canvas-action-btn.accent:hover { filter: brightness(1.05); }
+
+.topic-label.done { text-decoration: line-through; color: #999; }
+.student-plans-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.student-plan-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f9f7ff;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.student-plan-row small { display: block; color: var(--text-muted); margin-top: 4px; }
+.so-section-title { margin: 16px 0 10px; font-size: 0.95rem; }
+.so-topic-list .done { opacity: 0.5; text-decoration: line-through; }
+.student-overview-stats { display: flex; gap: 16px; align-items: center; margin-bottom: 8px; }
+.coaching-form { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.coaching-form input { flex: 1; min-width: 140px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+.coaching-list { list-style: none; padding: 0; margin: 16px 0 0; }
+.coaching-hint { color: var(--text-muted); font-size: 0.9rem; }
 
 .stats-card h3, .daily-card h3, .class-card h3 { margin-top: 0; font-size: 1.1rem; color: #333; }
 .stats-overall { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
@@ -904,7 +1105,7 @@ body {
 .stats-muted { margin: 4px 0 0; font-size: 0.75rem; color: var(--text-muted); }
 .stats-course-row { display: grid; grid-template-columns: 1fr 2fr auto; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 0.8rem; }
 .stats-bar { height: 8px; background: #ede9fe; border-radius: 4px; overflow: hidden; }
-.stats-bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 4px; }
+.stats-bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 4px; transition: width 0.75s cubic-bezier(0.34, 1.1, 0.64, 1); }
 .stats-pct { font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
 
 .daily-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }

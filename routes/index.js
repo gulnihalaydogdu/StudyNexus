@@ -33,19 +33,40 @@ router.get('/', requireAuth, (req, res) => {
         const stats = buildStats(courses, topics);
         const weekPanel = getWeekPanelForUser(userId, calendarEvents);
 
-        res.render('dashboard', {
+        const monthNames = [
+            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+        const now = new Date();
+        const dynamicMonths = [];
+        for (let i = 0; i < 3; i++) {
+            const calcMonth = (now.getMonth() + i) % 12;
+            const calcYear = now.getFullYear() + Math.floor((now.getMonth() + i) / 12);
+            dynamicMonths.push({ name: monthNames[calcMonth], year: calcYear });
+        }
+
+        const viewData = {
             courses,
             topics,
             weeklyPlans: weeklyPlans || [],
             calendarEvents: calendarEvents || [],
-            stats,
-            weekPanel,
+            dynamicMonths,
             user: {
                 username: req.session.username,
                 role: req.session.role,
                 id: userId
             },
             flashMsg
+        };
+
+        if (req.session.role === 'teacher') {
+            return res.render('teacher-dashboard', viewData);
+        }
+
+        res.render('dashboard-student', {
+            ...viewData,
+            stats,
+            weekPanel
         });
     } catch (err) {
         console.error(err);
