@@ -42,11 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const deletePlanBtn = document.getElementById('deletePlanBtn');
     const calendarPlanBtn = document.getElementById('calendarPlanBtn');
     const assignPlanBtn = document.getElementById('assignPlanBtn');
-    const templatePlanBtn = document.getElementById('templatePlanBtn');
     if (deletePlanBtn) deletePlanBtn.addEventListener('click', () => window.deleteWeeklyPlan());
     if (calendarPlanBtn) calendarPlanBtn.addEventListener('click', () => window.addToCalendar());
     if (assignPlanBtn) assignPlanBtn.addEventListener('click', () => window.openAssignPlanModal());
-    if (templatePlanBtn) templatePlanBtn.addEventListener('click', () => window.togglePlanTemplate());
 
     // --- 2. SÜRÜKLE BIRAK (DRAG & DROP) MOTORU ---
     const draggables = document.querySelectorAll('.draggable-item');
@@ -305,6 +303,8 @@ window.showToast = function (message, type = 'success') {
 // --- 4. ARAYÜZ (UI) ETKİLEŞİM FONKSİYONLARI ---
 
 let activeCourseFilter = null;
+let topicSearchQuery = '';
+let topicStatusFilter = 'all';
 
 window.applyCourseTopicFilter = function () {
     document.querySelectorAll('#courseTagsContainer .course-pill[data-course-id]').forEach((pill) => {
@@ -312,19 +312,65 @@ window.applyCourseTopicFilter = function () {
         pill.classList.toggle('active', activeCourseFilter !== null && pillId === activeCourseFilter);
     });
 
+    const query = topicSearchQuery.trim().toLowerCase();
     const items = document.querySelectorAll('#topicsContainer .draggable-item');
     let visibleCount = 0;
     items.forEach((item) => {
-        const show = activeCourseFilter === null || item.getAttribute('data-course-id') === activeCourseFilter;
+        const matchCourse = activeCourseFilter === null
+            || item.getAttribute('data-course-id') === activeCourseFilter;
+        const name = (item.getAttribute('data-topic-name') || '').toLowerCase();
+        const matchSearch = !query || name.includes(query);
+        const isDone = item.classList.contains('is-done');
+        const matchStatus = topicStatusFilter === 'all'
+            || (topicStatusFilter === 'done' && isDone)
+            || (topicStatusFilter === 'todo' && !isDone);
+        const show = matchCourse && matchSearch && matchStatus;
         item.style.display = show ? '' : 'none';
         if (show) visibleCount += 1;
     });
 
     const emptyHint = document.getElementById('topicsFilterEmpty');
     if (emptyHint) {
-        emptyHint.style.display =
-            activeCourseFilter !== null && visibleCount === 0 ? 'block' : 'none';
+        const filtersActive = activeCourseFilter !== null || query !== '' || topicStatusFilter !== 'all';
+        if (visibleCount === 0) {
+            emptyHint.textContent = filtersActive ? 'Filtreyle eşleşen konu yok.' : 'Henüz konu yok.';
+            emptyHint.style.display = filtersActive ? 'block' : 'none';
+        } else {
+            emptyHint.style.display = 'none';
+        }
     }
+};
+
+window.setTopicSearch = function (value) {
+    topicSearchQuery = value || '';
+    window.applyCourseTopicFilter();
+};
+
+window.setTopicStatusFilter = function (status, btn) {
+    topicStatusFilter = status;
+    document.querySelectorAll('#topicStatusFilter button').forEach((b) => {
+        b.classList.toggle('active', b === btn);
+    });
+    window.applyCourseTopicFilter();
+};
+
+window.filterPlans = function (value) {
+    const query = (value || '').trim().toLowerCase();
+    const container = document.querySelector('.left-sidebar .pile-container');
+    if (container) container.classList.toggle('searching', query !== '');
+
+    const papers = document.querySelectorAll('.left-sidebar .pile-container .pile-paper');
+    let visible = 0;
+    papers.forEach((paper) => {
+        const title = (paper.querySelector('.pile-title')?.textContent || '').toLowerCase();
+        const date = (paper.querySelector('.pile-date')?.textContent || '').toLowerCase();
+        const show = !query || title.includes(query) || date.includes(query);
+        paper.style.display = show ? '' : 'none';
+        if (show) visible += 1;
+    });
+
+    const emptyEl = document.getElementById('planSearchEmpty');
+    if (emptyEl) emptyEl.style.display = query !== '' && visible === 0 ? 'block' : 'none';
 };
 
 // Ders etiketine tıklayınca: seç, filtrele (tekrar tıklayınca tüm konular)
@@ -638,6 +684,7 @@ window.toggleTopicDone = function (id, isCompleted, btnElement) {
                     });
                     window.updateStatsUI(data.stats);
                     window.updateGamificationUI(data.gamification);
+                    window.applyCourseTopicFilter?.();
                 }
             }).catch(err => console.error(err));
     };
@@ -938,11 +985,9 @@ window.updateCanvasPlanActions = function (planId, readOnly = false) {
     const del = document.getElementById('deletePlanBtn');
     const cal = document.getElementById('calendarPlanBtn');
     const assign = document.getElementById('assignPlanBtn');
-    const template = document.getElementById('templatePlanBtn');
     if (del) del.style.display = show ? 'inline-flex' : 'none';
     if (cal) cal.style.display = show ? 'inline-flex' : 'none';
     if (assign) assign.style.display = show && window.STUDYNEXUS_USER?.role === 'teacher' ? 'inline-flex' : 'none';
-    if (template) template.style.display = show && window.STUDYNEXUS_USER?.role === 'teacher' ? 'inline-flex' : 'none';
 };
 
 window.setReadOnlyMode = function (readonly) {
@@ -1280,25 +1325,6 @@ window.deleteWeeklyPlan = function () {
         .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
 };
 
-window.togglePlanTemplate = function () {
-    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
-    if (!planId) return window.showToast('Önce bir plan açın veya kaydedin.', 'error');
-
-    fetch(`/api/plan/${planId}/template`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-    })
-        .then((res) => res.json())
-        .then((data) => {
-            if (!data.success) {
-                window.showToast(data.message || 'Şablon güncellenemedi.', 'error');
-                return;
-            }
-            window.showToast(data.message, 'success');
-        })
-        .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
-};
-
 window.addToCalendar = function () {
     const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
     if (!planId) return;
@@ -1547,4 +1573,199 @@ window.confirmAssignPlan = function () {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (window.STUDYNEXUS_USER) window.loadCoachingData();
+    window.initStudyTimer?.();
 });
+
+// --- ÇALIŞMA SAYACI (POMODORO) ---
+let stTotalSeconds = 30 * 60;
+let stRemaining = stTotalSeconds;
+let stInterval = null;
+let stRunning = false;
+let stLabel = 'Pomodoro';
+let stIsBreak = false;
+
+function stRenderClock() {
+    const clock = document.getElementById('studyTimerClock');
+    if (!clock) return;
+    const m = String(Math.floor(stRemaining / 60)).padStart(2, '0');
+    const s = String(stRemaining % 60).padStart(2, '0');
+    clock.textContent = `${m}:${s}`;
+}
+
+function stSetToggleBtn(text) {
+    const btn = document.getElementById('studyTimerToggleBtn');
+    if (btn) btn.textContent = text;
+}
+
+function stSetTopBtnRunning(running) {
+    document.getElementById('timerToggleBtn')?.classList.toggle('running', running);
+}
+
+window.toggleStudyTimer = function (force) {
+    const el = document.getElementById('studyTimer');
+    if (!el) return;
+    const show = force === undefined ? !el.classList.contains('open') : force;
+    el.classList.toggle('open', show);
+};
+
+window.studyTimerSetPreset = function (minutes, label, btn, isBreak = false) {
+    stPauseTimer();
+    stTotalSeconds = minutes * 60;
+    stRemaining = stTotalSeconds;
+    stLabel = label;
+    stIsBreak = !!isBreak;
+    document.querySelectorAll('.st-preset').forEach((b) => b.classList.toggle('active', b === btn));
+    const status = document.getElementById('studyTimerStatus');
+    if (status) {
+        status.textContent = `${label} · ${minutes} dk`;
+        status.className = 'study-timer-status';
+    }
+    document.getElementById('studyTimerClock')?.classList.remove('done');
+    stRenderClock();
+};
+
+window.studyTimerSetCustom = function () {
+    const input = document.getElementById('studyTimerCustomInput');
+    const minutes = parseInt(input?.value, 10);
+    if (!Number.isFinite(minutes) || minutes < 1) {
+        window.showToast?.('Lütfen 1 ile 600 arasında dakika girin.', 'error');
+        return;
+    }
+    const safe = Math.min(minutes, 600);
+    stPauseTimer();
+    stTotalSeconds = safe * 60;
+    stRemaining = stTotalSeconds;
+    stLabel = 'Özel';
+    stIsBreak = false;
+    document.querySelectorAll('.st-preset').forEach((b) => b.classList.remove('active'));
+    const status = document.getElementById('studyTimerStatus');
+    if (status) {
+        status.textContent = `Özel · ${safe} dk`;
+        status.className = 'study-timer-status';
+    }
+    document.getElementById('studyTimerClock')?.classList.remove('done');
+    stRenderClock();
+};
+
+function stTick() {
+    if (stRemaining > 0) {
+        stRemaining -= 1;
+        stRenderClock();
+        if (stRemaining === 0) stFinishTimer();
+    }
+}
+
+window.studyTimerStartPause = function () {
+    if (stRunning) {
+        stPauseTimer();
+        return;
+    }
+    if (stRemaining <= 0) stRemaining = stTotalSeconds;
+    stRunning = true;
+    stSetToggleBtn('Duraklat');
+    stSetTopBtnRunning(true);
+    const status = document.getElementById('studyTimerStatus');
+    if (status) {
+        status.textContent = `${stLabel} · çalışıyor`;
+        status.className = 'study-timer-status';
+    }
+    document.getElementById('studyTimerClock')?.classList.remove('done');
+    stInterval = setInterval(stTick, 1000);
+};
+
+function stPauseTimer() {
+    stRunning = false;
+    if (stInterval) clearInterval(stInterval);
+    stInterval = null;
+    stSetToggleBtn('Başlat');
+    stSetTopBtnRunning(false);
+}
+
+window.studyTimerReset = function () {
+    stPauseTimer();
+    stRemaining = stTotalSeconds;
+    const status = document.getElementById('studyTimerStatus');
+    if (status) {
+        status.textContent = 'Hazır';
+        status.className = 'study-timer-status';
+    }
+    document.getElementById('studyTimerClock')?.classList.remove('done');
+    stRenderClock();
+};
+
+function stFinishTimer() {
+    const wasStudy = !stIsBreak;
+    const finishedMinutes = Math.round(stTotalSeconds / 60);
+    stPauseTimer();
+    document.getElementById('studyTimerClock')?.classList.add('done');
+    const status = document.getElementById('studyTimerStatus');
+    if (status) {
+        status.textContent = wasStudy ? '⏰ Süre doldu — Mola vakti!' : '✅ Mola bitti — Devam!';
+        status.className = 'study-timer-status done';
+    }
+    stPlayBeep();
+    window.toggleStudyTimer(true);
+
+    if (wasStudy && window.STUDYNEXUS_USER?.role === 'student' && finishedMinutes > 0) {
+        window.showToast?.('🍅 Pomodoro tamamlandı! +XP kazandın 🎉', 'success');
+        fetch('/api/pomodoro/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ minutes: finishedMinutes })
+        })
+            .then((r) => r.json())
+            .then((d) => {
+                if (!d.success) return;
+                window.updateStatsUI?.(d.stats);
+                window.updateGamificationUI?.(d.gamification);
+                window.updatePomodoroCount?.(d.gamification?.pomodoros);
+            })
+            .catch(() => {});
+    } else {
+        window.showToast?.('⏰ Süre doldu!', 'success');
+    }
+}
+
+window.updatePomodoroCount = function (pomodoros) {
+    if (!pomodoros) return;
+    const el = document.getElementById('studyTimerCount');
+    if (el) el.textContent = `Bugün: ${pomodoros.today} 🍅 · Toplam: ${pomodoros.total}`;
+};
+
+function stPlayBeep() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const beepAt = (t, freq) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.type = 'sine';
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+            o.start(t);
+            o.stop(t + 0.47);
+        };
+        const now = ctx.currentTime;
+        beepAt(now, 880);
+        beepAt(now + 0.5, 988);
+        beepAt(now + 1.0, 1175);
+    } catch (e) {
+        /* ses çalınamazsa sessizce geç */
+    }
+}
+
+window.initStudyTimer = function () {
+    if (!document.getElementById('studyTimer')) return;
+    stRenderClock();
+    if (window.STUDYNEXUS_USER?.role === 'student') {
+        fetch('/api/stats', { headers: { Accept: 'application/json' } })
+            .then((r) => r.json())
+            .then((d) => {
+                if (d.success) window.updatePomodoroCount?.(d.gamification?.pomodoros);
+            })
+            .catch(() => {});
+    }
+};

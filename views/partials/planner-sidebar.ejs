@@ -1,4 +1,12 @@
 <div class="left-sidebar">
+    <% if (weeklyPlans && weeklyPlans.length > 0) { %>
+    <div class="plan-search-wrap">
+        <input type="search" id="planSearchInput" class="plan-search-input"
+               placeholder="🔍 Plan ara (başlık veya tarih)..." autocomplete="off"
+               oninput="window.filterPlans(this.value)">
+        <p id="planSearchEmpty" class="plan-search-empty" style="display:none;">Eşleşen plan bulunamadı.</p>
+    </div>
+    <% } %>
     <div class="pile-container">
         <% if (!weeklyPlans || weeklyPlans.length === 0) { %>
             <div class="pile-empty-state">

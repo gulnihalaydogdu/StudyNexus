@@ -256,6 +256,28 @@ router.post('/delete-topic', requireAuth, (req, res) => {
     res.json({ success: true, stats, gamification: getGamificationForUser(req.session.userId, stats) });
 });
 
+router.post('/api/pomodoro/complete', requireAuth, (req, res) => {
+    if (req.session.role !== 'student') {
+        return res.status(403).json({ success: false, message: 'Sadece öğrenciler için.' });
+    }
+
+    let minutes = Number(req.body.minutes);
+    if (!Number.isFinite(minutes) || minutes <= 0) minutes = 0;
+    minutes = Math.min(Math.round(minutes), 600);
+
+    dbRun(
+        'INSERT INTO pomodoro_sessions (user_id, minutes, completed_on) VALUES (?, ?, ?)',
+        [req.session.userId, minutes, localDateKey()]
+    );
+
+    const stats = getStatsForUser(req.session.userId);
+    res.json({
+        success: true,
+        stats,
+        gamification: getGamificationForUser(req.session.userId, stats)
+    });
+});
+
 router.post('/toggle-topic', requireAuth, (req, res) => {
     const topicId = req.body.topicId;
     const isCompleted = req.body.isCompleted ? 1 : 0;
@@ -376,26 +398,6 @@ router.post('/assign-to-calendar', requireAuth, (req, res) => {
         month: result.month,
         week: result.week,
         previousSlot: result.previousSlot || null
-    });
-});
-
-router.post('/api/plan/:id/template', requireAuth, (req, res) => {
-    if (req.session.role !== 'teacher') {
-        return res.status(403).json({ success: false, message: 'Sadece öğretmenler şablon oluşturabilir.' });
-    }
-    const planId = Number(req.params.id);
-    const plan = getPlanForUser(planId, req.session.userId);
-    if (!plan) return res.status(404).json({ success: false, message: 'Plan bulunamadı.' });
-
-    const next = plan.is_template ? 0 : 1;
-    dbRun('UPDATE weekly_plans SET is_template = ?, updated_at = datetime(\'now\') WHERE id = ?', [
-        next,
-        planId
-    ]);
-    res.json({
-        success: true,
-        isTemplate: Boolean(next),
-        message: next ? 'Plan şablon olarak işaretlendi.' : 'Plan şablonlardan çıkarıldı.'
     });
 });
 

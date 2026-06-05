@@ -541,6 +541,96 @@ body {
     text-align: center;
 }
 
+/* Konu arama + durum filtresi */
+.topic-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 6px 0 12px;
+}
+.topic-search-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.topic-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+.topic-status-filter {
+    display: flex;
+    gap: 6px;
+}
+.topic-status-filter button {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text-muted);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.topic-status-filter button:hover { border-color: #c4b5fd; color: var(--primary); }
+.topic-status-filter button.active {
+    background: var(--primary-gradient, linear-gradient(135deg, #7c3aed, #a855f7));
+    border-color: transparent;
+    color: #fff;
+}
+
+/* Plan arama */
+.plan-search-wrap { margin-bottom: 14px; }
+.plan-search-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.86rem;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.plan-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+.plan-search-empty {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    background: #f5f3ff;
+    border-radius: 10px;
+    border: 1px dashed #dcd7ea;
+    text-align: center;
+}
+
+/* Arama modunda yığını düz listeye çevir */
+.pile-container.searching {
+    min-height: auto;
+}
+.pile-container.searching .pile-paper {
+    position: relative;
+    height: auto;
+    transform: none !important;
+    opacity: 1 !important;
+    z-index: auto !important;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-md);
+}
+
 .pill-delete-btn {
     background: transparent;
     border: none;
@@ -1705,3 +1795,164 @@ body {
 .stats-pct { font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
 
 .daily-submit-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+/* --- ÇALIŞMA SAYACI (POMODORO) --- */
+.timer-toggle-btn {
+    background: #f5f3ff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.timer-toggle-btn:hover { transform: translateY(-1px); background: #ede9fe; border-color: #c4b5fd; }
+.timer-toggle-btn.running {
+    background: var(--primary-gradient, linear-gradient(135deg, #7c3aed, #a855f7));
+    border-color: transparent;
+    color: #fff;
+    animation: timerBtnPulse 1.6s ease-in-out infinite;
+}
+@keyframes timerBtnPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.0); }
+    50% { box-shadow: 0 0 0 5px rgba(124, 58, 237, 0.18); }
+}
+
+.study-timer {
+    position: fixed;
+    top: 76px;
+    right: 24px;
+    width: 290px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(76, 29, 149, 0.22);
+    padding: 18px;
+    z-index: 3500;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.study-timer.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+.study-timer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.study-timer-title { font-weight: 800; font-size: 0.92rem; color: var(--text-main); }
+.study-timer-close {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+}
+.study-timer-clock {
+    font-size: 3.2rem;
+    font-weight: 800;
+    text-align: center;
+    color: #6d28d9;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    margin: 4px 0;
+    transition: color 0.3s ease;
+}
+.study-timer-clock.done {
+    color: #ef4444;
+    animation: clockDonePulse 1s ease-in-out infinite;
+}
+@keyframes clockDonePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+.study-timer-status {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    min-height: 18px;
+}
+.study-timer-status.done { color: #ef4444; font-weight: 800; }
+.study-timer-count {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: #f5f3ff;
+    border: 1px solid #ede9fe;
+    border-radius: 999px;
+    padding: 5px 10px;
+    margin-bottom: 14px;
+}
+.study-timer-controls { display: flex; gap: 8px; margin-bottom: 14px; }
+.st-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+.st-btn:hover { transform: translateY(-1px); }
+.st-btn.primary {
+    background: var(--primary-gradient, linear-gradient(135deg, #7c3aed, #a855f7));
+    color: #fff;
+    border-color: transparent;
+}
+.study-timer-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.st-preset {
+    padding: 9px 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #faf8ff;
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.st-preset:hover { border-color: #c4b5fd; }
+.st-preset.active {
+    background: #ede9fe;
+    border-color: #a855f7;
+    color: var(--primary);
+}
+.study-timer-custom {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.study-timer-custom input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    background: #fff;
+}
+.study-timer-custom input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+.study-timer-custom .st-btn { flex: 0 0 auto; }
+
+@media (max-width: 640px) {
+    .study-timer { right: 12px; left: 12px; width: auto; top: 68px; }
+}

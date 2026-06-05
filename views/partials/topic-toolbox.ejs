@@ -28,6 +28,16 @@
         </div>
         <div class="unassigned-topics topics-scroll">
             <h3>📌 Sürükle — Kağıda Yerleştir</h3>
+            <div class="topic-filter-bar">
+                <input type="search" id="topicSearchInput" class="topic-search-input"
+                       placeholder="🔍 Konu ara..." autocomplete="off"
+                       oninput="window.setTopicSearch(this.value)">
+                <div class="topic-status-filter" id="topicStatusFilter">
+                    <button type="button" class="active" data-status="all" onclick="window.setTopicStatusFilter('all', this)">Tümü</button>
+                    <button type="button" data-status="todo" onclick="window.setTopicStatusFilter('todo', this)">Bekleyen</button>
+                    <button type="button" data-status="done" onclick="window.setTopicStatusFilter('done', this)">Bitti</button>
+                </div>
+            </div>
             <p id="topicsFilterEmpty" class="topics-filter-empty" style="display:none;">Bu derste henüz konu yok.</p>
             <div class="draggable-list" id="topicsContainer">
                 <% topics.forEach(topic => { %>
