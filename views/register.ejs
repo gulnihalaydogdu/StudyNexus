@@ -27,6 +27,7 @@
             <% } %>
             
             <form action="/register" method="POST">
+                <%- include('partials/csrf-field') %>
                 <select id="roleSelect" name="role" onchange="toggleFields()" required>
                     <option value="" disabled selected>Ben bir...</option>
                     <option value="student">Öğrenciyim</option>

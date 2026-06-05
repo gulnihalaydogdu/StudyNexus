@@ -1,25 +1,53 @@
 import express from 'express';
 import session from 'express-session';
-import { config, isMailConfigured, requireMail, autoVerifyWhenNoMail } from './config.js';
-import { dbReady } from './database.js';
+import { createRequire } from 'module';
+import { config, isMailConfigured, requireMail, autoVerifyWhenNoMail, isProduction } from './config.js';
+import { db, dbReady } from './database.js';
 import indexRoutes from './routes/index.js';
 import authRoutes from './routes/auth.js';
 import coachingRoutes from './routes/coaching.js';
+import {
+    helmetMiddleware,
+    globalLimiter,
+    ensureCsrfToken,
+    csrfProtection
+} from './middleware/security.js';
+
+const require = createRequire(import.meta.url);
+const SqliteStore = require('better-sqlite3-session-store')(session);
 
 const app = express();
 
 app.set('view engine', 'ejs');
+app.set('trust proxy', 1);
+
+app.use(helmetMiddleware);
+app.use(globalLimiter);
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 app.use(
     session({
+        store: new SqliteStore({
+            client: db,
+            expired: { clear: true, intervalMs: 900000 }
+        }),
         secret: config.sessionSecret,
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: false,
+        name: 'snx.sid',
+        cookie: {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        }
     })
 );
+
+app.use(ensureCsrfToken);
+app.use(csrfProtection);
 
 app.use('/', authRoutes);
 app.use('/', coachingRoutes);

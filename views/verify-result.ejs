@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyNexus — Doğrulama</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+    <div class="auth-graphic">
+        <h1>StudyNexus</h1>
+        <p><%= success ? 'Hesabınız aktif!' : 'Doğrulama başarısız' %></p>
+    </div>
+    <div class="auth-form-section">
+        <div class="auth-box" style="text-align:center;">
+            <h2><%= success ? '✅ Doğrulandı' : '⚠️ Hata' %></h2>
+            <p class="subtitle" style="color:<%= success ? '#10b981' : '#ef4444' %>;"><%= message %></p>
+            <a href="/login" style="display:inline-block;margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;text-decoration:none;border-radius:12px;font-weight:600;">Giriş Yap</a>
+        </div>
+    </div>
+</body>
+</html>

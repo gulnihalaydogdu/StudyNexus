@@ -17,8 +17,15 @@
         <div class="auth-box">
             <h2>Hoş Geldin 👋</h2>
             <p class="subtitle">Çalışmalarına kaldığın yerden devam et.</p>
+            <% if (typeof flash !== 'undefined' && flash) { %>
+                <p class="subtitle" style="color:#10b981;"><%= flash %></p>
+            <% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <p class="subtitle" style="color:#ef4444;"><%= error %></p>
+            <% } %>
             
             <form action="/login" method="POST">
+                <%- include('partials/csrf-field') %>
                 <input type="text" name="username" placeholder="Kullanıcı Adı" required>
                 <input type="password" name="password" placeholder="Şifre" required>
                 <button type="submit">Giriş Yap</button>

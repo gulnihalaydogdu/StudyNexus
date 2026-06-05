@@ -17,3 +17,4 @@ export const isMailConfigured = () => Boolean(config.mail.user && config.mail.pa
 export const autoVerifyWhenNoMail = process.env.AUTO_VERIFY_WHEN_NO_MAIL === 'true';
 
 export const requireMail = process.env.REQUIRE_MAIL !== 'false';
+export const isProduction = process.env.NODE_ENV === 'production';

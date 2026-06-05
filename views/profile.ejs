@@ -16,6 +16,7 @@
         </div>
         
         <form action="/profile/edit" method="POST">
+            <%- include('partials/csrf-field') %>
             <div class="form-row">
                 <div>
                     <label>Kullanıcı Adı</label>

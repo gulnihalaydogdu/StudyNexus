@@ -1,4 +1,5 @@
 // public/js/canvas.js
+import { escapeHtml } from './security.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -116,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             plannedItem.innerHTML = `
                 <input type="checkbox" title="Tamamlandı">
-                <span class="item-title">${topicName}</span>
+                <span class="item-title">${escapeHtml(topicName)}</span>
                 <input type="text" placeholder="Açıklama ekleyin...">
                 <button class="delete-item-btn" title="Bu planı sil">✕</button>
             `;
@@ -282,7 +283,7 @@ window.showToast = function (message, type = 'success') {
     const bgColor = type === 'error' ? '#ef4444' : '#10b981'; // Hata ise kırmızı, başarı ise yeşil
     const toastHTML = `
         <div class="toast-message" style="background: ${bgColor};" id="dynamicToast_${Date.now()}">
-            ${message}
+            ${escapeHtml(message)}
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', toastHTML);
@@ -334,7 +335,7 @@ window.updateStatsUI = function (stats) {
     if (rows && stats.byCourse) {
         rows.innerHTML = stats.byCourse.map(c => `
             <div class="stats-course-row" data-course-id="${c.id}">
-                <span>${c.name}</span>
+                <span>${escapeHtml(c.name)}</span>
                 <div class="stats-bar"><div class="stats-bar-fill stats-bar-animated" style="width:${c.percent}%"></div></div>
                 <span class="stats-pct">${c.percent}%</span>
             </div>`).join('');
@@ -434,7 +435,7 @@ window.submitNewCourse = function () {
             if (container) {
                 container.insertAdjacentHTML('beforeend', `
                     <div class="course-pill" data-course-id="${data.id}" onclick="selectCourseInCombo(${data.id})" style="cursor: pointer;">
-                        <span class="pill-text">${data.name}</span>
+                        <span class="pill-text">${escapeHtml(data.name)}</span>
                         <button type="button" class="pill-delete-btn" onclick="event.stopPropagation(); deleteCourse(${data.id}, this)" title="Dersi Sil">×</button>
                     </div>
                 `);
@@ -442,7 +443,7 @@ window.submitNewCourse = function () {
 
             const select = document.getElementById('topicCourseSelect');
             if (select) {
-                select.insertAdjacentHTML('beforeend', `<option value="${data.id}">${data.name}</option>`);
+                select.insertAdjacentHTML('beforeend', `<option value="${data.id}">${escapeHtml(data.name)}</option>`);
                 select.value = data.id; // OTOMATİK SEÇ
             }
 
@@ -479,8 +480,8 @@ window.submitNewTopic = function () {
         if (data.success) {
             const container = document.getElementById('topicsContainer');
             const newItemHTML = `
-                <div class="draggable-item" draggable="true" data-topic-id="${data.id}" data-course-id="${data.courseId}" data-topic-name="${data.name}">
-                    <span class="topic-label">${data.name}</span>
+                <div class="draggable-item" draggable="true" data-topic-id="${data.id}" data-course-id="${data.courseId}" data-topic-name="${escapeHtml(data.name)}">
+                    <span class="topic-label">${escapeHtml(data.name)}</span>
                     <div class="topic-actions">
                         <button type="button" class="topic-done-btn" onclick="event.stopPropagation(); toggleTopicDone(${data.id}, true, this)" title="Tamamlandı">✓</button>
                         <button type="button" class="topic-delete-btn" onclick="event.stopPropagation(); deleteTopic(${data.id}, this)" title="Konuyu sil">✕</button>
@@ -539,8 +540,8 @@ window.createPlannedItemElement = function (topicId, courseId, topicName, descri
 
     plannedItem.innerHTML = `
         <input type="checkbox" title="Tamamlandı">
-        <span class="item-title">${topicName}</span>
-        <input type="text" placeholder="Açıklama ekleyin..." value="${String(description ?? '').replace(/"/g, '&quot;')}">
+        <span class="item-title">${escapeHtml(topicName)}</span>
+        <input type="text" placeholder="Açıklama ekleyin..." value="${escapeHtml(description ?? '')}">
         <button class="delete-item-btn" title="Bu planı sil">✕</button>
     `;
 
@@ -618,8 +619,8 @@ window.prependPilePaper = function (planId, title, dateRange) {
     newPaper.className = 'pile-paper';
     newPaper.setAttribute('data-plan-id', planId);
     newPaper.innerHTML = `
-        <div class="pile-title">${title}</div>
-        <div class="pile-date">${dateRange}</div>
+        <div class="pile-title">${escapeHtml(title)}</div>
+        <div class="pile-date">${escapeHtml(dateRange)}</div>
     `;
     newPaper.setAttribute('data-open-plan', '');
     newPaper.setAttribute('data-plan-id', planId);
@@ -991,7 +992,7 @@ window.loadCoachingData = function () {
                     <li class="teacher-student-card">
                         <a href="/teacher/student/${s.id}" class="teacher-student-card-link">
                             <div class="teacher-student-head">
-                                <strong>${s.full_name || s.username}</strong>
+                                <strong>${escapeHtml(s.full_name || s.username)}</strong>
                                 <span class="teacher-student-pct">${s.stats.percent}%</span>
                             </div>
                             <p class="teacher-student-meta">${s.stats.completedTopics}/${s.stats.totalTopics} konu · Programlar & takvim</p>
@@ -1000,7 +1001,7 @@ window.loadCoachingData = function () {
                 const sel = document.getElementById('assignStudentModalSelect');
                 if (sel) {
                     sel.innerHTML = '<option value="">Öğrenci seç...</option>' +
-                        d.students.map(s => `<option value="${s.id}">${s.full_name || s.username}</option>`).join('');
+                        d.students.map(s => `<option value="${s.id}">${escapeHtml(s.full_name || s.username)}</option>`).join('');
                 }
             });
     } else {
@@ -1011,7 +1012,7 @@ window.loadCoachingData = function () {
                 if (!list) return;
                 list.innerHTML = !d.teachers?.length
                     ? '<li>Henüz koça bağlı değilsiniz.</li>'
-                    : d.teachers.map(t => `<li><strong>${t.full_name || t.username}</strong>${t.branch ? ' — ' + t.branch : ''}</li>`).join('');
+                    : d.teachers.map(t => `<li><strong>${escapeHtml(t.full_name || t.username)}</strong>${t.branch ? ' — ' + escapeHtml(t.branch) : ''}</li>`).join('');
             });
     }
 };
