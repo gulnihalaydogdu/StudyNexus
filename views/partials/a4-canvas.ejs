@@ -3,7 +3,9 @@
         <img src="/img/poster.png" alt="Hoş Geldiniz" class="welcome-poster">
         <p class="workspace-hint"><%= typeof workspaceHint !== 'undefined' ? workspaceHint : 'Yeni plan oluşturmak için + butonuna tıklayın.' %></p>
     </div>
+    <% if (typeof hideCreateBtn === 'undefined' || !hideCreateBtn) { %>
     <button class="add-btn" id="createNewBtn" type="button" title="Yeni plan">+</button>
+    <% } %>
     <div class="a4-template" id="a4Canvas" data-editing-id="" data-read-only="0">
         <button type="button" class="cancel-canvas-btn" id="closeCanvasBtn">Vazgeç</button>
         <div class="a4-header">

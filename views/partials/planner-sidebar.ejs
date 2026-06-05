@@ -4,10 +4,12 @@
             <div class="pile-empty-state">
                 <div style="font-size:3rem;margin-bottom:10px;opacity:0.5;">🗂️</div>
                 <div class="pile-title" style="color:#a39fbb;">Kayıtlı Plan Yok</div>
-                <div class="pile-date">İlk haftalık planınızı oluşturup kaydedin.</div>
+                <div class="pile-date"><%= typeof pileEmptyHint !== 'undefined' ? pileEmptyHint : 'İlk haftalık planınızı oluşturup kaydedin.' %></div>
             </div>
         <% } else { weeklyPlans.forEach((plan, index) => { %>
-            <div class="pile-paper" style="--index:<%= index %>;" data-plan-id="<%= plan.id %>" onclick="editWeeklyPlan(<%= plan.id %>)" role="button" tabindex="0">
+            <div class="pile-paper" style="--index:<%= index %>;" data-plan-id="<%= plan.id %>"
+                 onclick="<%= typeof studentViewId !== 'undefined' ? 'openStudentPlan(' + plan.id + ')' : 'editWeeklyPlan(' + plan.id + ')' %>"
+                 role="button" tabindex="0">
                 <div class="pile-title"><%= plan.title %></div>
                 <div class="pile-date"><%= plan.date_range %></div>
             </div>
@@ -23,10 +25,15 @@
                         <% for(let w=1; w<=4; w++) {
                             let event = calendarEvents.find(e => e.target_month === m.name && e.target_week == w);
                             if (event && !weeklyPlans.some(p => p.id === event.plan_id)) event = null;
+                            const calClick = event
+                                ? (typeof studentViewId !== 'undefined'
+                                    ? 'openStudentPlan(' + event.plan_id + ')'
+                                    : 'editWeeklyPlan(' + event.plan_id + ')')
+                                : null;
                         %>
                             <div class="cal-week-box <%= event ? 'filled' : 'empty' %>"
                                  id="cal-box-<%= m.name %>-<%= w %>"
-                                 <% if(event) { %> onclick="editWeeklyPlan(<%= event.plan_id %>)" <% } %>>
+                                 <% if (calClick) { %> onclick="<%= calClick %>" <% } %>>
                                 <span class="week-num"><%= w %>. Hafta</span>
                                 <% if(event) { %><div class="week-indicator"></div><% } %>
                             </div>

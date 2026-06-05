@@ -1,0 +1,31 @@
+<aside class="toolbox toolbox-readonly">
+    <div class="toolbox-drag-panel action-card">
+        <h3>📘 Öğrencinin Dersleri</h3>
+        <p class="toolbox-readonly-hint">Salt okunur — öğrencinin kendi listesi.</p>
+        <% if (!courses || courses.length === 0) { %>
+            <p class="week-panel-empty">Henüz ders eklenmemiş.</p>
+        <% } else { %>
+            <div class="course-tags-wrapper">
+                <div class="tags-container">
+                    <% courses.forEach(course => { %>
+                        <span class="course-pill readonly-pill"><%= course.name %></span>
+                    <% }) %>
+                </div>
+            </div>
+            <div class="unassigned-topics topics-scroll">
+                <h3>📌 Konular</h3>
+                <div class="draggable-list readonly-topics">
+                    <% topics.forEach(topic => { %>
+                        <div class="draggable-item readonly-item<%= topic.is_completed ? ' is-done' : '' %>">
+                            <span class="topic-label<%= topic.is_completed ? ' done' : '' %>">
+                                <small class="topic-course-tag"><%= topic.course_name %></small>
+                                <%= topic.name %>
+                            </span>
+                            <% if (topic.is_completed) { %><span class="topic-done-badge">✓</span><% } %>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</aside>

@@ -1,8 +1,14 @@
 import express from 'express';
 import { requireAuth } from '../middleware/authMiddleware.js';
 import { dbAll, dbGet, dbRun } from '../lib/db.js';
-import { ensureCoachCode, getStudentStats, assignPlanToStudent } from '../lib/coaching.js';
+import {
+    ensureCoachCode,
+    getStudentStats,
+    assignPlanToStudent,
+    getTeacherStudentLink
+} from '../lib/coaching.js';
 import { getPlanItemsWithNames } from '../lib/weeklyPlan.js';
+import { getDynamicMonths } from '../lib/calendarMonths.js';
 
 const router = express.Router();
 
@@ -64,6 +70,61 @@ router.get('/api/coaching/my-teacher', requireAuth, (req, res) => {
     );
 
     res.json({ success: true, teachers });
+});
+
+router.get('/teacher/student/:studentId', requireAuth, (req, res) => {
+    if (req.session.role !== 'teacher') {
+        return res.redirect('/');
+    }
+
+    const studentId = Number(req.params.studentId);
+    if (!Number.isFinite(studentId)) {
+        return res.status(400).send('Geçersiz öğrenci.');
+    }
+
+    const link = getTeacherStudentLink(req.session.userId, studentId);
+    if (!link) {
+        return res.status(403).send('Bu öğrenciye erişim yetkiniz yok.');
+    }
+
+    const student = dbGet(
+        'SELECT id, username, full_name, grade FROM users WHERE id = ? AND role = ?',
+        [studentId, 'student']
+    );
+    if (!student) {
+        return res.status(404).send('Öğrenci bulunamadı.');
+    }
+
+    const weeklyPlans = dbAll(
+        'SELECT * FROM weekly_plans WHERE user_id = ? ORDER BY id DESC',
+        [studentId]
+    );
+    const calendarEvents = dbAll('SELECT * FROM calendar_events WHERE user_id = ?', [studentId]);
+    const courses = dbAll('SELECT * FROM courses WHERE user_id = ? ORDER BY name', [studentId]);
+    const topics = dbAll(
+        `SELECT t.*, c.name as course_name FROM topics t
+         JOIN courses c ON t.course_id = c.id
+         WHERE c.user_id = ?
+         ORDER BY c.name, t.name`,
+        [studentId]
+    );
+    const stats = getStudentStats(studentId);
+
+    res.render('teacher-student', {
+        student,
+        weeklyPlans,
+        calendarEvents,
+        dynamicMonths: getDynamicMonths(),
+        courses,
+        topics,
+        stats,
+        studentViewId: studentId,
+        user: {
+            id: req.session.userId,
+            username: req.session.username,
+            role: req.session.role
+        }
+    });
 });
 
 router.get('/api/coaching/students', requireAuth, (req, res) => {

@@ -3,6 +3,7 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 import { dbAll, dbGet, dbRun } from '../lib/db.js';
 import { getWeekPanelForUser } from '../lib/weekPanel.js';
 import { getPlanForUser, getPlanItemsWithNames, replacePlanItems } from '../lib/weeklyPlan.js';
+import { getDynamicMonths } from '../lib/calendarMonths.js';
 const router = express.Router();
 
 router.get('/', requireAuth, (req, res) => {
@@ -33,17 +34,7 @@ router.get('/', requireAuth, (req, res) => {
         const stats = buildStats(courses, topics);
         const weekPanel = getWeekPanelForUser(userId, calendarEvents);
 
-        const monthNames = [
-            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-        ];
-        const now = new Date();
-        const dynamicMonths = [];
-        for (let i = 0; i < 3; i++) {
-            const calcMonth = (now.getMonth() + i) % 12;
-            const calcYear = now.getFullYear() + Math.floor((now.getMonth() + i) / 12);
-            dynamicMonths.push({ name: monthNames[calcMonth], year: calcYear });
-        }
+        const dynamicMonths = getDynamicMonths();
 
         const viewData = {
             courses,
