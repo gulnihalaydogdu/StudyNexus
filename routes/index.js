@@ -7,6 +7,7 @@ import { getDynamicMonths } from '../lib/calendarMonths.js';
 import { parseMonthSlot } from '../lib/calendarSlot.js';
 import { assignPlanToCalendarSlot } from '../lib/calendarAssign.js';
 import { getProgressTrend, localDateKey, recordProgressSnapshot } from '../lib/progress.js';
+import { getGamificationSummary } from '../lib/gamification.js';
 const router = express.Router();
 
 router.get('/', requireAuth, (req, res) => {
@@ -60,7 +61,8 @@ router.get('/', requireAuth, (req, res) => {
         res.render('dashboard-student', {
             ...viewData,
             stats,
-            weekPanel
+            weekPanel,
+            gamification: getGamificationSummary(userId, stats)
         });
     } catch (err) {
         console.error(err);
@@ -368,6 +370,26 @@ router.post('/assign-to-calendar', requireAuth, (req, res) => {
         month: result.month,
         week: result.week,
         previousSlot: result.previousSlot || null
+    });
+});
+
+router.post('/api/plan/:id/template', requireAuth, (req, res) => {
+    if (req.session.role !== 'teacher') {
+        return res.status(403).json({ success: false, message: 'Sadece öğretmenler şablon oluşturabilir.' });
+    }
+    const planId = Number(req.params.id);
+    const plan = getPlanForUser(planId, req.session.userId);
+    if (!plan) return res.status(404).json({ success: false, message: 'Plan bulunamadı.' });
+
+    const next = plan.is_template ? 0 : 1;
+    dbRun('UPDATE weekly_plans SET is_template = ?, updated_at = datetime(\'now\') WHERE id = ?', [
+        next,
+        planId
+    ]);
+    res.json({
+        success: true,
+        isTemplate: Boolean(next),
+        message: next ? 'Plan şablon olarak işaretlendi.' : 'Plan şablonlardan çıkarıldı.'
     });
 });
 

@@ -63,6 +63,7 @@ function initSchema() {
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
             date_range TEXT NOT NULL,
+            is_template INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT (datetime('now')),
             updated_at TEXT NOT NULL DEFAULT (datetime('now')),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -152,6 +153,18 @@ function initSchema() {
             UNIQUE (user_id, reminder_date, reminder_type),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS plan_feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            teacher_id INTEGER NOT NULL,
+            student_id INTEGER NOT NULL,
+            plan_id INTEGER,
+            message TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (plan_id) REFERENCES weekly_plans(id) ON DELETE SET NULL
+        );
     `);
 
     dbRun('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL');
@@ -164,6 +177,8 @@ function initSchema() {
     dbRun('CREATE INDEX IF NOT EXISTS idx_daily_task_user_date ON daily_task_completions(user_id, completed_on)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_progress_user_date ON progress_snapshots(user_id, snapshot_date)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_reminder_user_date ON study_reminder_log(user_id, reminder_date)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_feedback_student ON plan_feedback(student_id, created_at)');
+    dbRun('CREATE INDEX IF NOT EXISTS idx_feedback_teacher ON plan_feedback(teacher_id, created_at)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_tsl_teacher ON teacher_student_links(teacher_id)');
     dbRun('CREATE INDEX IF NOT EXISTS idx_tsl_student ON teacher_student_links(student_id)');
 }

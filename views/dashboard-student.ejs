@@ -68,6 +68,20 @@
     <section id="panel-stats" class="app-panel">
         <div class="panel-center-card stats-card-wide">
             <h2>📊 İlerleme</h2>
+            <div class="gamification-card">
+                <div>
+                    <span class="gamification-kicker">Seviye <%= gamification.level %></span>
+                    <strong><%= gamification.xp %> XP</strong>
+                    <p class="stats-muted"><%= gamification.streak %> günlük seri</p>
+                </div>
+                <div class="badge-row">
+                    <% if (!gamification.badges.length) { %>
+                        <span class="badge-pill muted">Rozetler yakında</span>
+                    <% } else { gamification.badges.forEach(b => { %>
+                        <span class="badge-pill"><%= b.icon %> <%= b.label %></span>
+                    <% }) } %>
+                </div>
+            </div>
             <div class="stats-overall">
                 <div class="stats-ring" id="statsRing" style="--p: <%= stats.overallPercent %>;">
                     <span id="statsPercentText"><%= stats.overallPercent %>%</span>
@@ -118,6 +132,10 @@
                 <button type="submit" class="daily-submit-btn">Bağlan</button>
             </form>
             <ul id="myTeachersList" class="coaching-list"></ul>
+            <div class="student-feedback-box">
+                <h3>Koç Geri Bildirimleri</h3>
+                <ul id="studentFeedbackList" class="feedback-list"></ul>
+            </div>
         </div>
     </section>
 </main>

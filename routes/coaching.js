@@ -73,6 +73,24 @@ router.get('/api/coaching/my-teacher', requireAuth, (req, res) => {
     res.json({ success: true, teachers });
 });
 
+router.get('/api/coaching/feedback', requireAuth, (req, res) => {
+    if (req.session.role !== 'student') {
+        return res.status(403).json({ success: false });
+    }
+
+    const feedback = dbAll(
+        `SELECT pf.id, pf.message, pf.created_at, u.full_name, u.username
+         FROM plan_feedback pf
+         JOIN users u ON u.id = pf.teacher_id
+         WHERE pf.student_id = ?
+         ORDER BY pf.created_at DESC
+         LIMIT 10`,
+        [req.session.userId]
+    );
+
+    res.json({ success: true, feedback });
+});
+
 router.get('/teacher/student/:studentId', requireAuth, (req, res) => {
     if (req.session.role !== 'teacher') {
         return res.redirect('/');
@@ -110,6 +128,15 @@ router.get('/teacher/student/:studentId', requireAuth, (req, res) => {
         [studentId]
     );
     const stats = getStudentStats(studentId);
+    const feedback = dbAll(
+        `SELECT pf.*, u.full_name as teacher_name, u.username as teacher_username
+         FROM plan_feedback pf
+         JOIN users u ON u.id = pf.teacher_id
+         WHERE pf.student_id = ?
+         ORDER BY pf.created_at DESC
+         LIMIT 8`,
+        [studentId]
+    );
 
     res.render('teacher-student', {
         student,
@@ -119,6 +146,7 @@ router.get('/teacher/student/:studentId', requireAuth, (req, res) => {
         courses,
         topics,
         stats,
+        feedback,
         studentViewId: studentId,
         user: {
             id: req.session.userId,
@@ -145,6 +173,62 @@ router.get('/api/coaching/students', requireAuth, (req, res) => {
     ).map((s) => ({ ...s, stats: getStudentStats(s.id) }));
 
     res.json({ success: true, students });
+});
+
+router.get('/api/coaching/analytics', requireAuth, (req, res) => {
+    if (req.session.role !== 'teacher') {
+        return res.status(403).json({ success: false });
+    }
+
+    const students = dbAll(
+        `SELECT u.id, u.username, u.full_name, u.grade
+         FROM teacher_student_links tsl
+         JOIN users u ON u.id = tsl.student_id
+         WHERE tsl.teacher_id = ?`,
+        [req.session.userId]
+    ).map((s) => ({ ...s, stats: getStudentStats(s.id) }));
+
+    const count = students.length;
+    const avgProgress = count
+        ? Math.round(students.reduce((sum, s) => sum + s.stats.percent, 0) / count)
+        : 0;
+    const needsAttention = students.filter((s) => s.stats.totalTopics > 0 && s.stats.percent < 40);
+    const topStudent = students.slice().sort((a, b) => b.stats.percent - a.stats.percent)[0] || null;
+
+    res.json({
+        success: true,
+        analytics: {
+            count,
+            avgProgress,
+            needsAttention,
+            topStudent
+        }
+    });
+});
+
+router.post('/api/coaching/students/:id/feedback', requireAuth, (req, res) => {
+    if (req.session.role !== 'teacher') {
+        return res.status(403).json({ success: false, message: 'Yetkisiz.' });
+    }
+
+    const studentId = Number(req.params.id);
+    const message = String(req.body.message || '').trim();
+    const planId = req.body.planId ? Number(req.body.planId) : null;
+
+    if (!Number.isFinite(studentId) || !message || message.length > 600) {
+        return res.status(400).json({ success: false, message: 'Geri bildirim 1-600 karakter olmalı.' });
+    }
+
+    const link = getTeacherStudentLink(req.session.userId, studentId);
+    if (!link) return res.status(403).json({ success: false, message: 'Bu öğrenciye erişim yok.' });
+
+    dbRun(
+        `INSERT INTO plan_feedback (teacher_id, student_id, plan_id, message)
+         VALUES (?, ?, ?, ?)`,
+        [req.session.userId, studentId, Number.isFinite(planId) ? planId : null, message]
+    );
+
+    res.json({ success: true, message: 'Geri bildirim kaydedildi.' });
 });
 
 router.get('/api/coaching/students/:id/plan/:planId', requireAuth, (req, res) => {
