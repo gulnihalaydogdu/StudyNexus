@@ -387,6 +387,147 @@ window.updateStatsUI = function (stats) {
     }
 };
 
+function popValue(el) {
+    if (!el) return;
+    el.classList.remove('xp-pop');
+    void el.offsetWidth;
+    el.classList.add('xp-pop');
+    setTimeout(() => el.classList.remove('xp-pop'), 600);
+}
+
+window.updateGamificationUI = function (gamification) {
+    if (!gamification) return;
+    const card = document.getElementById('gamificationCard');
+    const levelEl = document.getElementById('gamiLevel');
+    const xpEl = document.getElementById('gamiXp');
+    const streakEl = document.getElementById('gamiStreak');
+    const bar = document.getElementById('gamiXpBar');
+    const intoEl = document.getElementById('gamiXpInto');
+    const forEl = document.getElementById('gamiXpFor');
+    const toNextEl = document.getElementById('gamiXpToNext');
+    const badges = document.getElementById('gamiBadges');
+
+    const prevLevel = levelEl ? parseInt(levelEl.textContent, 10) || 0 : 0;
+    const prevXp = xpEl ? parseInt(xpEl.textContent, 10) || 0 : 0;
+
+    if (levelEl) levelEl.textContent = gamification.level;
+    if (xpEl) {
+        xpEl.textContent = gamification.xp;
+        if (gamification.xp !== prevXp) popValue(xpEl);
+    }
+    if (streakEl) streakEl.textContent = gamification.streak;
+    if (intoEl) intoEl.textContent = gamification.xpIntoLevel;
+    if (forEl) forEl.textContent = gamification.xpForLevel;
+    if (toNextEl) toNextEl.textContent = gamification.xpToNext;
+    if (bar) {
+        requestAnimationFrame(() => {
+            bar.style.width = `${gamification.levelProgressPercent}%`;
+        });
+    }
+
+    if (badges) {
+        badges.innerHTML = (gamification.badges && gamification.badges.length)
+            ? gamification.badges.map(b => `<span class="badge-pill">${b.icon} ${escapeHtml(b.label)}</span>`).join('')
+            : '<span class="badge-pill muted">Rozetler yakında</span>';
+    }
+
+    if (card && gamification.level > prevLevel && prevLevel > 0) {
+        card.classList.remove('level-up');
+        void card.offsetWidth;
+        card.classList.add('level-up');
+        setTimeout(() => card.classList.remove('level-up'), 1000);
+    }
+
+    if (gamification.xp > prevXp) {
+        window.showXpGainBar(prevXp, gamification);
+    }
+};
+
+let xpGainTimers = [];
+window.showXpGainBar = function (prevXp, gamification) {
+    document.getElementById('xpGainOverlay')?.remove();
+    xpGainTimers.forEach(clearTimeout);
+    xpGainTimers = [];
+
+    const leveledUp = gamification.level > Math.floor(prevXp / gamification.xpForLevel) + 1;
+    const sameLevel = !leveledUp;
+    const startPercent = sameLevel
+        ? Math.round(((prevXp % gamification.xpForLevel) / gamification.xpForLevel) * 100)
+        : 0;
+    const endPercent = gamification.levelProgressPercent;
+    const gained = gamification.xp - prevXp;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'xpGainOverlay';
+    overlay.className = 'xp-gain-overlay';
+    overlay.innerHTML = `
+        <div class="xp-gain-card">
+            <div class="xp-gain-top">
+                <span class="xp-gain-level">SEVİYE ${gamification.level}</span>
+                <span class="xp-gain-amount">+${gained} XP</span>
+            </div>
+            <div class="xp-gain-track">
+                <div class="xp-gain-fill"><span class="xp-gain-shine"></span></div>
+            </div>
+            <div class="xp-gain-status"></div>
+        </div>`;
+    document.body.appendChild(overlay);
+
+    const fill = overlay.querySelector('.xp-gain-fill');
+    const status = overlay.querySelector('.xp-gain-status');
+    fill.style.width = `${startPercent}%`;
+
+    requestAnimationFrame(() => {
+        overlay.classList.add('show');
+        requestAnimationFrame(() => {
+            fill.style.width = `${leveledUp ? 100 : endPercent}%`;
+        });
+    });
+
+    xpGainTimers.push(setTimeout(() => {
+        if (leveledUp) fill.style.width = `${endPercent}%`;
+        status.textContent = leveledUp ? `🎉 Seviye ${gamification.level}! İlerleme kaydedildi` : '✓ İlerleme kaydedildi';
+        status.classList.add('show');
+    }, 1100));
+
+    xpGainTimers.push(setTimeout(() => {
+        overlay.classList.remove('show');
+    }, 2400));
+
+    xpGainTimers.push(setTimeout(() => {
+        overlay.remove();
+    }, 2850));
+};
+
+window.confirmXpLoss = function (amount) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'xp-confirm-overlay';
+        const lossText = amount ? `<span class="xp-confirm-amount">-${amount} XP</span> kaybedeceksin.` : 'XP ilerlemen düşecek.';
+        overlay.innerHTML = `
+            <div class="xp-confirm-box" role="dialog" aria-modal="true">
+                <div class="xp-confirm-icon">⚠️</div>
+                <h3>Emin misin?</h3>
+                <p>Bu görevin işaretini kaldırırsan ${lossText}<br>Devam etmek istiyor musun?</p>
+                <div class="xp-confirm-actions">
+                    <button type="button" class="xp-confirm-cancel">Vazgeç</button>
+                    <button type="button" class="xp-confirm-ok">Evet, geri al</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('show'));
+
+        const close = (result) => {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 220);
+            resolve(result);
+        };
+        overlay.querySelector('.xp-confirm-cancel').addEventListener('click', () => close(false));
+        overlay.querySelector('.xp-confirm-ok').addEventListener('click', () => close(true));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+    });
+};
+
 window.renderWeekPanelUI = function (weekPanel) {
     const list = document.getElementById('weekTaskList');
     if (!list || !weekPanel?.hasPlan) return;
@@ -457,6 +598,7 @@ window.toggleWeekItemDone = function (itemId, completed, btnElement) {
                 completed: data.completed
             });
             window.updateStatsUI(data.stats);
+            window.updateGamificationUI(data.gamification);
             window.renderWeekPanelUI?.(data.weekPanel);
             window.showToast(data.completed ? 'Bugünkü görev tamamlandı.' : 'Görev geri alındı.', 'success');
         })
@@ -467,35 +609,44 @@ window.toggleWeekItemDone = function (itemId, completed, btnElement) {
 };
 
 window.toggleTopicDone = function (id, isCompleted, btnElement) {
-    fetch('/toggle-topic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topicId: id, isCompleted: isCompleted })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const topicDiv = btnElement.closest('.draggable-item');
-                const span = topicDiv.querySelector('.topic-label');
+    const run = () => {
+        fetch('/toggle-topic', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicId: id, isCompleted: isCompleted })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const topicDiv = btnElement.closest('.draggable-item');
+                    const span = topicDiv.querySelector('.topic-label');
 
-                if (isCompleted) {
-                    span?.classList.add('done');
-                    topicDiv.classList.add('is-done');
-                    topicDiv.setAttribute('draggable', 'false');
-                    btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, false, this)`);
-                } else {
-                    span?.classList.remove('done');
-                    topicDiv.classList.remove('is-done');
-                    topicDiv.setAttribute('draggable', 'true');
-                    btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, true, this)`);
+                    if (isCompleted) {
+                        span?.classList.add('done');
+                        topicDiv.classList.add('is-done');
+                        topicDiv.setAttribute('draggable', 'false');
+                        btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, false, this)`);
+                    } else {
+                        span?.classList.remove('done');
+                        topicDiv.classList.remove('is-done');
+                        topicDiv.setAttribute('draggable', 'true');
+                        btnElement.setAttribute('onclick', `event.stopPropagation(); toggleTopicDone(${id}, true, this)`);
+                    }
+                    window.setCanvasItemCompleted?.({
+                        topicId: id,
+                        completed: isCompleted
+                    });
+                    window.updateStatsUI(data.stats);
+                    window.updateGamificationUI(data.gamification);
                 }
-                window.setCanvasItemCompleted?.({
-                    topicId: id,
-                    completed: isCompleted
-                });
-                window.updateStatsUI(data.stats);
-            }
-        }).catch(err => console.error(err));
+            }).catch(err => console.error(err));
+    };
+
+    if (!isCompleted) {
+        window.confirmXpLoss(20).then((ok) => { if (ok) run(); });
+        return;
+    }
+    run();
 };
 
 window.deleteTopic = function (id, btnElement) {
@@ -512,6 +663,8 @@ window.deleteTopic = function (id, btnElement) {
                 topicDiv.style.opacity = '0';
                 setTimeout(() => topicDiv.remove(), 300);
                 document.querySelectorAll(`.planned-item[data-topic-id="${id}"]`).forEach(el => el.remove());
+                window.updateStatsUI?.(data.stats);
+                window.updateGamificationUI?.(data.gamification);
                 window.showToast('Konu tamamen silindi', 'success');
             }
         });
@@ -730,6 +883,7 @@ window.syncCanvasItemCompletion = function (plannedItem, completed) {
                 completed: data.completed
             });
             window.updateStatsUI(data.stats);
+            window.updateGamificationUI(data.gamification);
             window.showToast(data.completed ? 'Bugünkü görev tamamlandı.' : 'Görev geri alındı.', 'success');
         })
         .catch(err => {

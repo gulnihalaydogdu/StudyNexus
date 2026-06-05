@@ -111,6 +111,10 @@ function getWeekPanelForResponse(userId) {
     return getWeekPanelForUser(userId, calendarEvents);
 }
 
+function getGamificationForUser(userId, stats) {
+    return getGamificationSummary(userId, stats);
+}
+
 router.get('/api/stats', requireAuth, (req, res) => {
     const userId = req.session.userId;
     const courses = dbAll('SELECT * FROM courses WHERE user_id = ?', [userId]);
@@ -118,7 +122,8 @@ router.get('/api/stats', requireAuth, (req, res) => {
         `SELECT t.* FROM topics t JOIN courses c ON t.course_id = c.id WHERE c.user_id = ?`,
         [userId]
     );
-    res.json({ success: true, stats: buildStats(courses, topics, userId) });
+    const stats = buildStats(courses, topics, userId);
+    res.json({ success: true, stats, gamification: getGamificationForUser(userId, stats) });
 });
 
 router.get('/api/week-panel', requireAuth, (req, res) => {
@@ -248,7 +253,7 @@ router.post('/delete-topic', requireAuth, (req, res) => {
     );
     const stats = buildStats(courses, topics, req.session.userId);
     recordProgressSnapshot(req.session.userId, stats);
-    res.json({ success: true, stats });
+    res.json({ success: true, stats, gamification: getGamificationForUser(req.session.userId, stats) });
 });
 
 router.post('/toggle-topic', requireAuth, (req, res) => {
@@ -268,7 +273,7 @@ router.post('/toggle-topic', requireAuth, (req, res) => {
 
     const stats = getStatsForUser(req.session.userId);
     recordProgressSnapshot(req.session.userId, stats);
-    res.json({ success: true, stats });
+    res.json({ success: true, stats, gamification: getGamificationForUser(req.session.userId, stats) });
 });
 
 router.post('/api/week-item/:id/toggle', requireAuth, (req, res) => {
@@ -323,6 +328,7 @@ router.post('/api/week-item/:id/toggle', requireAuth, (req, res) => {
         itemId,
         topicId: item.topic_id,
         stats,
+        gamification: getGamificationForUser(req.session.userId, stats),
         weekPanel: getWeekPanelForResponse(req.session.userId)
     });
 });

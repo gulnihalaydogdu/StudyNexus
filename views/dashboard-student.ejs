@@ -68,13 +68,32 @@
     <section id="panel-stats" class="app-panel">
         <div class="panel-center-card stats-card-wide">
             <h2>📊 İlerleme</h2>
-            <div class="gamification-card">
-                <div>
-                    <span class="gamification-kicker">Seviye <%= gamification.level %></span>
-                    <strong><%= gamification.xp %> XP</strong>
-                    <p class="stats-muted"><%= gamification.streak %> günlük seri</p>
+            <div class="gamification-card" id="gamificationCard">
+                <div class="gamification-main">
+                    <div class="gamification-head">
+                        <div>
+                            <span class="gamification-kicker">Seviye <span id="gamiLevel"><%= gamification.level %></span></span>
+                            <strong><span id="gamiXp"><%= gamification.xp %></span> XP</strong>
+                            <p class="stats-muted"><span id="gamiStreak"><%= gamification.streak %></span> günlük seri</p>
+                        </div>
+                        <div class="gamification-mascot">
+                            <img id="gamiMascot" src="/img/xp-mascot.gif" alt=""
+                                 onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar-track">
+                            <div class="xp-bar-fill" id="gamiXpBar" style="width: <%= gamification.levelProgressPercent %>%;">
+                                <span class="xp-bar-shine"></span>
+                            </div>
+                        </div>
+                        <div class="xp-bar-meta">
+                            <span id="gamiXpInto"><%= gamification.xpIntoLevel %></span> / <span id="gamiXpFor"><%= gamification.xpForLevel %></span> XP
+                            <span class="xp-bar-next">· Sonraki seviyeye <span id="gamiXpToNext"><%= gamification.xpToNext %></span> XP</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="badge-row">
+                <div class="badge-row" id="gamiBadges">
                     <% if (!gamification.badges.length) { %>
                         <span class="badge-pill muted">Rozetler yakında</span>
                     <% } else { gamification.badges.forEach(b => { %>
