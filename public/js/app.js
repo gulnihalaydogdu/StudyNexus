@@ -6,3 +6,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 import './canvas.js';
+import './messages.js';

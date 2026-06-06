@@ -1459,9 +1459,10 @@ window.loadCoachingData = function () {
                                 <strong>${escapeHtml(s.full_name || s.username)}</strong>
                                 <span class="teacher-student-pct">${s.stats.percent}%</span>
                             </div>
-                            <p class="teacher-student-meta">${s.stats.completedTopics}/${s.stats.totalTopics} konu · Programlar & takvim</p>
+                            <p class="teacher-student-meta">${s.stats.completedTopics}/${s.stats.totalTopics} konu · Mesajlaş & plan</p>
                         </a>
                     </li>`).join('');
+                window.loadTeacherMessageBadges?.();
                 const sel = document.getElementById('assignStudentModalSelect');
                 if (sel) {
                     sel.innerHTML = '<option value="">Öğrenci seç...</option>' +
@@ -1478,40 +1479,8 @@ window.loadCoachingData = function () {
                     ? '<li>Henüz koça bağlı değilsiniz.</li>'
                     : d.teachers.map(t => `<li><strong>${escapeHtml(t.full_name || t.username)}</strong>${t.branch ? ' — ' + escapeHtml(t.branch) : ''}</li>`).join('');
             });
-        fetch('/api/coaching/feedback')
-            .then(r => r.json())
-            .then(d => {
-                const list = document.getElementById('studentFeedbackList');
-                if (!list || !d.success) return;
-                list.innerHTML = d.feedback.length
-                    ? d.feedback.map(item => `<li><strong>${escapeHtml(item.full_name || item.username)}</strong>: ${escapeHtml(item.message)}</li>`).join('')
-                    : '<li>Henüz geri bildirim yok.</li>';
-            });
+        window.refreshStudentChat?.();
     }
-};
-
-window.submitStudentFeedback = function (studentId) {
-    const input = document.getElementById('studentFeedbackInput');
-    const message = input?.value.trim();
-    if (!message) return window.showToast('Geri bildirim boş olamaz.', 'error');
-
-    const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id') || null;
-    fetch(`/api/coaching/students/${studentId}/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, planId })
-    })
-        .then(r => r.json())
-        .then(d => {
-            if (!d.success) return window.showToast(d.message || 'Geri bildirim kaydedilemedi.', 'error');
-            const list = document.getElementById('teacherFeedbackList');
-            if (list) {
-                list.insertAdjacentHTML('afterbegin', `<li><strong>Siz</strong>: ${escapeHtml(message)}</li>`);
-            }
-            input.value = '';
-            window.showToast('Geri bildirim gönderildi.', 'success');
-        })
-        .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
 };
 
 window.linkToCoach = function () {
@@ -1525,6 +1494,7 @@ window.linkToCoach = function () {
             window.showToast(`${d.teacherName || 'Koç'}a bağlandınız.`, 'success');
             document.getElementById('coachCodeInput').value = '';
             window.loadCoachingData();
+            window.refreshStudentChat?.();
         } else {
             window.showToast(d.message || 'Bağlantı başarısız.', 'error');
         }
@@ -1773,6 +1743,7 @@ window.initStudyTimer = function () {
 // --- UYGULAMA İÇİ BİLDİRİM MERKEZİ ---
 const NOTIF_ICONS = {
     feedback: '💬',
+    message: '✉️',
     assignment: '🗂️',
     reminder: '📋',
     student_joined: '🎓'

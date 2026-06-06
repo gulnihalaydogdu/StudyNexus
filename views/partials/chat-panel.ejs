@@ -1,0 +1,25 @@
+<div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-head">
+        <div class="chat-partner">
+            <span class="chat-avatar" id="chatPartnerAvatar">?</span>
+            <div class="chat-partner-text">
+                <strong id="chatPartnerName">Mesajlaşma</strong>
+                <span class="chat-partner-sub" id="chatPartnerSub">Koçunuzla yazışın</span>
+            </div>
+        </div>
+    </div>
+    <div class="chat-thread-tabs" id="chatThreadTabs" hidden></div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-empty" id="chatEmptyState">
+            <span class="chat-empty-icon">💬</span>
+            <p>Henüz mesaj yok.</p>
+            <span class="chat-empty-hint">İlk mesajı göndererek sohbeti başlatın.</span>
+        </div>
+    </div>
+    <form class="chat-composer" id="chatComposerForm" onsubmit="event.preventDefault(); sendChatMessage();">
+        <textarea id="chatInput" maxlength="1200" placeholder="Mesajınızı yazın..." rows="1" autocomplete="off"></textarea>
+        <button type="submit" class="chat-send-btn" id="chatSendBtn" title="Gönder" aria-label="Gönder">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+    </form>
+</div>

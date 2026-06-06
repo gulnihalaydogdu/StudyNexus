@@ -16,7 +16,7 @@
         <button type="button" class="nav-chip active" data-panel="planner">📝 Planlarım</button>
         <button type="button" class="nav-chip" data-panel="week">📋 Bu Hafta</button>
         <button type="button" class="nav-chip" data-panel="stats">📊 İlerleme</button>
-        <button type="button" class="nav-chip" data-panel="coaching">👩‍🏫 Koçum</button>
+        <button type="button" class="nav-chip" data-panel="coaching" id="coachingNavChip">👩‍🏫 Koçum <span class="nav-unread-badge" id="coachingUnreadBadge" hidden>0</span></button>
     </nav>
     <div class="user-menu">
         <%- include('partials/notification-bell') %>
@@ -156,9 +156,10 @@
                 <button type="submit" class="daily-submit-btn">Bağlan</button>
             </form>
             <ul id="myTeachersList" class="coaching-list"></ul>
-            <div class="student-feedback-box">
-                <h3>Koç Geri Bildirimleri</h3>
-                <ul id="studentFeedbackList" class="feedback-list"></ul>
+            <div class="student-chat-box">
+                <h3>Mesajlaşma</h3>
+                <p class="coaching-hint">Koçunuzla plan, geri bildirim ve sorularınızı buradan paylaşın.</p>
+                <%- include('partials/chat-panel') %>
             </div>
         </div>
     </section>
