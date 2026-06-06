@@ -17,6 +17,7 @@
         <button type="button" class="nav-chip" data-panel="planner">📝 Plan Oluştur</button>
     </nav>
     <div class="user-menu">
+        <%- include('partials/notification-bell') %>
         <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğretmen</span></a>
         <a href="/logout" class="logout-btn">Çıkış</a>
     </div>

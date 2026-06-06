@@ -10,6 +10,11 @@ import {
 import { getPlanItemsWithNames } from '../lib/weeklyPlan.js';
 import { getDynamicMonths } from '../lib/calendarMonths.js';
 import { parseMonthSlot } from '../lib/calendarSlot.js';
+import { createNotification } from '../lib/notifications.js';
+
+function displayName(user) {
+    return user?.full_name || user?.username || 'Bilinmeyen kullanıcı';
+}
 
 const router = express.Router();
 
@@ -41,6 +46,15 @@ router.post('/api/coaching/link-teacher', requireAuth, (req, res) => {
             teacher.id,
             req.session.userId
         ]);
+        const student = dbGet('SELECT full_name, username FROM users WHERE id = ?', [
+            req.session.userId
+        ]);
+        createNotification(teacher.id, {
+            type: 'student_joined',
+            title: '🎓 Yeni öğrenci bağlandı',
+            body: `${displayName(student)} koç kodunuzla size bağlandı.`,
+            link: '/'
+        });
         res.json({
             success: true,
             teacherName: teacher.full_name || teacher.username
@@ -228,6 +242,16 @@ router.post('/api/coaching/students/:id/feedback', requireAuth, (req, res) => {
         [req.session.userId, studentId, Number.isFinite(planId) ? planId : null, message]
     );
 
+    const teacher = dbGet('SELECT full_name, username FROM users WHERE id = ?', [
+        req.session.userId
+    ]);
+    createNotification(studentId, {
+        type: 'feedback',
+        title: `💬 ${displayName(teacher)} geri bildirim gönderdi`,
+        body: message,
+        link: '/'
+    });
+
     res.json({ success: true, message: 'Geri bildirim kaydedildi.' });
 });
 
@@ -283,6 +307,18 @@ router.post('/api/coaching/assign-plan', requireAuth, (req, res) => {
     if (!result.ok) {
         return res.status(400).json({ success: false, message: result.error });
     }
+
+    const teacher = dbGet('SELECT full_name, username FROM users WHERE id = ?', [
+        req.session.userId
+    ]);
+    const sourcePlan = dbGet('SELECT title FROM weekly_plans WHERE id = ?', [Number(planId)]);
+    const planTitle = sourcePlan?.title ? `"${sourcePlan.title}"` : 'bir';
+    createNotification(Number(studentId), {
+        type: 'assignment',
+        title: '🗂️ Yeni plan atandı',
+        body: `${displayName(teacher)} sana ${planTitle} çalışma planı atadı.`,
+        link: '/'
+    });
 
     res.json({ success: true, studentPlanId: result.studentPlanId });
 });

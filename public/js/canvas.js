@@ -1769,3 +1769,133 @@ window.initStudyTimer = function () {
             .catch(() => {});
     }
 };
+
+// --- UYGULAMA İÇİ BİLDİRİM MERKEZİ ---
+const NOTIF_ICONS = {
+    feedback: '💬',
+    assignment: '🗂️',
+    reminder: '📋',
+    student_joined: '🎓'
+};
+
+function notifTimeAgo(iso) {
+    if (!iso) return '';
+    const date = new Date(iso.includes('T') || iso.includes('Z') ? iso : iso.replace(' ', 'T') + 'Z');
+    const diff = Date.now() - date.getTime();
+    if (Number.isNaN(diff)) return '';
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return 'az önce';
+    if (min < 60) return `${min} dk önce`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr} sa önce`;
+    const day = Math.floor(hr / 24);
+    if (day < 7) return `${day} gün önce`;
+    return date.toLocaleDateString('tr-TR');
+}
+
+function renderNotifications(data) {
+    const badge = document.getElementById('notifBadge');
+    const list = document.getElementById('notifList');
+    const unread = data.unread || 0;
+
+    if (badge) {
+        if (unread > 0) {
+            badge.textContent = unread > 99 ? '99+' : String(unread);
+            badge.hidden = false;
+        } else {
+            badge.hidden = true;
+        }
+    }
+
+    if (!list) return;
+    const items = data.notifications || [];
+    if (items.length === 0) {
+        list.innerHTML = '<div class="notif-empty">Henüz bildirim yok.</div>';
+        return;
+    }
+
+    const esc = window.escapeHtml || ((s) => s);
+    list.innerHTML = items
+        .map((n) => {
+            const icon = NOTIF_ICONS[n.type] || '🔔';
+            const cls = n.is_read ? 'notif-item' : 'notif-item unread';
+            return `<button type="button" class="${cls}" data-id="${n.id}" data-link="${esc(n.link || '')}" onclick="onNotificationClick(this)">
+                <span class="notif-icon">${icon}</span>
+                <span class="notif-body">
+                    <span class="notif-title">${esc(n.title)}</span>
+                    ${n.body ? `<span class="notif-text">${esc(n.body)}</span>` : ''}
+                    <span class="notif-time">${notifTimeAgo(n.created_at)}</span>
+                </span>
+            </button>`;
+        })
+        .join('');
+}
+
+window.loadNotifications = function () {
+    if (!document.getElementById('notifBellBtn')) return;
+    fetch('/api/notifications', { headers: { Accept: 'application/json' } })
+        .then((r) => r.json())
+        .then((d) => {
+            if (d.success) renderNotifications(d);
+        })
+        .catch(() => {});
+};
+
+window.toggleNotifications = function (force) {
+    const panel = document.getElementById('notifPanel');
+    if (!panel) return;
+    const show = force === undefined ? panel.hidden : force;
+    panel.hidden = !show;
+    if (show) window.loadNotifications();
+};
+
+window.onNotificationClick = function (el) {
+    const id = el.getAttribute('data-id');
+    const link = el.getAttribute('data-link');
+    el.classList.remove('unread');
+    fetch('/api/notifications/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: Number(id) })
+    })
+        .then((r) => r.json())
+        .then((d) => {
+            const badge = document.getElementById('notifBadge');
+            if (badge && d.success) {
+                if (d.unread > 0) {
+                    badge.textContent = d.unread > 99 ? '99+' : String(d.unread);
+                    badge.hidden = false;
+                } else {
+                    badge.hidden = true;
+                }
+            }
+            if (link && link !== '/' && link !== window.location.pathname) {
+                window.location.href = link;
+            }
+        })
+        .catch(() => {});
+};
+
+window.markAllNotificationsRead = function () {
+    fetch('/api/notifications/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+        .then((r) => r.json())
+        .then(() => window.loadNotifications())
+        .catch(() => {});
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('notifBellBtn')) return;
+    window.loadNotifications();
+    setInterval(() => window.loadNotifications(), 60000);
+    document.addEventListener('click', (e) => {
+        const wrap = document.querySelector('.notif-wrap');
+        const panel = document.getElementById('notifPanel');
+        if (wrap && panel && !panel.hidden && !wrap.contains(e.target)) {
+            panel.hidden = true;
+        }
+    });
+});

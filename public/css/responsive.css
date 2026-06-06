@@ -454,6 +454,15 @@
     .coaching-form button {
         width: 100%;
     }
+
+    .notif-panel {
+        position: fixed;
+        top: 64px;
+        right: 8px;
+        left: 8px;
+        width: auto;
+        max-width: none;
+    }
 }
 
 /* Dokunmatik cihazlarda hover yığın efektini kapat */

@@ -6,6 +6,7 @@ import { db, dbReady } from './database.js';
 import indexRoutes from './routes/index.js';
 import authRoutes from './routes/auth.js';
 import coachingRoutes from './routes/coaching.js';
+import notificationRoutes from './routes/notifications.js';
 import { startDailyReminderScheduler } from './lib/reminders.js';
 import {
     helmetMiddleware,
@@ -52,6 +53,7 @@ app.use(csrfProtection);
 
 app.use('/', authRoutes);
 app.use('/', coachingRoutes);
+app.use('/', notificationRoutes);
 app.use('/', indexRoutes);
 
 dbReady

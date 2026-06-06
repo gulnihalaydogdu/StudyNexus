@@ -19,6 +19,7 @@
         <button type="button" class="nav-chip" data-panel="coaching">👩‍🏫 Koçum</button>
     </nav>
     <div class="user-menu">
+        <%- include('partials/notification-bell') %>
         <button type="button" class="timer-toggle-btn" id="timerToggleBtn" onclick="toggleStudyTimer()" title="Çalışma sayacı">⏱️</button>
         <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğrenci</span></a>
         <a href="/logout" class="logout-btn">Çıkış</a>
