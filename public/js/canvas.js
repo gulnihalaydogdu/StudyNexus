@@ -1818,11 +1818,13 @@ function renderNotifications(data) {
     list.innerHTML = items
         .map((n) => {
             const icon = NOTIF_ICONS[n.type] || '🔔';
+            let title = n.title || '';
+            if (icon && title.startsWith(icon)) title = title.slice(icon.length).trimStart();
             const cls = n.is_read ? 'notif-item' : 'notif-item unread';
             return `<button type="button" class="${cls}" data-id="${n.id}" data-link="${esc(n.link || '')}" onclick="onNotificationClick(this)">
                 <span class="notif-icon">${icon}</span>
                 <span class="notif-body">
-                    <span class="notif-title">${esc(n.title)}</span>
+                    <span class="notif-title">${esc(title)}</span>
                     ${n.body ? `<span class="notif-text">${esc(n.body)}</span>` : ''}
                     <span class="notif-time">${notifTimeAgo(n.created_at)}</span>
                 </span>
@@ -1841,12 +1843,29 @@ window.loadNotifications = function () {
         .catch(() => {});
 };
 
+function positionNotifPanel() {
+    const btn = document.getElementById('notifBellBtn');
+    const panel = document.getElementById('notifPanel');
+    if (!btn || !panel) return;
+    const rect = btn.getBoundingClientRect();
+    const gap = 8;
+    const panelWidth = panel.offsetWidth || 340;
+    let right = window.innerWidth - rect.right;
+    right = Math.max(8, Math.min(right, window.innerWidth - panelWidth - 8));
+    panel.style.top = `${rect.bottom + gap}px`;
+    panel.style.right = `${right}px`;
+    panel.style.left = 'auto';
+}
+
 window.toggleNotifications = function (force) {
     const panel = document.getElementById('notifPanel');
     if (!panel) return;
     const show = force === undefined ? panel.hidden : force;
     panel.hidden = !show;
-    if (show) window.loadNotifications();
+    if (show) {
+        positionNotifPanel();
+        window.loadNotifications();
+    }
 };
 
 window.onNotificationClick = function (el) {
@@ -1891,10 +1910,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('notifBellBtn')) return;
     window.loadNotifications();
     setInterval(() => window.loadNotifications(), 60000);
+    window.addEventListener('resize', () => {
+        const panel = document.getElementById('notifPanel');
+        if (panel && !panel.hidden) positionNotifPanel();
+    });
     document.addEventListener('click', (e) => {
         const wrap = document.querySelector('.notif-wrap');
         const panel = document.getElementById('notifPanel');
-        if (wrap && panel && !panel.hidden && !wrap.contains(e.target)) {
+        if (
+            wrap &&
+            panel &&
+            !panel.hidden &&
+            !wrap.contains(e.target) &&
+            !panel.contains(e.target)
+        ) {
             panel.hidden = true;
         }
     });

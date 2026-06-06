@@ -456,11 +456,9 @@
     }
 
     .notif-panel {
-        position: fixed;
-        top: 64px;
-        right: 8px;
-        left: 8px;
-        width: auto;
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
         max-width: none;
     }
 }

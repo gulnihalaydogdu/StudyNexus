@@ -51,7 +51,7 @@ router.post('/api/coaching/link-teacher', requireAuth, (req, res) => {
         ]);
         createNotification(teacher.id, {
             type: 'student_joined',
-            title: '🎓 Yeni öğrenci bağlandı',
+            title: 'Yeni öğrenci bağlandı',
             body: `${displayName(student)} koç kodunuzla size bağlandı.`,
             link: '/'
         });
@@ -247,7 +247,7 @@ router.post('/api/coaching/students/:id/feedback', requireAuth, (req, res) => {
     ]);
     createNotification(studentId, {
         type: 'feedback',
-        title: `💬 ${displayName(teacher)} geri bildirim gönderdi`,
+        title: `${displayName(teacher)} geri bildirim gönderdi`,
         body: message,
         link: '/'
     });
@@ -315,7 +315,7 @@ router.post('/api/coaching/assign-plan', requireAuth, (req, res) => {
     const planTitle = sourcePlan?.title ? `"${sourcePlan.title}"` : 'bir';
     createNotification(Number(studentId), {
         type: 'assignment',
-        title: '🗂️ Yeni plan atandı',
+        title: 'Yeni plan atandı',
         body: `${displayName(teacher)} sana ${planTitle} çalışma planı atadı.`,
         link: '/'
     });

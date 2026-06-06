@@ -43,7 +43,7 @@ body {
     /* Eski kodların aynen dursun, sadece şunları ekle: */
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 5000;
     background: rgba(253, 252, 255, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -53,7 +53,6 @@ body {
     align-items: center;
     border-bottom: 1px solid rgba(139, 92, 246, 0.1);
     box-shadow: var(--shadow-sm);
-    z-index: 100;
 }
 
 .brand { font-size: 1.5rem; font-weight: 800; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; letter-spacing: -0.5px; }
@@ -227,7 +226,7 @@ body {
     cursor: pointer;
     box-shadow: var(--shadow-md);
     transition: all 0.3s ease;
-    z-index: 100;
+    z-index: 10;
 }
 .add-btn:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 
@@ -1850,16 +1849,16 @@ body {
     box-shadow: 0 0 0 2px #fff;
 }
 .notif-panel {
-    position: absolute;
-    top: 52px;
-    right: 0;
+    position: fixed;
+    top: 72px;
+    right: 40px;
     width: 340px;
-    max-width: 88vw;
+    max-width: calc(100vw - 16px);
     background: #fff;
     border: 1px solid var(--border);
     border-radius: 16px;
     box-shadow: 0 18px 45px rgba(76, 29, 149, 0.22);
-    z-index: 3600;
+    z-index: 5100;
     overflow: hidden;
     animation: notifPanelIn 0.18s ease;
 }
