@@ -35,23 +35,25 @@
                 <div class="cal-month-group">
                     <div class="cal-month-name"><%= m.name %> <%= m.year %></div>
                     <div class="cal-weeks-grid">
-                        <% for(let w=1; w<=4; w++) {
+                        <% (m.weeks || []).forEach(w => {
                             let event = calendarEvents.find(e =>
-                                e.target_year == m.year && e.target_month === m.name && e.target_week == w
+                                e.week_start_date === w.weekStart ||
+                                (e.target_year == m.year && e.target_month === m.name && e.target_week == w.weekIndex)
                             );
                             if (event && !weeklyPlans.some(p => p.id === event.plan_id)) event = null;
                         %>
                             <div class="cal-week-box <%= event ? 'filled' : 'empty' %>"
-                                 id="cal-box-<%= m.year %>-<%= m.name %>-<%= w %>"
+                                 id="cal-box-<%= w.weekStart %>"
+                                 data-week-start="<%= w.weekStart %>"
                                  <% if (event) { %>
                                  data-plan-id="<%= event.plan_id %>"
                                  data-open-plan
                                  <% if (typeof studentViewId !== 'undefined') { %>data-student-plan-for="<%= studentViewId %>"<% } %>
                                  <% } %>>
-                                <span class="week-num"><%= w %>. Hafta</span>
+                                <span class="week-num"><%= w.label %></span>
                                 <% if(event) { %><div class="week-indicator"></div><% } %>
                             </div>
-                        <% } %>
+                        <% }) %>
                     </div>
                 </div>
             <% }) %>

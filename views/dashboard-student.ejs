@@ -42,9 +42,9 @@
         <div class="panel-center-card">
             <h2>📋 Bu Hafta — <%= weekPanel.todayName %></h2>
             <% if (!weekPanel.hasPlan) { %>
-                <p class="week-panel-empty">Bu ayın <%= weekPanel.week %>. haftası için takvimde atanmış plan yok.</p>
+                <p class="week-panel-empty"><%= weekPanel.weekRangeLabel || 'Bu hafta' %> için takvimde atanmış plan yok.</p>
             <% } else { %>
-                <p class="week-panel-sub"><%= weekPanel.planTitle %> · <%= weekPanel.month %> · <%= weekPanel.week %>. Hafta</p>
+                <p class="week-panel-sub"><%= weekPanel.planTitle %> · <%= weekPanel.weekRangeLabel %> · <%= weekPanel.todayDateLabel %></p>
                 <% if (weekPanel.todayItems.length === 0) { %>
                     <p class="week-panel-empty">Bugün için planlanmış konu yok.</p>
                 <% } else { %>
@@ -170,7 +170,10 @@
 <% } %>
 <%- include('partials/modals') %>
 
-<script>window.STUDYNEXUS_USER = { id: <%= user.id %>, role: 'student' };</script>
+<script>
+window.STUDYNEXUS_USER = { id: <%= user.id %>, role: 'student' };
+window.STUDYNEXUS_CALENDAR = <%- JSON.stringify(dynamicMonths) %>;
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script type="module" src="/js/app.js"></script>

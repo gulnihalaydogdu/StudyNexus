@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (calendarPlanBtn) calendarPlanBtn.addEventListener('click', () => window.addToCalendar());
     if (assignPlanBtn) assignPlanBtn.addEventListener('click', () => window.openAssignPlanModal());
 
+    const calMonth = document.getElementById('calMonthSelect')?.value;
+    if (calMonth) window.renderCalendarWeekPills?.('calWeekSelector', 'selectedWeekValue', calMonth);
+    const assignMonth = document.getElementById('assignMonthSelect')?.value;
+    if (assignMonth) window.renderCalendarWeekPills?.('assignWeekSelector', 'assignWeekValue', assignMonth);
+
     // --- 2. SÜRÜKLE BIRAK (DRAG & DROP) MOTORU ---
     const draggables = document.querySelectorAll('.draggable-item');
     const dropZones = document.querySelectorAll('.drop-zone');
@@ -1312,14 +1317,12 @@ window.deleteWeeklyPlan = function () {
                 }, 300);
             }
 
-            document.querySelectorAll('.cal-week-box').forEach((box) => {
-                const onclickAttr = box.getAttribute('onclick') || '';
-                if (!onclickAttr.includes(`editWeeklyPlan(${planId})`)) return;
+            document.querySelectorAll(`.cal-week-box[data-plan-id="${planId}"]`).forEach((box) => {
                 box.classList.remove('filled');
                 box.classList.add('empty');
-                box.removeAttribute('onclick');
-                const indicator = box.querySelector('.week-indicator');
-                if (indicator) indicator.remove();
+                box.removeAttribute('data-plan-id');
+                box.removeAttribute('data-open-plan');
+                box.querySelector('.week-indicator')?.remove();
             });
         })
         .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
@@ -1330,25 +1333,15 @@ window.addToCalendar = function () {
     if (!planId) return;
     const calModal = document.getElementById('calendarModal');
     calModal.setAttribute('data-plan-id', planId);
+    const monthValue = document.getElementById('calMonthSelect')?.value;
+    if (monthValue) window.renderCalendarWeekPills?.('calWeekSelector', 'selectedWeekValue', monthValue);
     calModal.classList.add('active');
 };
 
-// --- 2. TAKVİM PENCERESİNİ KAPATMA ---
 window.closeCalendarModal = function () {
     document.getElementById('calendarModal').classList.remove('active');
 };
 
-// --- 3. HAFTA SEÇİMİ (Pill Butonlarına tıklanınca görseli günceller) ---
-window.selectWeek = function (btnElement, weekNumber) {
-    // Önce hepsinin aktifliğini kaldır
-    document.querySelectorAll('.week-pill').forEach(btn => btn.classList.remove('active'));
-    // Tıklananı aktif yap
-    btnElement.classList.add('active');
-    // Gizli inputa değeri yaz
-    document.getElementById('selectedWeekValue').value = weekNumber;
-};
-
-// --- 4. VERİTABANINA ONAYLAMA (AJAX) ---
 function parseMonthSlotValue(value) {
     const raw = String(value || '');
     const [yearPart, ...monthParts] = raw.split('|');
@@ -1360,59 +1353,91 @@ function parseMonthSlotValue(value) {
     };
 }
 
+function getCalendarMonths() {
+    return window.STUDYNEXUS_CALENDAR || [];
+}
+
+window.renderCalendarWeekPills = function (containerId, hiddenInputId, monthValue) {
+    const container = document.getElementById(containerId);
+    const hidden = document.getElementById(hiddenInputId);
+    if (!container || !hidden) return;
+
+    const { year, month } = parseMonthSlotValue(monthValue);
+    const monthData = getCalendarMonths().find((m) => m.year === year && m.name === month);
+    const weeks = monthData?.weeks || [];
+
+    if (!weeks.length) {
+        container.innerHTML = '<p class="week-selector-empty">Bu ay için hafta bulunamadı.</p>';
+        hidden.value = '';
+        return;
+    }
+
+    container.innerHTML = weeks
+        .map(
+            (w, i) =>
+                `<button type="button" class="week-pill${i === 0 ? ' active' : ''}" data-week-start="${w.weekStart}" onclick="window.selectWeekStart(this, '${hiddenInputId}')">${escapeHtml(w.label)}</button>`
+        )
+        .join('');
+    hidden.value = weeks[0].weekStart;
+};
+
+window.selectWeekStart = function (btn, hiddenInputId) {
+    const wrap = btn.closest('.week-selector-container');
+    wrap?.querySelectorAll('.week-pill').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    const hidden = document.getElementById(hiddenInputId);
+    if (hidden) hidden.value = btn.getAttribute('data-week-start') || '';
+};
+
+function fillCalendarWeekBox(box, planId) {
+    if (!box) return;
+    box.classList.remove('empty');
+    box.classList.add('filled');
+    box.setAttribute('data-plan-id', planId);
+    box.setAttribute('data-open-plan', '');
+    if (!box.querySelector('.week-indicator')) {
+        box.insertAdjacentHTML('beforeend', '<div class="week-indicator"></div>');
+    }
+}
+
+function clearCalendarWeekBox(box) {
+    if (!box) return;
+    box.classList.remove('filled');
+    box.classList.add('empty');
+    box.removeAttribute('data-plan-id');
+    box.removeAttribute('data-open-plan');
+    box.querySelector('.week-indicator')?.remove();
+}
+
 window.confirmCalendarAssignment = function () {
     const planId = document.getElementById('calendarModal').getAttribute('data-plan-id');
     const monthValue = document.getElementById('calMonthSelect').value;
-    const week = document.getElementById('selectedWeekValue').value;
-    const { year, month } = parseMonthSlotValue(monthValue);
+    const weekStart = document.getElementById('selectedWeekValue').value;
+    const { year } = parseMonthSlotValue(monthValue);
+
+    if (!weekStart) return window.showToast('Hafta seçin.', 'error');
 
     fetch('/assign-to-calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId, month: monthValue, week, year })
+        body: JSON.stringify({ planId, month: monthValue, weekStart, year })
     })
-        .then(res => res.json())
-        .then(data => {
-
+        .then((res) => res.json())
+        .then((data) => {
             if (data.success) {
                 window.showToast(data.message || 'Plan takvime eklendi.', 'success');
                 window.closeCalendarModal();
 
-                if (data.previousSlot) {
-                    const oldBox = document.getElementById(
-                        `cal-box-${data.previousSlot.year}-${data.previousSlot.month}-${data.previousSlot.week}`
-                    );
-                    if (oldBox) {
-                        oldBox.classList.remove('filled');
-                        oldBox.classList.add('empty');
-                        oldBox.removeAttribute('data-plan-id');
-                        oldBox.removeAttribute('data-open-plan');
-                        oldBox.querySelector('.week-indicator')?.remove();
-                    }
+                if (data.previousSlot?.weekStart) {
+                    clearCalendarWeekBox(document.getElementById(`cal-box-${data.previousSlot.weekStart}`));
                 }
 
-                const boxId = `cal-box-${data.year || year}-${data.month || month}-${data.week || week}`;
-                const box = document.getElementById(boxId);
-                if (box) {
-                    box.classList.remove('empty');
-                    box.classList.add('filled');
-                    box.title = 'Atanan Plan';
-
-                    box.setAttribute('data-plan-id', planId);
-                    box.setAttribute('data-open-plan', '');
-
-                    if (!box.querySelector('.week-indicator')) {
-                        box.insertAdjacentHTML('beforeend', '<div class="week-indicator"></div>');
-                    }
-                }
+                fillCalendarWeekBox(document.getElementById(`cal-box-${data.weekStart}`), planId);
             } else {
                 window.showToast(data.message || 'Atama işlemi başarısız oldu.', 'error');
             }
         })
-        .catch(err => {
-            console.error(err);
-            window.showToast('Sunucu bağlantısı koptu.', 'error');
-        });
+        .catch(() => window.showToast('Sunucu bağlantısı koptu.', 'error'));
 };
 
 // --- KOÇLUK ---
@@ -1505,6 +1530,8 @@ window.openAssignPlanModal = function () {
     const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id');
     if (!planId) return window.showToast('Önce bir plan kaydedin veya açın.', 'error');
     document.getElementById('assignPlanModal').setAttribute('data-plan-id', planId);
+    const monthValue = document.getElementById('assignMonthSelect')?.value;
+    if (monthValue) window.renderCalendarWeekPills?.('assignWeekSelector', 'assignWeekValue', monthValue);
     document.getElementById('assignPlanModal').classList.add('active');
 };
 
@@ -1512,25 +1539,20 @@ window.closeAssignPlanModal = function () {
     document.getElementById('assignPlanModal').classList.remove('active');
 };
 
-window.selectAssignWeek = function (btn, n) {
-    document.querySelectorAll('#assignPlanModal .week-pill').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('assignWeekValue').value = n;
-};
-
 window.confirmAssignPlan = function () {
     const planId = document.getElementById('a4Canvas')?.getAttribute('data-editing-id')
         || document.getElementById('assignPlanModal').getAttribute('data-plan-id');
     const studentId = document.getElementById('assignStudentModalSelect').value;
     const monthValue = document.getElementById('assignMonthSelect').value;
-    const week = document.getElementById('assignWeekValue').value;
+    const weekStart = document.getElementById('assignWeekValue').value;
     const { year } = parseMonthSlotValue(monthValue);
     if (!studentId) return window.showToast('Öğrenci seçin.', 'error');
+    if (!weekStart) return window.showToast('Hafta seçin.', 'error');
 
     fetch('/api/coaching/assign-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, planId, month: monthValue, week, year })
+        body: JSON.stringify({ studentId, planId, month: monthValue, weekStart, year })
     }).then(r => r.json()).then(d => {
         if (d.success) {
             window.showToast('Plan öğrenciye atandı ve takvimine eklendi.', 'success');

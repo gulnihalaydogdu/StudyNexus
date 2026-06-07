@@ -1,20 +1,15 @@
 <div id="calendarModal" class="modal-overlay">
     <div class="modal-content modal-sm">
         <button type="button" class="close-modal-btn" onclick="closeCalendarModal()">✕</button>
-        <div class="modal-header"><h2>📅 Hedef Hafta</h2><p>Bu planı hangi haftaya atayalım?</p></div>
+        <div class="modal-header"><h2>📅 Hedef Hafta</h2><p>Bu planı hangi tarih aralığına atayalım?</p></div>
         <div class="modal-body">
-            <select id="calMonthSelect" class="modal-select">
+            <select id="calMonthSelect" class="modal-select" onchange="window.renderCalendarWeekPills?.('calWeekSelector','selectedWeekValue', this.value)">
                 <% if (typeof dynamicMonths !== 'undefined') { dynamicMonths.forEach(m => { %>
                     <option value="<%= m.year %>|<%= m.name %>"><%= m.name %> <%= m.year %></option>
                 <% }) } %>
             </select>
-            <div class="week-selector-container">
-                <button type="button" class="week-pill active" onclick="selectWeek(this, 1)">1. Hafta</button>
-                <button type="button" class="week-pill" onclick="selectWeek(this, 2)">2. Hafta</button>
-                <button type="button" class="week-pill" onclick="selectWeek(this, 3)">3. Hafta</button>
-                <button type="button" class="week-pill" onclick="selectWeek(this, 4)">4. Hafta</button>
-            </div>
-            <input type="hidden" id="selectedWeekValue" value="1">
+            <div class="week-selector-container" id="calWeekSelector"></div>
+            <input type="hidden" id="selectedWeekValue" value="">
         </div>
         <div class="modal-footer"><button type="button" class="add-to-calendar-btn" onclick="confirmCalendarAssignment()">Onayla</button></div>
     </div>
@@ -26,18 +21,13 @@
         <div class="modal-header"><h2>Öğrenciye Plan Ata</h2></div>
         <div class="modal-body">
             <select id="assignStudentModalSelect" class="modal-select"></select>
-            <select id="assignMonthSelect" class="modal-select">
+            <select id="assignMonthSelect" class="modal-select" onchange="window.renderCalendarWeekPills?.('assignWeekSelector','assignWeekValue', this.value)">
                 <% if (typeof dynamicMonths !== 'undefined') { dynamicMonths.forEach(m => { %>
                     <option value="<%= m.year %>|<%= m.name %>"><%= m.name %> <%= m.year %></option>
                 <% }) } %>
             </select>
-            <div class="week-selector-container">
-                <button type="button" class="week-pill active" onclick="selectAssignWeek(this,1)">1. Hafta</button>
-                <button type="button" class="week-pill" onclick="selectAssignWeek(this,2)">2. Hafta</button>
-                <button type="button" class="week-pill" onclick="selectAssignWeek(this,3)">3. Hafta</button>
-                <button type="button" class="week-pill" onclick="selectAssignWeek(this,4)">4. Hafta</button>
-            </div>
-            <input type="hidden" id="assignWeekValue" value="1">
+            <div class="week-selector-container" id="assignWeekSelector"></div>
+            <input type="hidden" id="assignWeekValue" value="">
         </div>
         <div class="modal-footer"><button type="button" class="add-to-calendar-btn" onclick="confirmAssignPlan()">Ata</button></div>
     </div>

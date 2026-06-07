@@ -88,11 +88,13 @@ function initSchema() {
             plan_id INTEGER NOT NULL,
             target_year INTEGER NOT NULL,
             target_month TEXT NOT NULL,
-            target_week INTEGER NOT NULL CHECK(target_week BETWEEN 1 AND 4),
+            target_week INTEGER NOT NULL CHECK(target_week BETWEEN 1 AND 6),
+            week_start_date TEXT NOT NULL,
+            week_end_date TEXT NOT NULL,
             created_at TEXT NOT NULL DEFAULT (datetime('now')),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (plan_id) REFERENCES weekly_plans(id) ON DELETE CASCADE,
-            UNIQUE (user_id, target_year, target_month, target_week)
+            UNIQUE (user_id, week_start_date)
         );
 
         CREATE TABLE IF NOT EXISTS teacher_student_links (

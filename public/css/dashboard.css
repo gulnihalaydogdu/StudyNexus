@@ -887,9 +887,15 @@ body {
 
 .week-pill {
     background: #f5f3f9; color: var(--text-muted); border: 1px solid #e9e4f4;
-    padding: 10px 15px; border-radius: 12px; font-weight: 600; font-size: 0.85rem;
+    padding: 8px 10px; border-radius: 12px; font-weight: 600; font-size: 0.78rem;
     cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;
-    flex: 1; min-width: 70px;
+    flex: 1 1 calc(50% - 8px); min-width: 120px; line-height: 1.25;
+}
+.week-selector-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin: 8px 0;
 }
 
 .week-pill:hover { background: #e9e4f4; color: var(--text-main); }
@@ -950,6 +956,7 @@ body {
 .cal-month-name { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
 
 .cal-weeks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.cal-weeks-grid.cols-1 { grid-template-columns: 1fr; }
 
 .cal-week-box {
     background: #f5f3f9;
@@ -979,7 +986,13 @@ body {
     box-shadow: 0 4px 6px rgba(139, 92, 246, 0.15);
 }
 
-.week-num { font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
+.week-num {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: center;
+    line-height: 1.25;
+}
 
 /* Dolu haftayı belirten mor nokta */
 .week-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-gradient); box-shadow: 0 2px 4px rgba(139, 92, 246, 0.4);}

@@ -156,7 +156,7 @@ router.get('/teacher/student/:studentId', requireAuth, (req, res) => {
         student,
         weeklyPlans,
         calendarEvents,
-        dynamicMonths: getDynamicMonths(),
+        dynamicMonths: getDynamicMonths(5),
         courses,
         topics,
         stats,
@@ -293,12 +293,13 @@ router.post('/api/coaching/assign-plan', requireAuth, (req, res) => {
         return res.status(403).json({ success: false });
     }
 
-    const { studentId, planId, month, week, year } = req.body;
+    const { studentId, planId, month, week, year, weekStart, weekStartDate } = req.body;
     const slot = parseMonthSlot(month);
     const result = assignPlanToStudent({
         teacherId: req.session.userId,
         studentId: Number(studentId),
         planId: Number(planId),
+        weekStart: weekStart || weekStartDate,
         year: year ?? slot.year,
         month: slot.month,
         week: Number(week)

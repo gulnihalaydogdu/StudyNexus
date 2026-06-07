@@ -38,7 +38,7 @@ router.get('/', requireAuth, (req, res) => {
         const stats = buildStats(courses, topics, userId);
         const weekPanel = getWeekPanelForUser(userId, calendarEvents);
 
-        const dynamicMonths = getDynamicMonths();
+        const dynamicMonths = getDynamicMonths(5);
 
         const viewData = {
             courses,
@@ -365,25 +365,18 @@ router.post('/delete-weekly-plan', requireAuth, (req, res) => {
 });
 
 router.post('/assign-to-calendar', requireAuth, (req, res) => {
-    const { planId, month, week, year } = req.body;
+    const { planId, month, week, year, weekStart, weekStartDate } = req.body;
     const plan = getPlanForUser(planId, req.session.userId);
     if (!plan) return res.status(404).json({ success: false });
 
     const slot = parseMonthSlot(month);
-    const targetYear = year ?? slot.year;
-    const targetMonth = slot.month;
-    const targetWeek = Number(week);
-
-    if (!targetMonth || targetWeek < 1 || targetWeek > 4) {
-        return res.status(400).json({ success: false, message: 'Geçersiz takvim slotu.' });
-    }
-
     const result = assignPlanToCalendarSlot({
         userId: req.session.userId,
         planId,
-        year: targetYear,
-        month: targetMonth,
-        week: targetWeek
+        weekStart: weekStart || weekStartDate,
+        year: year ?? slot.year,
+        month: slot.month,
+        week: Number(week)
     });
 
     if (!result.ok) {
@@ -397,8 +390,18 @@ router.post('/assign-to-calendar', requireAuth, (req, res) => {
         year: result.year,
         month: result.month,
         week: result.week,
+        weekStart: result.weekStart,
+        weekEnd: result.weekEnd,
+        weekRangeLabel: result.weekRangeLabel,
         previousSlot: result.previousSlot || null
     });
+});
+
+router.get('/api/calendar/weeks', requireAuth, (req, res) => {
+    const slot = parseMonthSlot(req.query.month);
+    const months = getDynamicMonths(12);
+    const monthData = months.find((m) => m.year === slot.year && m.name === slot.month);
+    res.json({ success: true, weeks: monthData?.weeks || [] });
 });
 
 router.get('/profile', requireAuth, (req, res) => {
