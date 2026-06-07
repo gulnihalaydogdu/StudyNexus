@@ -17,7 +17,7 @@ export const config = {
 
 export const isMailConfigured = () => Boolean(config.mail.user && config.mail.pass);
 
-/** Yalnızca bilinçli geliştirme için: AUTO_VERIFY_WHEN_NO_MAIL=true */
+/** Yalnızca bilinçli geliştirme için, AUTO_VERIFY_WHEN_NO_MAIL=true */
 export const autoVerifyWhenNoMail = process.env.AUTO_VERIFY_WHEN_NO_MAIL === 'true';
 
 export const requireMail = process.env.REQUIRE_MAIL !== 'false';
