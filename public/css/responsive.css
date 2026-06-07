@@ -217,8 +217,25 @@
         padding: 0 8px;
     }
 
+    .welcome-poster-wrap {
+        max-width: 100%;
+    }
+
     .welcome-poster {
         max-width: 100%;
+    }
+
+    .welcome-arrow {
+        right: 42px;
+        top: 44px;
+        width: 78px;
+        transform: rotate(-36deg);
+        transform-origin: 0% 100%;
+    }
+
+    @keyframes welcomeArrowBounce {
+        0%, 100% { transform: rotate(-36deg) translate(0, 0); }
+        50% { transform: rotate(-36deg) translate(3px, -5px); }
     }
 
     .add-btn {

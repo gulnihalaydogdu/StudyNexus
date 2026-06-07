@@ -21,7 +21,10 @@
     <div class="user-menu">
         <%- include('partials/theme-toggle') %>
         <%- include('partials/notification-bell') %>
-        <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğretmen</span></a>
+        <a href="/profile" class="profile-link">
+            <img class="profile-link-icon" src="/img/profile.png" alt="" width="22" height="22" aria-hidden="true">
+            <%= user.username %> <span class="role-tag">Öğretmen</span>
+        </a>
         <a href="/logout" class="logout-btn">Çıkış</a>
     </div>
 </header>
@@ -76,7 +79,7 @@
     <section id="panel-planner" class="app-panel">
         <div class="canvas-area">
             <%- include('partials/planner-sidebar', { hideCalendar: true, weeklyPlans, calendarEvents, dynamicMonths }) %>
-            <%- include('partials/a4-canvas', { workspaceHint: 'Öğrencilere atayacağınız haftalık planı burada oluşturun.', showAssignBtn: true, compactToolbar: true }) %>
+            <%- include('partials/a4-canvas', { workspaceHint: 'Öğrencilere atayacağınız haftalık planı burada oluşturun.', showAssignBtn: true, compactToolbar: true, darkPoster: true }) %>
             <%- include('partials/topic-toolbox') %>
         </div>
     </section>

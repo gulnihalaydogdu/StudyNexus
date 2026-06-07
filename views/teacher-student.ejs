@@ -26,7 +26,10 @@
     </div>
     <div class="user-menu">
         <%- include('partials/theme-toggle') %>
-        <a href="/profile" class="profile-link">👤 <%= user.username %></a>
+        <a href="/profile" class="profile-link">
+            <img class="profile-link-icon" src="/img/profile.png" alt="" width="22" height="22" aria-hidden="true">
+            <%= user.username %>
+        </a>
         <a href="/logout" class="logout-btn">Çıkış</a>
     </div>
 </header>
@@ -44,7 +47,8 @@
         <%- include('partials/a4-canvas', {
             workspaceHint: 'Soldan bir plan seçin veya takvimdeki haftaya tıklayın.',
             showAssignBtn: false,
-            hideCreateBtn: true
+            hideCreateBtn: true,
+            darkPoster: true
         }) %>
         <%- include('partials/topic-toolbox-readonly', { courses, topics }) %>
     </div>

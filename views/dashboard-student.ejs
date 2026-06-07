@@ -15,16 +15,21 @@
 <header class="navbar">
     <h1 class="brand">StudyNexus</h1>
     <nav class="app-nav" data-default-panel="planner">
-        <button type="button" class="nav-chip active" data-panel="planner">📝 Planlarım</button>
-        <button type="button" class="nav-chip" data-panel="week">📋 Bu Hafta</button>
-        <button type="button" class="nav-chip" data-panel="stats">📊 İlerleme</button>
-        <button type="button" class="nav-chip" data-panel="coaching" id="coachingNavChip">👩‍🏫 Koçum <span class="nav-unread-badge" id="coachingUnreadBadge" hidden>0</span></button>
+        <button type="button" class="nav-chip active" data-panel="planner">Planlarım</button>
+        <button type="button" class="nav-chip" data-panel="week">Bu Hafta</button>
+        <button type="button" class="nav-chip" data-panel="stats">İlerleme</button>
+        <button type="button" class="nav-chip" data-panel="coaching" id="coachingNavChip">Koçum <span class="nav-unread-badge" id="coachingUnreadBadge" hidden>0</span></button>
     </nav>
     <div class="user-menu">
         <%- include('partials/theme-toggle') %>
         <%- include('partials/notification-bell') %>
-        <button type="button" class="timer-toggle-btn" id="timerToggleBtn" onclick="toggleStudyTimer()" title="Çalışma sayacı">⏱️</button>
-        <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğrenci</span></a>
+        <button type="button" class="timer-toggle-btn" id="timerToggleBtn" onclick="toggleStudyTimer()" title="Çalışma sayacı" aria-label="Çalışma sayacı">
+            <img class="timer-toggle-icon" src="/img/clock.png" alt="" width="32" height="32" aria-hidden="true">
+        </button>
+        <a href="/profile" class="profile-link">
+            <img class="profile-link-icon" src="/img/profile.png" alt="" aria-hidden="true">
+            <%= user.username %> <span class="role-tag">Öğrenci</span>
+        </a>
         <a href="/logout" class="logout-btn">Çıkış</a>
     </div>
 </header>
@@ -75,7 +80,7 @@
 
     <section id="panel-stats" class="app-panel">
         <div class="panel-center-card stats-card-wide">
-            <h2>📊 İlerleme</h2>
+            <h2>İlerleme</h2>
             <div class="gamification-card" id="gamificationCard">
                 <div class="gamification-main">
                     <div class="gamification-head">
@@ -83,10 +88,6 @@
                             <span class="gamification-kicker">Seviye <span id="gamiLevel"><%= gamification.level %></span></span>
                             <strong><span id="gamiXp"><%= gamification.xp %></span> XP</strong>
                             <p class="stats-muted"><span id="gamiStreak"><%= gamification.streak %></span> günlük seri</p>
-                        </div>
-                        <div class="gamification-mascot">
-                            <img id="gamiMascot" src="/img/xp-mascot.gif" alt=""
-                                 onerror="this.style.display='none'">
                         </div>
                     </div>
                     <div class="xp-bar-wrap">
@@ -152,7 +153,7 @@
 
     <section id="panel-coaching" class="app-panel">
         <div class="panel-center-card">
-            <h2>👩‍🏫 Koçuma Bağlan</h2>
+            <h2>Koçuma Bağlan</h2>
             <p class="coaching-hint">Koçunuzun verdiği kodu girerek programa erişim ve plan atamaları alırsınız.</p>
             <form class="coaching-form" onsubmit="event.preventDefault(); linkToCoach();">
                 <input type="text" id="coachCodeInput" placeholder="Koç kodu" required style="text-transform:uppercase;">

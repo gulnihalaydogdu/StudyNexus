@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
             a4Canvas.classList.add('active');
             createBtn.style.display = 'none';
             if (workspacePoster) workspacePoster.style.display = 'none';
+            const welcomeArrow = document.getElementById('welcomeArrow');
+            if (welcomeArrow) welcomeArrow.style.display = 'none';
         });
     }
 
@@ -515,6 +517,9 @@ window.showXpGainBar = function (prevXp, gamification) {
                 <div class="xp-gain-fill"><span class="xp-gain-shine"></span></div>
             </div>
             <div class="xp-gain-status"></div>
+        </div>
+        <div class="xp-gain-mascot" aria-hidden="true">
+            <img src="/img/xp-mascot.gif" alt="" onerror="this.parentElement.style.display='none'">
         </div>`;
     document.body.appendChild(overlay);
 
@@ -1048,6 +1053,8 @@ window.closeCanvasEditor = function () {
     if (createNewBtn) createNewBtn.style.display = 'flex';
     const wEmptyState = document.getElementById('workspaceEmptyState');
     if (wEmptyState) wEmptyState.style.display = 'flex';
+    const welcomeArrow = document.getElementById('welcomeArrow');
+    if (welcomeArrow) welcomeArrow.style.display = '';
     const savePlanBtn = document.getElementById('savePlanBtn');
     if (savePlanBtn) savePlanBtn.textContent = '💾 Kaydet';
 };
@@ -1172,6 +1179,8 @@ window.applyPlanToCanvas = function (data, options = {}) {
     if (createNewBtn) createNewBtn.style.display = 'none';
     const wEmptyState = document.getElementById('workspaceEmptyState');
     if (wEmptyState) wEmptyState.style.display = 'none';
+    const welcomeArrow = document.getElementById('welcomeArrow');
+    if (welcomeArrow) welcomeArrow.style.display = 'none';
 
     const savePlanBtn = document.getElementById('savePlanBtn');
     if (savePlanBtn) {

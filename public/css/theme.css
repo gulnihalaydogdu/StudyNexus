@@ -65,7 +65,6 @@ html[data-theme="dark"] .profile-link,
 html[data-theme="dark"] .logout-btn,
 html[data-theme="dark"] .toolbox-drag-panel,
 html[data-theme="dark"] .topics-scroll h3,
-html[data-theme="dark"] .pile-paper,
 html[data-theme="dark"] .calendar-widget,
 html[data-theme="dark"] .modal-content,
 html[data-theme="dark"] .modal-footer,
@@ -84,7 +83,6 @@ html[data-theme="dark"] .stats-card,
 html[data-theme="dark"] .gamification-card,
 html[data-theme="dark"] .plan-search-input,
 html[data-theme="dark"] .topic-filter-input,
-html[data-theme="dark"] .canvas-action-btn,
 html[data-theme="dark"] .back-dashboard-link,
 html[data-theme="dark"] .teacher-student-card-link,
 html[data-theme="dark"] .chat-float-panel,
@@ -96,14 +94,11 @@ html[data-theme="dark"] .profile-nav,
 html[data-theme="dark"] .profile-home-link,
 html[data-theme="dark"] .auth-box,
 html[data-theme="dark"] .info-card,
-html[data-theme="dark"] .timer-toggle-btn,
 html[data-theme="dark"] .create-plan-btn,
 html[data-theme="dark"] .topic-chip,
-html[data-theme="dark"] .drop-zone,
 html[data-theme="dark"] .zone-card,
 html[data-theme="dark"] .chat-tab,
-html[data-theme="dark"] .chat-compose,
-html[data-theme="dark"] .chat-msg.other,
+html[data-theme="dark"] .chat-composer,
 html[data-theme="dark"] .notif-item,
 html[data-theme="dark"] .coaching-list li,
 html[data-theme="dark"] .teacher-student-stat,
@@ -129,15 +124,30 @@ html[data-theme="dark"] .logout-btn:hover {
     color: white;
 }
 
-html[data-theme="dark"] .a4-template,
-html[data-theme="dark"] .a4-paper-export {
-    background: #2a2540;
-    color: var(--text-main);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-}
+/* A4 tuval karanlık modda da açık kağıt görünümünde kalır — ayrıntılar dosya sonunda */
 
 html[data-theme="dark"] .pile-paper {
-    background: var(--surface-raised);
+    background-color: #ffffff;
+    background-image: url('/img/paper-texture.png');
+    background-size: cover;
+    background-position: top center;
+    border-color: #e9e4f4;
+    box-shadow: 0 8px 16px -4px rgba(109, 40, 217, 0.12);
+}
+
+html[data-theme="dark"] .pile-paper .pile-title {
+    color: #2e1065;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+html[data-theme="dark"] .pile-paper .pile-date {
+    color: #7c7b9b;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+html[data-theme="dark"] .pile-container:hover .pile-paper,
+html[data-theme="dark"] .pile-container .pile-paper:hover {
+    box-shadow: 0 10px 20px rgba(109, 40, 217, 0.15);
 }
 
 html[data-theme="dark"] .cal-week-box.empty {
@@ -263,17 +273,13 @@ html[data-theme="dark"] .canvas-action-btn.danger:hover {
 }
 
 html[data-theme="dark"] .theme-toggle-btn:hover,
-html[data-theme="dark"] .notif-bell-btn:hover {
+html[data-theme="dark"] .notif-bell-btn:hover,
+html[data-theme="dark"] .timer-toggle-btn:hover {
     background: rgba(167, 139, 250, 0.15);
 }
 
-html[data-theme="dark"] .timer-toggle-btn:hover {
-    background: #2d2848;
-    border-color: var(--primary);
-}
-
 html[data-theme="dark"] .timer-toggle-btn.running {
-    color: #fff;
+    background: rgba(167, 139, 250, 0.2);
 }
 
 html[data-theme="dark"] .auth-form-section {
@@ -293,7 +299,6 @@ html[data-theme="dark"] .profile-nav-link.danger:hover {
     background: #2a1518;
 }
 
-html[data-theme="dark"] .drop-zone.drag-over,
 html[data-theme="dark"] .zone-card:hover {
     border-color: var(--primary);
     background: rgba(139, 92, 246, 0.08);
@@ -364,6 +369,191 @@ html[data-theme="dark"] .notif-time {
 
 html[data-theme="dark"] .notif-badge {
     box-shadow: 0 0 0 2px var(--surface-solid);
+}
+
+/* --- Mesajlaşma paneli (karanlık mod) --- */
+html[data-theme="dark"] .chat-panel {
+    background: var(--surface-solid);
+    border-color: var(--border);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .chat-panel-head {
+    background: var(--surface-raised);
+    border-bottom-color: var(--border);
+}
+
+html[data-theme="dark"] .chat-partner-text strong {
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .chat-partner-sub {
+    color: #9d96b8;
+}
+
+html[data-theme="dark"] .chat-thread-tabs {
+    background: var(--surface-raised);
+    border-bottom-color: var(--border);
+}
+
+html[data-theme="dark"] .chat-tab {
+    background: #252038;
+    border-color: var(--border);
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .chat-tab:hover {
+    background: #2d2848;
+    border-color: #6d5aad;
+}
+
+html[data-theme="dark"] .chat-tab.active {
+    background: var(--primary-gradient);
+    color: #fff;
+    border-color: transparent;
+}
+
+html[data-theme="dark"] .chat-messages {
+    background:
+        radial-gradient(circle at 20% 10%, rgba(167, 139, 250, 0.08), transparent 45%),
+        var(--surface-solid);
+}
+
+html[data-theme="dark"] .chat-messages::-webkit-scrollbar-thumb {
+    background: #4a4268;
+}
+
+html[data-theme="dark"] .chat-empty {
+    color: #9d96b8;
+}
+
+html[data-theme="dark"] .chat-empty p {
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .chat-empty-hint {
+    color: #8f89a8;
+}
+
+html[data-theme="dark"] .chat-bubble-row.theirs .chat-bubble {
+    background: #2d2848;
+    border-color: #4a4268;
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .chat-bubble-row.mine .chat-bubble {
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
+}
+
+html[data-theme="dark"] .chat-bubble-name {
+    color: #9d96b8;
+}
+
+html[data-theme="dark"] .chat-bubble-avatar {
+    background: #3f3a5c;
+    color: #c4b5fd;
+}
+
+html[data-theme="dark"] .chat-bubble-time {
+    color: #8f89a8;
+}
+
+html[data-theme="dark"] .chat-read-mark {
+    color: #c4b5fd;
+}
+
+html[data-theme="dark"] .chat-read-mark.pending {
+    color: #6b6588;
+}
+
+html[data-theme="dark"] .chat-composer {
+    background: var(--surface-raised);
+    border-top-color: var(--border);
+}
+
+html[data-theme="dark"] .chat-composer textarea {
+    background-color: var(--input-bg);
+    color: #ebe7f7;
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .chat-composer textarea::placeholder {
+    color: #6b6588;
+}
+
+html[data-theme="dark"] .chat-composer textarea:focus {
+    background-color: #1a1528;
+    border-color: #6d5aad;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.12);
+}
+
+html[data-theme="dark"] .student-chat-box {
+    border-top-color: var(--border);
+}
+
+html[data-theme="dark"] .student-chat-box h3 {
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .chat-float-close {
+    background: rgba(37, 32, 56, 0.95);
+    color: #b8b2d0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .chat-float-close:hover {
+    background: #3d1f1f;
+    color: #fca5a5;
+}
+
+html[data-theme="dark"] .chat-float-badge {
+    box-shadow: 0 0 0 2px var(--surface-solid);
+}
+
+html[data-theme="dark"] .chat-float-panel .chat-panel {
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55);
+}
+
+/* --- İlerleme / gamification (karanlık mod) --- */
+html[data-theme="dark"] .gamification-card {
+    background: linear-gradient(135deg, #221e34, #1c1729);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .gamification-card strong {
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .gamification-kicker {
+    color: #c4b5fd;
+}
+
+html[data-theme="dark"] .xp-bar-track {
+    background: #2d2848;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .xp-bar-meta {
+    color: #9d96b8;
+}
+
+html[data-theme="dark"] .badge-pill {
+    background: #2d2848;
+    border-color: #4a4268;
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .badge-pill.muted {
+    color: #9d96b8;
+}
+
+html[data-theme="dark"] .trend-bar-track {
+    background: #2d2848;
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .trend-bar-item span {
+    color: #9d96b8;
 }
 
 /* --- Ders & konu paneli (karanlık mod) --- */
@@ -476,4 +666,159 @@ html[data-theme="dark"] .toolbox-add-btn {
 
 html[data-theme="dark"] .toolbox-add-btn:hover {
     background: #7c3aed;
+}
+
+/* --- A4 kağıt tuval: dark modda da bright görünüm (öğrenci + öğretmen) --- */
+html[data-theme="dark"] .a4-bright-paper,
+html[data-theme="dark"] #a4Canvas.a4-bright-paper {
+    --primary: #8b5cf6;
+    --primary-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    --text-main: #2e1065;
+    --text-muted: #7c7b9b;
+    --border: #e9e4f4;
+    --shadow-lg: 0 20px 25px -5px rgba(109, 40, 217, 0.1);
+    color-scheme: light;
+    background: #ffffff !important;
+    color: #2e1065;
+    box-shadow: 0 20px 25px -5px rgba(109, 40, 217, 0.1) !important;
+}
+
+html[data-theme="dark"] .a4-bright-paper .a4-paper-export,
+html[data-theme="dark"] .a4-bright-paper .planner-rows {
+    background: #ffffff !important;
+    color: #2e1065;
+}
+
+html[data-theme="dark"] .a4-bright-paper .a4-header {
+    background: transparent !important;
+    border-bottom: 2px solid #e9e4f4;
+}
+
+html[data-theme="dark"] .a4-bright-paper .day-row {
+    background: transparent !important;
+    border-bottom-color: #e9e4f4;
+}
+
+html[data-theme="dark"] .a4-bright-paper input,
+html[data-theme="dark"] .a4-bright-paper textarea {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent;
+    color: #2e1065;
+}
+
+html[data-theme="dark"] .a4-bright-paper input:disabled,
+html[data-theme="dark"] .a4-bright-paper input[disabled],
+html[data-theme="dark"] .a4-bright-paper textarea:disabled,
+html[data-theme="dark"] .a4-bright-paper textarea[disabled] {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #2e1065 !important;
+    -webkit-text-fill-color: #2e1065;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .a4-bright-paper .plan-title-input {
+    color: #2e1065 !important;
+}
+
+html[data-theme="dark"] .a4-bright-paper .plan-date-input {
+    color: #7c7b9b !important;
+}
+
+html[data-theme="dark"] .a4-bright-paper input:focus,
+html[data-theme="dark"] .a4-bright-paper textarea:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+    outline: none;
+}
+
+html[data-theme="dark"] .a4-bright-paper .plan-title-input::placeholder {
+    color: #c4b5fd;
+}
+
+html[data-theme="dark"] .a4-bright-paper .plan-date-input::placeholder {
+    color: #d1d5db;
+}
+
+html[data-theme="dark"] .a4-bright-paper .drop-zone {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent;
+    color: #2e1065;
+}
+
+html[data-theme="dark"] .a4-bright-paper .drop-zone.drag-over {
+    background: rgba(139, 92, 246, 0.05) !important;
+    border-color: #8b5cf6;
+}
+
+html[data-theme="dark"] .a4-bright-paper .planned-item {
+    background: #ffffff !important;
+    border-bottom-color: #e9e4f4;
+    color: #2e1065;
+}
+
+html[data-theme="dark"] .a4-bright-paper .planned-item.is-done {
+    background: #ecfdf5 !important;
+}
+
+html[data-theme="dark"] .a4-bright-paper .planned-item .item-title {
+    color: #2e1065;
+}
+
+html[data-theme="dark"] .a4-bright-paper .planned-item input[type="text"] {
+    color: #7c7b9b;
+    border-bottom-color: #e9e4f4;
+    background: transparent !important;
+}
+
+html[data-theme="dark"] .a4-bright-paper .planned-item input[type="text"]:focus {
+    border-bottom-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.02) !important;
+}
+
+html[data-theme="dark"] .a4-bright-paper .planned-item input[type="text"]:disabled,
+html[data-theme="dark"] .a4-bright-paper .planned-item input[type="text"][disabled] {
+    background: transparent !important;
+    color: #7c7b9b !important;
+    -webkit-text-fill-color: #7c7b9b;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .a4-bright-paper .cancel-canvas-btn {
+    background: #ffffff !important;
+    color: #ef4444;
+    border-color: #fee2e2;
+}
+
+html[data-theme="dark"] .a4-bright-paper .cancel-canvas-btn:hover {
+    background: #fef2f2 !important;
+    border-color: #fca5a5;
+}
+
+html[data-theme="dark"] .a4-bright-paper .canvas-action-btn {
+    background: #ffffff !important;
+    color: #2e1065;
+    border-color: #e9e4f4;
+}
+
+html[data-theme="dark"] .a4-bright-paper .canvas-action-btn:hover {
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+html[data-theme="dark"] .a4-bright-paper .canvas-action-btn.accent {
+    background: #06b6d4 !important;
+    color: #fff;
+    border-color: transparent;
+}
+
+html[data-theme="dark"] .a4-bright-paper .canvas-action-btn.danger {
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+html[data-theme="dark"] .a4-bright-paper .canvas-action-btn.danger:hover {
+    background: #fef2f2 !important;
 }
