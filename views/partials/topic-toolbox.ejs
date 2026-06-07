@@ -29,9 +29,12 @@
         <div class="unassigned-topics topics-scroll">
             <h3>Sürükle — Kağıda Yerleştir</h3>
             <div class="topic-filter-bar">
-                <input type="search" id="topicSearchInput" class="topic-search-input"
-                       placeholder="🔍 Konu ara..." autocomplete="off"
-                       oninput="window.setTopicSearch(this.value)">
+                <div class="search-input-with-icon">
+                    <img class="search-icon-img" src="/img/magnifier.png" alt="" width="32" height="32" aria-hidden="true">
+                    <input type="search" id="topicSearchInput" class="topic-search-input"
+                           placeholder="Konu ara..." autocomplete="off"
+                           oninput="window.setTopicSearch(this.value)">
+                </div>
                 <div class="topic-status-filter" id="topicStatusFilter">
                     <button type="button" class="active" data-status="all" onclick="window.setTopicStatusFilter('all', this)">Tümü</button>
                     <button type="button" data-status="todo" onclick="window.setTopicStatusFilter('todo', this)">Bekleyen</button>

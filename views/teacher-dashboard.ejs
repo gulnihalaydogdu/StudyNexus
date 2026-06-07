@@ -15,8 +15,8 @@
 <header class="navbar">
     <h1 class="brand">StudyNexus <span class="brand-sub">Koç Paneli</span></h1>
     <nav class="app-nav" data-default-panel="students">
-        <button type="button" class="nav-chip active" data-panel="students">🎯 Öğrencilerim</button>
-        <button type="button" class="nav-chip" data-panel="planner">📝 Plan Oluştur</button>
+        <button type="button" class="nav-chip active" data-panel="students">Öğrencilerim</button>
+        <button type="button" class="nav-chip" data-panel="planner">Plan Oluştur</button>
     </nav>
     <div class="user-menu">
         <%- include('partials/theme-toggle') %>
@@ -40,8 +40,14 @@
                     <h2>Merhaba, <%= user.username %></h2>
                     <p>Öğrencilerinin gelişimini takip et, haftalık plan oluştur ve tek tıkla ata.</p>
                     <div class="teacher-hero-actions">
-                        <button type="button" class="hero-btn primary" onclick="window.showAppPanel('planner')">📝 Plan Oluştur</button>
-                        <button type="button" class="hero-btn ghost" id="heroCopyCode">📋 Davet Kodunu Kopyala</button>
+                        <button type="button" class="hero-btn primary" onclick="window.showAppPanel('planner')">
+                            <img class="hero-btn-icon" src="/img/plan.png" alt="" width="32" height="32" aria-hidden="true">
+                            Plan Oluştur
+                        </button>
+                        <button type="button" class="hero-btn ghost" id="heroCopyCode">
+                            <img class="hero-btn-icon" src="/img/copy-code.png" alt="" width="32" height="32" aria-hidden="true">
+                            Davet Kodunu Kopyala
+                        </button>
                     </div>
                 </div>
                 <div class="teacher-hero-stat">

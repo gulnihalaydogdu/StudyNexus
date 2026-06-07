@@ -1,8 +1,9 @@
 <div class="left-sidebar">
     <% if (weeklyPlans && weeklyPlans.length > 0) { %>
-    <div class="plan-search-wrap">
+    <div class="plan-search-wrap search-input-with-icon">
+        <img class="search-icon-img" src="/img/magnifier.png" alt="" width="32" height="32" aria-hidden="true">
         <input type="search" id="planSearchInput" class="plan-search-input"
-               placeholder="🔍 Plan ara (başlık veya tarih)..." autocomplete="off"
+               placeholder="Plan ara (başlık veya tarih)..." autocomplete="off"
                oninput="window.filterPlans(this.value)">
         <p id="planSearchEmpty" class="plan-search-empty" style="display:none;">Eşleşen plan bulunamadı.</p>
     </div>

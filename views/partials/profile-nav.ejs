@@ -1,18 +1,18 @@
 <nav class="profile-nav" aria-label="Hesap ayarları">
     <a href="/profile" class="profile-nav-link<%= activeTab === 'personal' ? ' active' : '' %>">
-        <span class="profile-nav-icon">👤</span>
+        <img class="profile-nav-icon-img" src="/img/profile.png" alt="" width="32" height="32" aria-hidden="true">
         <span class="profile-nav-text">Kişisel Bilgiler</span>
     </a>
     <a href="/profile/password" class="profile-nav-link<%= activeTab === 'password' ? ' active' : '' %>">
-        <span class="profile-nav-icon">🔐</span>
+        <img class="profile-nav-icon-img" src="/img/change-password.png" alt="" width="32" height="32" aria-hidden="true">
         <span class="profile-nav-text">Şifre Değiştir</span>
     </a>
     <a href="/profile/email" class="profile-nav-link<%= activeTab === 'email' ? ' active' : '' %>">
-        <span class="profile-nav-icon">✉️</span>
+        <img class="profile-nav-icon-img" src="/img/change-email.png" alt="" width="32" height="32" aria-hidden="true">
         <span class="profile-nav-text">E-Posta Değiştir</span>
     </a>
     <a href="/profile/delete" class="profile-nav-link danger<%= activeTab === 'delete' ? ' active' : '' %>">
-        <span class="profile-nav-icon">⚠️</span>
+        <img class="profile-nav-icon-img" src="/img/delete-account.png" alt="" width="32" height="32" aria-hidden="true">
         <span class="profile-nav-text">Hesabı Sil</span>
     </a>
 </nav>

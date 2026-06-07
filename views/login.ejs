@@ -19,8 +19,13 @@
 
     <div class="auth-form-section">
         <div class="auth-box">
-            <h2>Hoş Geldin</h2>
-            <p class="subtitle">Çalışmalarına kaldığın yerden devam et.</p>
+            <div class="auth-box-header">
+                <div class="auth-box-headline">
+                    <h2>Hoş Geldin</h2>
+                    <p class="subtitle">Çalışmalarına kaldığın yerden devam et.</p>
+                </div>
+                <img src="/img/mascot-welcome.png" alt="" class="auth-mascot" width="80" height="80" aria-hidden="true">
+            </div>
             <% if (typeof flash !== 'undefined' && flash) { %>
                 <p class="subtitle" style="color:#10b981;"><%= flash %></p>
             <% } %>

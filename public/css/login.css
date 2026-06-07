@@ -82,6 +82,20 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
+.auth-box-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.auth-box-headline {
+    flex: 1;
+    min-width: 0;
+}
+
 .auth-box h2 {
     font-size: 2rem;
     color: var(--text-main);
@@ -91,7 +105,23 @@ body {
     letter-spacing: -0.5px;
 }
 
-.auth-box p.subtitle { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
+.auth-box p.subtitle {
+    color: var(--text-muted);
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.auth-mascot {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    max-width: 34%;
+    object-fit: contain;
+    object-position: top right;
+    pointer-events: none;
+    user-select: none;
+}
 
 /* Input Tarlaları */
 input {
@@ -193,6 +223,11 @@ button:active { transform: scale(0.98); }
     .auth-box h2 {
         font-size: 1.6rem;
     }
+
+    .auth-mascot {
+        width: 64px;
+        height: 64px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -208,6 +243,11 @@ button:active { transform: scale(0.98); }
     .auth-box {
         padding: 22px 18px;
         border-radius: 16px;
+    }
+
+    .auth-mascot {
+        width: 56px;
+        height: 56px;
     }
 
     input, button {

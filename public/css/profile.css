@@ -150,6 +150,14 @@ body {
     line-height: 1;
 }
 
+.profile-nav-icon-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
+}
+
 .profile-flash {
     padding: 14px 18px;
     border-radius: 12px;

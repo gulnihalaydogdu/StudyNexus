@@ -1809,7 +1809,7 @@ function stFinishTimer() {
     window.toggleStudyTimer(true);
 
     if (wasStudy && window.STUDYNEXUS_USER?.role === 'student' && finishedMinutes > 0) {
-        window.showToast?.('🍅 Pomodoro tamamlandı! +XP kazandın 🎉', 'success');
+        window.showToast?.(`⏱️ ${finishedMinutes} dk tamamlandı! +XP kazandın 🎉`, 'success');
         fetch('/api/pomodoro/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1820,7 +1820,7 @@ function stFinishTimer() {
                 if (!d.success) return;
                 window.updateStatsUI?.(d.stats);
                 window.updateGamificationUI?.(d.gamification);
-                window.updatePomodoroCount?.(d.gamification?.pomodoros);
+                window.updateStudyMinutes?.(d.gamification?.studyMinutes);
             })
             .catch(() => {});
     } else {
@@ -1828,10 +1828,10 @@ function stFinishTimer() {
     }
 }
 
-window.updatePomodoroCount = function (pomodoros) {
-    if (!pomodoros) return;
+window.updateStudyMinutes = function (studyMinutes) {
+    if (!studyMinutes) return;
     const el = document.getElementById('studyTimerCount');
-    if (el) el.textContent = `Bugün: ${pomodoros.today} 🍅 · Toplam: ${pomodoros.total}`;
+    if (el) el.textContent = `Bugün: ${studyMinutes.today} dk · Toplam: ${studyMinutes.total} dk`;
 };
 
 function stPlayBeep() {
@@ -1866,7 +1866,7 @@ window.initStudyTimer = function () {
         fetch('/api/stats', { headers: { Accept: 'application/json' } })
             .then((r) => r.json())
             .then((d) => {
-                if (d.success) window.updatePomodoroCount?.(d.gamification?.pomodoros);
+                if (d.success) window.updateStudyMinutes?.(d.gamification?.studyMinutes);
             })
             .catch(() => {});
     }
