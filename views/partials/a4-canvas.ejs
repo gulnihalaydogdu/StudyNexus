@@ -1,6 +1,9 @@
 <div class="workspace">
     <div class="workspace-empty-state" id="workspaceEmptyState">
-        <img src="/img/poster.png" alt="Hoş Geldiniz" class="welcome-poster">
+        <img src="/img/eng-poster-bright.png" alt="Hoş Geldiniz" class="welcome-poster" id="welcomePoster"
+             <% if (typeof darkPoster !== 'undefined' && darkPoster) { %>
+             data-poster-light="/img/eng-poster-bright.png" data-poster-dark="/img/eng-poster-dark.png"
+             <% } %>>
         <p class="workspace-hint"><%= typeof workspaceHint !== 'undefined' ? workspaceHint : 'Yeni plan oluşturmak için + butonuna tıklayın.' %></p>
     </div>
     <% if (typeof hideCreateBtn === 'undefined' || !hideCreateBtn) { %>

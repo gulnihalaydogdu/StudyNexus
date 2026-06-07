@@ -1,18 +1,20 @@
 /* public/css/profile.css */
 
 :root {
-    /* Ortak Tema Değişkenleri */
-    --primary: #8b5cf6; 
+    --primary: #8b5cf6;
     --primary-gradient: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-    --bg-color: #f5f3f9; 
-    --surface: rgba(253, 252, 255, 0.95); 
-    --text-main: #2e1065; 
+    --bg-color: #f5f3f9;
+    --surface: rgba(253, 252, 255, 0.95);
+    --text-main: #2e1065;
     --text-muted: #7c7b9b;
-    --border: #e9e4f4; 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --border: #e9e4f4;
     --shadow-md: 0 8px 16px -4px rgba(109, 40, 217, 0.08);
     --shadow-lg: 0 20px 25px -5px rgba(109, 40, 217, 0.1);
     --radius: 20px;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
 }
 
 body {
@@ -20,124 +22,363 @@ body {
     background-color: var(--bg-color);
     background-image: radial-gradient(var(--border) 1px, transparent 1px);
     background-size: 24px 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     margin: 0;
-    padding: 20px;
+    padding: 32px 20px 48px;
     color: var(--text-main);
 }
 
-/* Profil Kutusu (Glassmorphism & Soft Shadow) */
-.profile-box {
+.profile-page {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.profile-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.profile-top h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.profile-top p {
+    margin: 8px 0 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.profile-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.profile-home-link {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.profile-home-link:hover {
+    border-color: #dcd7ea;
+    transform: translateY(-1px);
+}
+
+.profile-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.profile-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-nav {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 12px;
+    position: sticky;
+    top: 24px;
+}
+
+.profile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.profile-nav-link:hover {
+    background: #f5f3f9;
+    color: var(--text-main);
+}
+
+.profile-nav-link.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.28);
+}
+
+.profile-nav-link.danger {
+    color: #b91c1c;
+}
+
+.profile-nav-link.danger:hover {
+    background: var(--danger-bg);
+    color: #b91c1c;
+}
+
+.profile-nav-link.danger.active {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.28);
+}
+
+.profile-nav-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.profile-flash {
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.profile-flash.success {
+    background: var(--success-bg);
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.profile-flash.error {
+    background: var(--danger-bg);
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.profile-section {
     background: var(--surface);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    padding: 45px 40px;
+    padding: 28px 30px;
     border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    width: 100%;
-    max-width: 550px;
+    box-shadow: var(--shadow-md);
     border: 1px solid white;
 }
 
-/* Başlıklar */
-.profile-header { text-align: center; margin-bottom: 35px; }
-.profile-header h2 { margin: 0; color: var(--text-main); font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
-.profile-header p { margin: 8px 0 0; color: var(--text-muted); font-size: 0.95rem; }
+.section-head {
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #f0edf7;
+}
 
-/* Form Elemanları */
-label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.section-head h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
 
-input { 
-    width: 100%; 
-    padding: 14px 18px; 
-    margin-bottom: 20px; 
-    border: 2px solid var(--border); 
-    border-radius: 12px; 
-    font-family: 'Poppins', sans-serif; 
-    font-size: 0.95rem; 
-    box-sizing: border-box; 
-    background-color: #fcfbfe; 
+.section-head p {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.info-card {
+    background: #f5f3f9;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+}
+
+.info-card-label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.info-card-value {
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text-main);
-    transition: all 0.3s ease; 
 }
 
-input:focus { 
-    outline: none; 
-    border-color: var(--primary); 
-    background-color: white; 
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); 
+label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
-input[disabled] { 
-    background-color: #e9e4f4; 
-    color: #8a88a4; 
-    cursor: not-allowed; 
-    border-color: transparent; 
-}
-
-.form-row { display: flex; gap: 20px; }
-.form-row > div { flex: 1; }
-
-/* Butonlar */
-.btn-group { display: flex; gap: 15px; margin-top: 15px; }
-
-button, .back-btn { 
-    flex: 1; 
-    padding: 14px; 
-    border: none; 
-    border-radius: 12px; 
-    font-size: 1.05rem; 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: all 0.3s ease; 
-    font-family: 'Poppins', sans-serif; 
-    text-align: center; 
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.save-btn { 
-    background: var(--primary-gradient); 
-    color: white; 
-}
-
-.save-btn:hover { 
-    transform: translateY(-2px); 
-    box-shadow: 0 6px 15px rgba(139, 92, 246, 0.35); 
-}
-
-.back-btn { 
-    background-color: white; 
-    color: var(--text-main); 
+input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 18px;
     border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    background-color: #fcfbfe;
+    color: var(--text-main);
+    transition: all 0.3s ease;
 }
 
-.back-btn:hover { 
-    border-color: #dcd7ea; 
-    background-color: #fcfbfe; 
-    transform: translateY(-2px); 
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+}
+
+input[disabled] {
+    background-color: #e9e4f4;
+    color: #8a88a4;
+    cursor: not-allowed;
+    border-color: transparent;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-row > div {
+    flex: 1;
+}
+
+.field-hint {
+    margin: -8px 0 16px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.field-hint a {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.field-hint.pending {
+    color: #7c3aed;
+}
+
+.field-hint.warn {
+    color: #b45309;
+    background: #fffbeb;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #fde68a;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+button {
+    padding: 13px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.save-btn {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(139, 92, 246, 0.35);
+}
+
+.danger-zone {
+    border-color: #fecaca;
+    background: linear-gradient(180deg, #fffafa 0%, var(--surface) 100%);
+}
+
+.danger-zone .section-head h2 {
+    color: #b91c1c;
+}
+
+.delete-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(239, 68, 68, 0.35);
 }
 
 @media (max-width: 768px) {
     body {
         padding: 16px;
-        align-items: flex-start;
         padding-top: max(16px, env(safe-area-inset-top));
     }
 
-    .profile-box {
-        padding: 28px 20px;
-        border-radius: 16px;
+    .profile-top {
+        flex-direction: column;
     }
 
-    .profile-header h2 {
+    .profile-top h1 {
         font-size: 1.6rem;
+    }
+
+    .profile-layout {
+        flex-direction: column-reverse;
+    }
+
+    .profile-nav {
+        width: 100%;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+
+    .profile-nav-link {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 140px;
+        justify-content: center;
+        padding: 10px 12px;
+    }
+
+    .profile-nav-text {
+        font-size: 0.8rem;
+    }
+
+    .profile-section {
+        padding: 22px 18px;
+        border-radius: 16px;
     }
 
     .form-row {
@@ -145,17 +386,15 @@ button, .back-btn {
         gap: 0;
     }
 
-    .btn-group {
-        flex-direction: column;
+    .form-actions {
+        justify-content: stretch;
     }
 
-    .btn-group a,
-    .btn-group button {
+    .form-actions button {
         width: 100%;
-        text-align: center;
     }
 
-    input, select, button {
+    input, button {
         font-size: 16px;
     }
 }

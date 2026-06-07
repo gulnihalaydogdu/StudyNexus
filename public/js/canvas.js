@@ -17,15 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (createBtn && a4Canvas) {
         createBtn.addEventListener('click', function () {
-            a4Canvas.setAttribute('data-editing-id', '');
-            a4Canvas.setAttribute('data-read-only', '0');
-            document.getElementById('planTitleInput').value = '';
-            document.getElementById('planDateInput').value = '';
-            window.clearCanvasZones?.();
-            window.setReadOnlyMode?.(false);
-            const saveBtn = document.getElementById('savePlanBtn');
-            if (saveBtn) saveBtn.textContent = '💾 Kaydet';
-            window.updateCanvasPlanActions?.('');
+            window.resetCanvasForNewPlan?.();
             a4Canvas.classList.add('active');
             createBtn.style.display = 'none';
             if (workspacePoster) workspacePoster.style.display = 'none';
@@ -48,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const calMonth = document.getElementById('calMonthSelect')?.value;
     if (calMonth) window.renderCalendarWeekPills?.('calWeekSelector', 'selectedWeekValue', calMonth);
+
+    window.initSidebarCalendar?.();
     const assignMonth = document.getElementById('assignMonthSelect')?.value;
     if (assignMonth) window.renderCalendarWeekPills?.('assignWeekSelector', 'assignWeekValue', assignMonth);
 
@@ -979,10 +973,36 @@ window.createPlannedItemElement = function (topicId, courseId, topicName, descri
 };
 
 window.clearCanvasZones = function () {
-    document.querySelectorAll('.drop-zone').forEach((zone) => {
+    const root = document.getElementById('a4Canvas');
+    const zones = root ? root.querySelectorAll('.drop-zone') : document.querySelectorAll('.drop-zone');
+    zones.forEach((zone) => {
         zone.innerHTML = '';
+        zone.classList.remove('drag-over', 'compact', 'two-columns');
         window.updateZoneLayout(zone);
     });
+};
+
+window.resetCanvasForNewPlan = function () {
+    const a4Canvas = document.getElementById('a4Canvas');
+    if (!a4Canvas) return;
+
+    a4Canvas.setAttribute('data-editing-id', '');
+    a4Canvas.setAttribute('data-read-only', '0');
+
+    const titleIn = document.getElementById('planTitleInput');
+    const dateIn = document.getElementById('planDateInput');
+    if (titleIn) titleIn.value = '';
+    if (dateIn) dateIn.value = '';
+
+    window.clearCanvasZones();
+    window.setReadOnlyMode?.(false);
+    window.updateCanvasPlanActions?.('');
+
+    const saveBtn = document.getElementById('savePlanBtn');
+    if (saveBtn) {
+        saveBtn.textContent = '💾 Kaydet';
+        saveBtn.disabled = false;
+    }
 };
 
 window.updateCanvasPlanActions = function (planId, readOnly = false) {
@@ -1105,9 +1125,7 @@ if (savePlanBtn) {
 
                 window.renderWeekPanelUI?.(data.weekPanel);
 
-                document.getElementById('planTitleInput').value = '';
-                document.getElementById('planDateInput').value = '';
-                window.clearCanvasZones();
+                window.resetCanvasForNewPlan();
                 window.closeCanvasEditor();
             })
             .catch((err) => {
@@ -1357,6 +1375,71 @@ function getCalendarMonths() {
     return window.STUDYNEXUS_CALENDAR || [];
 }
 
+function renderWeekRangeLabel(parts, fallbackLabel) {
+    if (!parts) return escapeHtml(fallbackLabel || '');
+    if (parts.sameMonth) {
+        return `<span class="week-range-label"><span class="week-range-line">${parts.startDay} – ${parts.endDay}</span><span class="week-range-month">${escapeHtml(parts.startMonth)}</span></span>`;
+    }
+    return `<span class="week-range-label"><span class="week-range-line">${parts.startDay} ${escapeHtml(parts.startMonth)}</span><span class="week-range-line">${parts.endDay} ${escapeHtml(parts.endMonth)}</span></span>`;
+}
+
+function getSidebarCalendarData() {
+    const raw = window.STUDYNEXUS_SIDEBAR_CAL || {};
+    return {
+        events: raw.events || [],
+        planIds: new Set(raw.planIds || []),
+        studentViewId: raw.studentViewId
+    };
+}
+
+function findSidebarEventForWeek(events, planIds, monthData, week) {
+    const event = events.find(
+        (e) =>
+            e.week_start_date === week.weekStart ||
+            (e.target_year == monthData.year && e.target_month === monthData.name && e.target_week == week.weekIndex)
+    );
+    if (event && !planIds.has(event.plan_id)) return null;
+    return event;
+}
+
+window.renderSidebarCalendar = function (monthValue) {
+    const grid = document.getElementById('sidebarCalWeeksGrid');
+    if (!grid) return;
+
+    const { year, month } = parseMonthSlotValue(monthValue);
+    const monthData = getCalendarMonths().find((m) => m.year === year && m.name === month);
+    const weeks = monthData?.weeks || [];
+    const { events, planIds, studentViewId } = getSidebarCalendarData();
+
+    if (!weeks.length) {
+        grid.innerHTML = '<p class="week-selector-empty">Bu ay için hafta bulunamadı.</p>';
+        return;
+    }
+
+    grid.innerHTML = weeks
+        .map((w) => {
+            const event = findSidebarEventForWeek(events, planIds, monthData, w);
+            const filled = Boolean(event);
+            const labelHtml = renderWeekRangeLabel(w.labelParts, w.label);
+            const studentAttr =
+                filled && studentViewId ? ` data-student-plan-for="${studentViewId}"` : '';
+            const planAttrs = filled
+                ? ` data-plan-id="${event.plan_id}" data-open-plan${studentAttr}`
+                : '';
+            const indicator = filled ? '<div class="week-indicator"></div>' : '';
+            return `<div class="cal-week-box ${filled ? 'filled' : 'empty'}" id="cal-box-${w.weekStart}" data-week-start="${w.weekStart}"${planAttrs}>${labelHtml}${indicator}</div>`;
+        })
+        .join('');
+
+    window.bindPlanOpenHandlers?.();
+};
+
+window.initSidebarCalendar = function () {
+    const select = document.getElementById('sidebarCalMonthSelect');
+    if (!select) return;
+    window.renderSidebarCalendar(select.value);
+};
+
 window.renderCalendarWeekPills = function (containerId, hiddenInputId, monthValue) {
     const container = document.getElementById(containerId);
     const hidden = document.getElementById(hiddenInputId);
@@ -1375,7 +1458,7 @@ window.renderCalendarWeekPills = function (containerId, hiddenInputId, monthValu
     container.innerHTML = weeks
         .map(
             (w, i) =>
-                `<button type="button" class="week-pill${i === 0 ? ' active' : ''}" data-week-start="${w.weekStart}" onclick="window.selectWeekStart(this, '${hiddenInputId}')">${escapeHtml(w.label)}</button>`
+                `<button type="button" class="week-pill${i === 0 ? ' active' : ''}" data-week-start="${w.weekStart}" onclick="window.selectWeekStart(this, '${hiddenInputId}')">${renderWeekRangeLabel(w.labelParts, w.label)}</button>`
         )
         .join('');
     hidden.value = weeks[0].weekStart;
@@ -1427,6 +1510,24 @@ window.confirmCalendarAssignment = function () {
             if (data.success) {
                 window.showToast(data.message || 'Plan takvime eklendi.', 'success');
                 window.closeCalendarModal();
+
+                const sidebarCal = window.STUDYNEXUS_SIDEBAR_CAL;
+                if (sidebarCal?.events) {
+                    if (data.previousSlot?.weekStart) {
+                        sidebarCal.events = sidebarCal.events.filter(
+                            (e) => e.week_start_date !== data.previousSlot.weekStart
+                        );
+                    }
+                    sidebarCal.events = sidebarCal.events.filter((e) => e.plan_id !== Number(planId));
+                    sidebarCal.events.push({
+                        plan_id: Number(planId),
+                        week_start_date: data.weekStart,
+                        week_end_date: data.weekEnd,
+                        target_year: data.year,
+                        target_month: data.month,
+                        target_week: data.week
+                    });
+                }
 
                 if (data.previousSlot?.weekStart) {
                     clearCalendarWeekBox(document.getElementById(`cal-box-${data.previousSlot.weekStart}`));

@@ -1,0 +1,56 @@
+<section class="profile-section">
+    <div class="section-head">
+        <h2>Kişisel Bilgiler</h2>
+        <p>Profil ve iletişim bilgileriniz</p>
+    </div>
+    <form action="/profile/edit" method="POST" class="profile-form">
+        <%- include('csrf-field') %>
+        <div class="form-row">
+            <div>
+                <label>Kullanıcı Adı</label>
+                <input type="text" value="<%= user.username %>" disabled>
+            </div>
+            <div>
+                <label>E-Posta</label>
+                <input type="text" value="<%= user.email || '—' %>" disabled>
+                <% if (user.pending_email) { %>
+                    <p class="field-hint pending">Onay bekliyor: <strong><%= user.pending_email %></strong></p>
+                <% } %>
+            </div>
+        </div>
+
+        <label>İsim Soyisim</label>
+        <input type="text" name="full_name" value="<%= user.full_name || '' %>" required>
+
+        <div class="form-row">
+            <div>
+                <label>Yaşadığınız Şehir</label>
+                <input type="text" name="location" value="<%= user.location || '' %>" required>
+            </div>
+            <div>
+                <label>Doğum Tarihi</label>
+                <input type="date" name="birth_date" value="<%= user.birth_date || '' %>" required>
+            </div>
+        </div>
+
+        <% if (user.role === 'student') { %>
+            <div class="form-row">
+                <div>
+                    <label>Sınıfınız</label>
+                    <input type="text" name="grade" value="<%= user.grade || '' %>">
+                </div>
+                <div>
+                    <label>Yaşınız</label>
+                    <input type="number" name="age" value="<%= user.age || '' %>">
+                </div>
+            </div>
+        <% } else if (user.role === 'teacher') { %>
+            <label>Branşınız</label>
+            <input type="text" name="branch" value="<%= user.branch || '' %>">
+        <% } %>
+
+        <div class="form-actions">
+            <button type="submit" class="save-btn">Kaydet</button>
+        </div>
+    </form>
+</section>

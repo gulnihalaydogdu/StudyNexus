@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyNexus — Öğretmen</title>
+    <%- include('partials/theme-init') %>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/responsive.css">
+    <link rel="stylesheet" href="/css/theme.css">
     <%- include('partials/csrf-meta') %>
 </head>
 <body class="role-teacher">
@@ -17,6 +19,7 @@
         <button type="button" class="nav-chip" data-panel="planner">📝 Plan Oluştur</button>
     </nav>
     <div class="user-menu">
+        <%- include('partials/theme-toggle') %>
         <%- include('partials/notification-bell') %>
         <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğretmen</span></a>
         <a href="/logout" class="logout-btn">Çıkış</a>
@@ -31,7 +34,7 @@
             <div class="teacher-hero">
                 <div class="teacher-hero-text">
                     <span class="teacher-hero-kicker">Koç Paneli</span>
-                    <h2>Merhaba, <%= user.username %> 👋</h2>
+                    <h2>Merhaba, <%= user.username %></h2>
                     <p>Öğrencilerinin gelişimini takip et, haftalık plan oluştur ve tek tıkla ata.</p>
                     <div class="teacher-hero-actions">
                         <button type="button" class="hero-btn primary" onclick="window.showAppPanel('planner')">📝 Plan Oluştur</button>
@@ -90,6 +93,7 @@ window.STUDYNEXUS_CALENDAR = <%- JSON.stringify(dynamicMonths) %>;
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/js/theme.js" defer></script>
 <script type="module" src="/js/app.js"></script>
 </body>
 </html>

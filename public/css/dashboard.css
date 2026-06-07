@@ -887,9 +887,10 @@ body {
 
 .week-pill {
     background: #f5f3f9; color: var(--text-muted); border: 1px solid #e9e4f4;
-    padding: 8px 10px; border-radius: 12px; font-weight: 600; font-size: 0.78rem;
+    padding: 8px 6px; border-radius: 12px; font-weight: 600; font-size: 0.78rem;
     cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif;
-    flex: 1 1 calc(50% - 8px); min-width: 120px; line-height: 1.25;
+    flex: 1 1 calc(50% - 8px); min-width: 120px; min-height: 48px;
+    display: flex; align-items: center; justify-content: center; line-height: 1.25;
 }
 .week-selector-empty {
     text-align: center;
@@ -907,6 +908,11 @@ body {
     border-color: transparent;
     box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
     transform: translateY(-2px);
+}
+
+.week-pill.active .week-range-line,
+.week-pill.active .week-range-month {
+    color: white;
 }
 
 /* --- SOL SÜTUN (YIĞIN + TAKVİM) --- */
@@ -944,16 +950,45 @@ body {
     padding: 20px;
 }
 
-.calendar-widget .cal-header h3 {
-    margin: 0 0 15px 0;
-    font-size: 1.1rem;
-    color: var(--text-main);
+.calendar-widget .cal-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
     border-bottom: 2px solid #e9e4f4;
-    padding-bottom: 10px;
 }
 
-.cal-month-group { margin-bottom: 15px; }
-.cal-month-name { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+.calendar-widget .cal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.cal-month-select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #f5f3f9 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b5b95' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center;
+    border: 1px solid #e9e4f4;
+    border-radius: 10px;
+    padding: 10px 36px 10px 14px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cal-month-select:hover,
+.cal-month-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    outline: none;
+}
 
 .cal-weeks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .cal-weeks-grid.cols-1 { grid-template-columns: 1fr; }
@@ -962,7 +997,8 @@ body {
     background: #f5f3f9;
     border: 1px dashed #dcd7ea;
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 6px;
+    min-height: 52px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -986,12 +1022,32 @@ body {
     box-shadow: 0 4px 6px rgba(139, 92, 246, 0.15);
 }
 
-.week-num {
+.week-range-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+
+.week-range-line {
     font-size: 0.72rem;
     font-weight: 600;
     color: var(--text-main);
-    text-align: center;
-    line-height: 1.25;
+    line-height: 1.2;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+}
+
+.week-range-month {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.1;
 }
 
 /* Dolu haftayı belirten mor nokta */
@@ -2156,16 +2212,27 @@ body {
 .notif-wrap { position: relative; display: inline-flex; }
 .notif-bell-btn {
     position: relative;
-    background: #f5f3ff;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    width: 40px;
-    height: 40px;
-    font-size: 1.15rem;
+    background: transparent;
+    border: none;
+    width: auto;
+    height: auto;
+    padding: 2px;
     cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: transform 0.15s ease, background 0.15s ease;
 }
-.notif-bell-btn:hover { transform: translateY(-1px); background: #ede9fe; border-color: #c4b5fd; }
+
+.notif-bell-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+}
+.notif-bell-btn:hover { transform: translateY(-1px); background: rgba(139, 92, 246, 0.1); }
 .notif-badge {
     position: absolute;
     top: -6px;

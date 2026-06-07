@@ -29,35 +29,25 @@
     </div>
     <% if (typeof hideCalendar === 'undefined' || !hideCalendar) { %>
     <div class="calendar-widget">
-        <div class="cal-header"><h3>🗓️ Takvim</h3></div>
+        <div class="cal-header">
+            <h3>🗓️ Takvim</h3>
+            <select id="sidebarCalMonthSelect" class="cal-month-select"
+                    onchange="window.renderSidebarCalendar?.(this.value)">
+                <% (dynamicMonths || []).forEach((m, i) => { %>
+                    <option value="<%= m.year %>|<%= m.name %>"<%= i === 0 ? ' selected' : '' %>><%= m.name %> <%= m.year %></option>
+                <% }) %>
+            </select>
+        </div>
         <div class="cal-body">
-            <% dynamicMonths.forEach(m => { %>
-                <div class="cal-month-group">
-                    <div class="cal-month-name"><%= m.name %> <%= m.year %></div>
-                    <div class="cal-weeks-grid">
-                        <% (m.weeks || []).forEach(w => {
-                            let event = calendarEvents.find(e =>
-                                e.week_start_date === w.weekStart ||
-                                (e.target_year == m.year && e.target_month === m.name && e.target_week == w.weekIndex)
-                            );
-                            if (event && !weeklyPlans.some(p => p.id === event.plan_id)) event = null;
-                        %>
-                            <div class="cal-week-box <%= event ? 'filled' : 'empty' %>"
-                                 id="cal-box-<%= w.weekStart %>"
-                                 data-week-start="<%= w.weekStart %>"
-                                 <% if (event) { %>
-                                 data-plan-id="<%= event.plan_id %>"
-                                 data-open-plan
-                                 <% if (typeof studentViewId !== 'undefined') { %>data-student-plan-for="<%= studentViewId %>"<% } %>
-                                 <% } %>>
-                                <span class="week-num"><%= w.label %></span>
-                                <% if(event) { %><div class="week-indicator"></div><% } %>
-                            </div>
-                        <% }) %>
-                    </div>
-                </div>
-            <% }) %>
+            <div id="sidebarCalWeeksGrid" class="cal-weeks-grid"></div>
         </div>
     </div>
+    <script>
+    window.STUDYNEXUS_SIDEBAR_CAL = {
+        events: <%- JSON.stringify(calendarEvents || []) %>,
+        planIds: <%- JSON.stringify((weeklyPlans || []).map(p => p.id)) %>,
+        studentViewId: <%= typeof studentViewId !== 'undefined' ? studentViewId : 'null' %>
+    };
+    </script>
     <% } %>
 </div>

@@ -1,0 +1,479 @@
+/* StudyNexus — Karanlık mod (yüklenme sırası: diğer CSS dosyalarından sonra) */
+
+.theme-toggle-btn {
+    background: transparent;
+    border: none;
+    width: auto;
+    height: auto;
+    padding: 2px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: transform 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
+}
+
+.theme-toggle-img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+}
+
+.theme-toggle-img[hidden] {
+    display: none;
+}
+
+.theme-toggle-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.auth-theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9000;
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --primary: #a78bfa;
+    --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    --bg-color: #110e18;
+    --surface: rgba(24, 20, 36, 0.96);
+    --surface-solid: #1c1729;
+    --surface-raised: #252038;
+    --surface-muted: #161222;
+    --text-main: #ebe7f7;
+    --text-muted: #9d96b8;
+    --border: #3a3354;
+    --border-soft: #2d2840;
+    --input-bg: #14101f;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.45);
+}
+
+/* --- Ortak yüzeyler --- */
+html[data-theme="dark"] .navbar,
+html[data-theme="dark"] .profile-link,
+html[data-theme="dark"] .logout-btn,
+html[data-theme="dark"] .toolbox-drag-panel,
+html[data-theme="dark"] .topics-scroll h3,
+html[data-theme="dark"] .pile-paper,
+html[data-theme="dark"] .calendar-widget,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .modal-footer,
+html[data-theme="dark"] .modal-body,
+html[data-theme="dark"] .week-pill,
+html[data-theme="dark"] .cal-week-box,
+html[data-theme="dark"] .cal-month-select,
+html[data-theme="dark"] .nav-chip,
+html[data-theme="dark"] .panel-center-card,
+html[data-theme="dark"] .week-panel-card,
+html[data-theme="dark"] .teacher-student-card,
+html[data-theme="dark"] .teacher-hero,
+html[data-theme="dark"] .teacher-card,
+html[data-theme="dark"] .coaching-card,
+html[data-theme="dark"] .stats-card,
+html[data-theme="dark"] .gamification-card,
+html[data-theme="dark"] .plan-search-input,
+html[data-theme="dark"] .topic-filter-input,
+html[data-theme="dark"] .canvas-action-btn,
+html[data-theme="dark"] .back-dashboard-link,
+html[data-theme="dark"] .teacher-student-card-link,
+html[data-theme="dark"] .chat-float-panel,
+html[data-theme="dark"] .chat-panel,
+html[data-theme="dark"] .notif-panel,
+html[data-theme="dark"] .study-timer-panel,
+html[data-theme="dark"] .profile-section,
+html[data-theme="dark"] .profile-nav,
+html[data-theme="dark"] .profile-home-link,
+html[data-theme="dark"] .auth-box,
+html[data-theme="dark"] .info-card,
+html[data-theme="dark"] .timer-toggle-btn,
+html[data-theme="dark"] .create-plan-btn,
+html[data-theme="dark"] .topic-chip,
+html[data-theme="dark"] .drop-zone,
+html[data-theme="dark"] .zone-card,
+html[data-theme="dark"] .chat-tab,
+html[data-theme="dark"] .chat-compose,
+html[data-theme="dark"] .chat-msg.other,
+html[data-theme="dark"] .notif-item,
+html[data-theme="dark"] .coaching-list li,
+html[data-theme="dark"] .teacher-student-stat,
+html[data-theme="dark"] .invite-code-big,
+html[data-theme="dark"] .close-modal-btn {
+    background: var(--surface-solid);
+    border-color: var(--border);
+    color: var(--text-main);
+}
+
+html[data-theme="dark"] .navbar {
+    background: rgba(17, 14, 24, 0.92);
+    border-bottom-color: var(--border-soft);
+}
+
+html[data-theme="dark"] .logout-btn {
+    color: #fca5a5;
+    border-color: #4a2a2a;
+}
+
+html[data-theme="dark"] .logout-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+html[data-theme="dark"] .a4-template,
+html[data-theme="dark"] .a4-paper-export {
+    background: #2a2540;
+    color: var(--text-main);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] .pile-paper {
+    background: var(--surface-raised);
+}
+
+html[data-theme="dark"] .cal-week-box.empty {
+    background: var(--surface-muted);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .cal-week-box.filled {
+    background: rgba(139, 92, 246, 0.12);
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] .cal-week-box.empty:hover,
+html[data-theme="dark"] .week-pill:hover,
+html[data-theme="dark"] .nav-chip:hover {
+    background: #2d2848;
+}
+
+html[data-theme="dark"] .week-pill {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .modal-body {
+    background: var(--surface-muted);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+    background-color: #1a1528;
+}
+
+html[data-theme="dark"] input[disabled] {
+    background-color: #1f1a30;
+    color: #6b6588;
+}
+
+html[data-theme="dark"] .workspace::-webkit-scrollbar-thumb {
+    background: #4a4268;
+}
+
+html[data-theme="dark"] .workspace::-webkit-scrollbar-thumb:hover {
+    background: #5c5480;
+}
+
+html[data-theme="dark"] .coaching-hint code,
+html[data-theme="dark"] .teacher-student-pill,
+html[data-theme="dark"] .back-dashboard-link,
+html[data-theme="dark"] .stats-ring::before {
+    background: var(--surface-raised);
+}
+
+html[data-theme="dark"] .stats-ring {
+    background: conic-gradient(var(--primary) calc(var(--p) * 1%), var(--border) 0);
+}
+
+html[data-theme="dark"] .week-task-list li {
+    border-bottom-color: var(--border-soft);
+}
+
+html[data-theme="dark"] .week-task-desc,
+html[data-theme="dark"] .topics-scroll h3 {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .topics-scroll h3 {
+    background: var(--surface-solid);
+}
+
+html[data-theme="dark"] .notif-item.unread,
+html[data-theme="dark"] .notif-item:hover,
+html[data-theme="dark"] .notif-readall:hover {
+    background: #221e34;
+}
+
+html[data-theme="dark"] .chat-msg.self {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+html[data-theme="dark"] .close-modal-btn:hover {
+    background: #3d1f1f;
+}
+
+html[data-theme="dark"] .field-hint.warn {
+    background: #2a2418;
+    border-color: #5c4a20;
+    color: #fbbf24;
+}
+
+html[data-theme="dark"] .profile-flash.success {
+    background: #0f2a22;
+    border-color: #166534;
+    color: #6ee7b7;
+}
+
+html[data-theme="dark"] .profile-flash.error {
+    background: #2a1518;
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+html[data-theme="dark"] .danger-zone {
+    background: linear-gradient(180deg, #1f1418 0%, var(--surface-solid) 100%);
+    border-color: #4a2a2a;
+}
+
+html[data-theme="dark"] .hero-btn.primary {
+    background: var(--surface-raised);
+    color: var(--primary);
+}
+
+html[data-theme="dark"] .canvas-action-btn.danger:hover {
+    background: #2a1518;
+}
+
+html[data-theme="dark"] .theme-toggle-btn:hover,
+html[data-theme="dark"] .notif-bell-btn:hover {
+    background: rgba(167, 139, 250, 0.15);
+}
+
+html[data-theme="dark"] .timer-toggle-btn:hover {
+    background: #2d2848;
+    border-color: var(--primary);
+}
+
+html[data-theme="dark"] .timer-toggle-btn.running {
+    color: #fff;
+}
+
+html[data-theme="dark"] .auth-form-section {
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+}
+
+html[data-theme="dark"] .auth-box {
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .profile-nav-link:hover {
+    background: var(--surface-muted);
+}
+
+html[data-theme="dark"] .profile-nav-link.danger:hover {
+    background: #2a1518;
+}
+
+html[data-theme="dark"] .drop-zone.drag-over,
+html[data-theme="dark"] .zone-card:hover {
+    border-color: var(--primary);
+    background: rgba(139, 92, 246, 0.08);
+}
+
+html[data-theme="dark"] .study-timer-panel,
+html[data-theme="dark"] .notif-panel {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* --- Bildirim paneli (karanlık mod) --- */
+html[data-theme="dark"] .notif-panel {
+    background: var(--surface-solid);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .notif-panel-head {
+    background: var(--surface-raised);
+    border-bottom-color: var(--border);
+}
+
+html[data-theme="dark"] .notif-panel-title {
+    color: var(--text-main);
+}
+
+html[data-theme="dark"] .notif-readall {
+    color: var(--primary);
+}
+
+html[data-theme="dark"] .notif-readall:hover {
+    background: rgba(167, 139, 250, 0.12);
+    color: #c4b5fd;
+}
+
+html[data-theme="dark"] .notif-list {
+    background: var(--surface-solid);
+}
+
+html[data-theme="dark"] .notif-empty {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .notif-item {
+    border-bottom-color: var(--border-soft);
+    background: var(--surface-solid);
+}
+
+html[data-theme="dark"] .notif-item.unread {
+    background: #221e34;
+}
+
+html[data-theme="dark"] .notif-item:hover,
+html[data-theme="dark"] .notif-item.unread:hover {
+    background: #2d2848;
+}
+
+html[data-theme="dark"] .notif-title {
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .notif-text {
+    color: #b8b2d0;
+}
+
+html[data-theme="dark"] .notif-time {
+    color: #8f89a8;
+}
+
+html[data-theme="dark"] .notif-badge {
+    box-shadow: 0 0 0 2px var(--surface-solid);
+}
+
+/* --- Ders & konu paneli (karanlık mod) --- */
+html[data-theme="dark"] .toolbox-drag-panel {
+    background: #2d2848;
+    border-color: #4a4268;
+}
+
+html[data-theme="dark"] .toolbox-drag-panel h3,
+html[data-theme="dark"] .topics-scroll h3 {
+    color: #ebe7f7;
+    background: transparent;
+}
+
+html[data-theme="dark"] .course-tags-wrapper {
+    background: #363050;
+    border-color: #4a4268;
+}
+
+html[data-theme="dark"] .tags-title {
+    color: #b8b2d0;
+}
+
+html[data-theme="dark"] .course-pill {
+    background: #3f3a5c;
+    color: #ebe7f7;
+    border-color: #5c5480;
+}
+
+html[data-theme="dark"] .course-pill:hover {
+    background: #4a4568;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+}
+
+html[data-theme="dark"] .course-pill .pill-delete-btn {
+    color: #c4b5fd;
+}
+
+html[data-theme="dark"] .course-pill.active .pill-delete-btn {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+html[data-theme="dark"] .topic-search-input {
+    background: #252038;
+    color: #ebe7f7;
+    border-color: #4a4268;
+}
+
+html[data-theme="dark"] .topic-search-input::placeholder {
+    color: #8f89a8;
+}
+
+html[data-theme="dark"] .topic-status-filter button {
+    background: #3f3a5c;
+    color: #b8b2d0;
+    border-color: #5c5480;
+}
+
+html[data-theme="dark"] .topic-status-filter button:hover {
+    border-color: var(--primary);
+    color: #ebe7f7;
+    background: #4a4568;
+}
+
+html[data-theme="dark"] .topic-status-filter button.active {
+    color: #fff;
+}
+
+html[data-theme="dark"] .draggable-item {
+    background: #363050;
+    border-color: #4a4268;
+}
+
+html[data-theme="dark"] .draggable-item .topic-label {
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .draggable-item.is-done {
+    opacity: 0.65;
+}
+
+html[data-theme="dark"] .draggable-item.is-done .topic-label,
+html[data-theme="dark"] .topic-label.done {
+    color: #8f89a8;
+}
+
+html[data-theme="dark"] .topics-filter-empty {
+    background: #363050;
+    border-color: #4a4268;
+    color: #b8b2d0;
+}
+
+html[data-theme="dark"] .toolbox-inline-form input,
+html[data-theme="dark"] .toolbox-inline-form select {
+    background: #252038;
+    color: #ebe7f7;
+    border-color: #4a4268;
+}
+
+html[data-theme="dark"] .toolbox-inline-form select option {
+    background: #252038;
+    color: #ebe7f7;
+}
+
+html[data-theme="dark"] .toolbox-add-btn {
+    background: var(--primary);
+    color: #fff;
+}
+
+html[data-theme="dark"] .toolbox-add-btn:hover {
+    background: #7c3aed;
+}

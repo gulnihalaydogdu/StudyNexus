@@ -1,0 +1,18 @@
+<nav class="profile-nav" aria-label="Hesap ayarları">
+    <a href="/profile" class="profile-nav-link<%= activeTab === 'personal' ? ' active' : '' %>">
+        <span class="profile-nav-icon">👤</span>
+        <span class="profile-nav-text">Kişisel Bilgiler</span>
+    </a>
+    <a href="/profile/password" class="profile-nav-link<%= activeTab === 'password' ? ' active' : '' %>">
+        <span class="profile-nav-icon">🔐</span>
+        <span class="profile-nav-text">Şifre Değiştir</span>
+    </a>
+    <a href="/profile/email" class="profile-nav-link<%= activeTab === 'email' ? ' active' : '' %>">
+        <span class="profile-nav-icon">✉️</span>
+        <span class="profile-nav-text">E-Posta Değiştir</span>
+    </a>
+    <a href="/profile/delete" class="profile-nav-link danger<%= activeTab === 'delete' ? ' active' : '' %>">
+        <span class="profile-nav-icon">⚠️</span>
+        <span class="profile-nav-text">Hesabı Sil</span>
+    </a>
+</nav>

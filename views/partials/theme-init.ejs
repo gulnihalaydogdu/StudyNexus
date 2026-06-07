@@ -1,0 +1,11 @@
+<script>
+(function () {
+    try {
+        var stored = localStorage.getItem('studynexus-theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    } catch (e) {}
+})();
+</script>

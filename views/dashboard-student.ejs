@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyNexus — Öğrenci</title>
+    <%- include('partials/theme-init') %>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/responsive.css">
+    <link rel="stylesheet" href="/css/theme.css">
     <%- include('partials/csrf-meta') %>
 </head>
 <body class="role-student">
@@ -19,6 +21,7 @@
         <button type="button" class="nav-chip" data-panel="coaching" id="coachingNavChip">👩‍🏫 Koçum <span class="nav-unread-badge" id="coachingUnreadBadge" hidden>0</span></button>
     </nav>
     <div class="user-menu">
+        <%- include('partials/theme-toggle') %>
         <%- include('partials/notification-bell') %>
         <button type="button" class="timer-toggle-btn" id="timerToggleBtn" onclick="toggleStudyTimer()" title="Çalışma sayacı">⏱️</button>
         <a href="/profile" class="profile-link">👤 <%= user.username %> <span class="role-tag">Öğrenci</span></a>
@@ -33,7 +36,7 @@
     <section id="panel-planner" class="app-panel active">
         <div class="canvas-area">
             <%- include('partials/planner-sidebar') %>
-            <%- include('partials/a4-canvas', { workspaceHint: 'Haftalık planınızı oluşturun veya soldan bir plana tıklayın.', showAssignBtn: false }) %>
+            <%- include('partials/a4-canvas', { workspaceHint: 'Haftalık planınızı oluşturun veya soldan bir plana tıklayın.', showAssignBtn: false, darkPoster: true }) %>
             <%- include('partials/topic-toolbox') %>
         </div>
     </section>
@@ -176,6 +179,7 @@ window.STUDYNEXUS_CALENDAR = <%- JSON.stringify(dynamicMonths) %>;
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/js/theme.js" defer></script>
 <script type="module" src="/js/app.js"></script>
 </body>
 </html>

@@ -404,21 +404,4 @@ router.get('/api/calendar/weeks', requireAuth, (req, res) => {
     res.json({ success: true, weeks: monthData?.weeks || [] });
 });
 
-router.get('/profile', requireAuth, (req, res) => {
-    const user = dbGet('SELECT * FROM users WHERE id = ?', [req.session.userId]);
-    if (!user) return res.status(500).send('Veritabanı hatası.');
-    res.render('profile', { user });
-});
-
-router.post('/profile/edit', requireAuth, (req, res) => {
-    const { full_name, location, birth_date, grade, age, branch } = req.body;
-    dbRun(
-        `UPDATE users SET full_name = ?, location = ?, birth_date = ?, grade = ?, age = ?, branch = ?,
-         updated_at = datetime('now')
-         WHERE id = ?`,
-        [full_name, location, birth_date, grade, age, branch, req.session.userId]
-    );
-    res.redirect('/profile');
-});
-
 export default router;

@@ -1,0 +1,33 @@
+<section class="profile-section">
+    <div class="section-head">
+        <h2>E-Posta Değiştir</h2>
+        <p>Yeni adrese doğrulama bağlantısı gönderilir</p>
+    </div>
+
+    <div class="info-card">
+        <span class="info-card-label">Mevcut e-posta</span>
+        <span class="info-card-value"><%= user.email || '—' %></span>
+        <% if (user.pending_email) { %>
+            <p class="field-hint pending">Onay bekliyor: <strong><%= user.pending_email %></strong></p>
+        <% } %>
+    </div>
+
+    <form action="/profile/email" method="POST" class="profile-form">
+        <%- include('csrf-field') %>
+        <label>Yeni E-Posta Adresi</label>
+        <input type="email" name="email" placeholder="yeni@ornek.com" required>
+
+        <label>Onay için Şifreniz</label>
+        <input type="password" name="password" autocomplete="current-password" required>
+
+        <% if (!mailConfigured) { %>
+            <p class="field-hint warn">E-posta sunucusu yapılandırılmamış. Değişiklik için .env dosyasında MAIL_USER ve MAIL_PASS tanımlanmalı (geliştirmede AUTO_VERIFY_WHEN_NO_MAIL=true ile anında güncellenebilir).</p>
+        <% } else { %>
+            <p class="field-hint">Doğrulama bağlantısı yeni adrese gönderilir; onaylanana kadar mevcut e-postanız geçerlidir.</p>
+        <% } %>
+
+        <div class="form-actions">
+            <button type="submit" class="save-btn">Doğrulama Gönder</button>
+        </div>
+    </form>
+</section>

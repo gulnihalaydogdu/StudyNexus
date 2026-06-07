@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyNexus - Giriş Yap</title>
+    <%- include('partials/theme-init') %>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/login.css"> </head>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/theme.css">
+</head>
 <body>
+    <div class="auth-theme-toggle"><%- include('partials/theme-toggle') %></div>
     
     <div class="auth-graphic">
         <h1>StudyNexus</h1>
@@ -42,5 +46,6 @@
         </div>
     </div>
 
+<script src="/js/theme.js" defer></script>
 </body>
 </html>

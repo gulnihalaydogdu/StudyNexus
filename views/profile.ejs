@@ -3,67 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyNexus - Profilim</title>
+    <title>StudyNexus — <%= pageTitle %></title>
+    <%- include('partials/theme-init') %>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/theme.css">
 </head>
 <body>
 
-    <div class="profile-box">
-        <div class="profile-header">
-            <h2>Kişisel Bilgilerim</h2>
-            <p>Hesap detaylarınızı buradan yönetebilirsiniz.</p>
+    <div class="profile-page">
+        <header class="profile-top">
+            <div>
+                <h1>Hesap Ayarları</h1>
+                <p><%= pageSubtitle %></p>
+            </div>
+            <div class="profile-top-actions">
+                <%- include('partials/theme-toggle') %>
+                <a href="/" class="profile-home-link">← Ana sayfa</a>
+            </div>
+        </header>
+
+        <div class="profile-layout">
+            <main class="profile-main">
+                <% if (flashMsg) { %>
+                    <div class="profile-flash <%= flashType === 'error' ? 'error' : 'success' %>" role="alert">
+                        <%= flashMsg %>
+                    </div>
+                <% } %>
+
+                <% if (activeTab === 'personal') { %>
+                    <%- include('partials/profile-personal') %>
+                <% } else if (activeTab === 'password') { %>
+                    <%- include('partials/profile-password') %>
+                <% } else if (activeTab === 'email') { %>
+                    <%- include('partials/profile-email') %>
+                <% } else if (activeTab === 'delete') { %>
+                    <%- include('partials/profile-delete') %>
+                <% } %>
+            </main>
+
+            <%- include('partials/profile-nav') %>
         </div>
-        
-        <form action="/profile/edit" method="POST">
-            <%- include('partials/csrf-field') %>
-            <div class="form-row">
-                <div>
-                    <label>Kullanıcı Adı</label>
-                    <input type="text" value="<%= user.username %>" disabled>
-                </div>
-                <div>
-                    <label>E-Posta Adresi</label>
-                    <input type="text" value="<%= user.email %>" disabled>
-                </div>
-            </div>
-
-            <label>İsim Soyisim</label>
-            <input type="text" name="full_name" value="<%= user.full_name || '' %>" required>
-
-            <div class="form-row">
-                <div>
-                    <label>Yaşadığınız Şehir</label>
-                    <input type="text" name="location" value="<%= user.location || '' %>" required>
-                </div>
-                <div>
-                    <label>Doğum Tarihi</label>
-                    <input type="date" name="birth_date" value="<%= user.birth_date || '' %>" required>
-                </div>
-            </div>
-
-            <% if (user.role === 'student') { %>
-                <div class="form-row">
-                    <div>
-                        <label>Sınıfınız</label>
-                        <input type="text" name="grade" value="<%= user.grade || '' %>">
-                    </div>
-                    <div>
-                        <label>Yaşınız</label>
-                        <input type="number" name="age" value="<%= user.age || '' %>">
-                    </div>
-                </div>
-            <% } else if (user.role === 'teacher') { %>
-                <label>Branşınız</label>
-                <input type="text" name="branch" value="<%= user.branch || '' %>">
-            <% } %>
-
-            <div class="btn-group">
-                <a href="/" class="back-btn">İptal</a>
-                <button type="submit" class="save-btn">Değişiklikleri Kaydet</button>
-            </div>
-        </form>
     </div>
 
+<script src="/js/theme.js" defer></script>
 </body>
 </html>

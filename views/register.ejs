@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyNexus - Kayıt Ol</title>
+    <%- include('partials/theme-init') %>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/register.css">
+    <link rel="stylesheet" href="/css/theme.css">
 </head>
 <body>
+    <div class="auth-theme-toggle"><%- include('partials/theme-toggle') %></div>
     <% const f = typeof form !== 'undefined' && form ? form : {}; %>
     <% const errField = typeof fieldError !== 'undefined' ? fieldError : ''; %>
     <% const hasRole = f.role === 'student' || f.role === 'teacher'; %>
@@ -116,5 +119,6 @@
             }
         });
     </script>
+    <script src="/js/theme.js" defer></script>
 </body>
 </html>

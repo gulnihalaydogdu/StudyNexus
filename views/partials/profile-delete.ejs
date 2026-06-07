@@ -1,0 +1,19 @@
+<section class="profile-section danger-zone">
+    <div class="section-head">
+        <h2>Hesabı Sil</h2>
+        <p>Bu işlem geri alınamaz — tüm planlar, konular ve veriler silinir</p>
+    </div>
+    <form action="/profile/delete" method="POST" class="profile-form"
+          onsubmit="return confirm('Hesabınız kalıcı olarak silinecek. Emin misiniz?');">
+        <%- include('csrf-field') %>
+        <label>Onay için Şifreniz</label>
+        <input type="password" name="password" autocomplete="current-password" required>
+
+        <label>Kullanıcı Adınızı Yazın (<strong><%= user.username %></strong>)</label>
+        <input type="text" name="confirmUsername" placeholder="<%= user.username %>" autocomplete="off" required>
+
+        <div class="form-actions">
+            <button type="submit" class="delete-btn">Hesabımı Kalıcı Olarak Sil</button>
+        </div>
+    </form>
+</section>
